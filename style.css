@@ -1,13 +1,13 @@
 html{
-  background-color: #F7F9FA;
-  width: 100%;
+  background-color: #FAF8F7;
+  
 }
 body{
   font-family: sans-serif;
 }
 #maincontent{
   padding-top: 40px;
-  max-width: 80%;
+  max-width: 70%;
   margin: 0 auto;
 
 }
