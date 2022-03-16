@@ -1,9 +1,10 @@
 body{
-font-family: default;
-margin: 0 auto;
+  font-family: default;
+  margin: 0 auto;
 }
 div #maincontent{
-max-width: 80%;
+  padding-top: 40px;
+  max-width: 80%;
 
 }
 h1{
@@ -11,13 +12,13 @@ h1{
 
 }
 a{
-color: #3E84AC;
+  color: #3E84AC;
 }
 p{
-color: #888888;
+  color: #888888;
 
 }
 img{
-width: 25%;
+  width: 25%;
 
 }
