@@ -1,11 +1,11 @@
 body{
   color: #D7DFE3;
-  font-family: default;
-  margin: 0 auto;
+  font-family: sans-serif;
 }
 div #maincontent{
   padding-top: 40px;
   max-width: 80%;
+  margin: 0 auto;
 
 }
 h1{
