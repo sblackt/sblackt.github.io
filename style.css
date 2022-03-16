@@ -2,7 +2,7 @@ body{
   color: #D7DFE3;
   font-family: sans-serif;
 }
-div #maincontent{
+div{
   padding-top: 40px;
   max-width: 80%;
   margin: 0 auto;
