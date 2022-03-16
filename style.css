@@ -2,6 +2,10 @@ body{
 font-family: default;
 
 }
+#maincontent{
+width: 80%;
+
+}
 h1{
   color: #999999;
 
