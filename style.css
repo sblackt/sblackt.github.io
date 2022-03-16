@@ -3,7 +3,7 @@ font-family: default;
 
 }
 #maincontent{
-width: 80%;
+max-width: 80%;
 
 }
 h1{
