@@ -1,28 +1,790 @@
 <!DOCTYPE html>
-<html lang="eng-US">
-  <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
-    <title>Stephen White</title>
-    <meta name="description" content="Stephen White Product Design Leader">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    
-  </head>
-  <! -- Hi! Thanks for being here, and being curious enough to inspect or check my code. This is just a self-depricating note to say I am no pro dev, please don't judge my code too harshly. I'm doing my best, scout's honour! Cheers. -- >
-  <body>
-    <div id='maincontent'>
-      <h1>Hi, I'm Steve</h1>
-      <img src="stevecircle.png" alt="Profile photo of Steve">
-      <h2>I'm a product design team leader living rurally in Ontario, Canada.</h2>
-     <h3>What I'm up to</h3>
-      <p>I currently lead the Product Design team at <a href="https://audienceview.com/">AudienceView</a> creating robust solutions for the ticketing industry, both for venues/event creators and users/ticket buyers.</p>
-<p>What I do is create and support design teams to solve real problems and promote human centred design thinking across organizations.</p>
-        <h3>Bio</h3>
-<p>After practicing child and youth work in my first career, owning a contracting company in Vancouver, freelance designing in Toronto out of <a href="https://socialinnovation.org/">CSI Toronto</a> and working with the wild team over at <a href="https://elitedigitalagency.com/">Elite Digital</a> – I landed in design leadership at AudienceView. <br><br>I have 10 years of design experience spanning freelance, agency, in-house – branding, web, print and product UX/UI. Leveraging my initial career experience in social work I am a strong empathetic leader with a focus on facilitation and empowering professionals to do their job the best they can. I emphasize enjoying work and life through a love of design and it's process.<br><br>For organizations I believe design can and does provide key practices to set companies apart and create the right kind of value. A well run design team can prove value almost immediately in efficiencies and solutions using a human centred focus. 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stephen White - Director of Product Design | Better Design for Everyone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-      <h3>Resumé</h3>
-      <p>Check me out here in LinkedIn</p>
-      <a href="https://www.linkedin.com/in/stephen-white-750403126/">Stephen White</a><br><br><br><br>
-    </div>
-  </body>
-    
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header */
+        header {
+            padding: 2rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #1a1a1a;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 10rem 0 8rem;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 60%;
+            height: 200%;
+            background: linear-gradient(135deg, rgba(120, 119, 198, 0.1) 0%, rgba(255, 119, 198, 0.05) 100%);
+            border-radius: 50%;
+            transform: rotate(-15deg);
+            z-index: -1;
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #1a1a1a 0%, #6366f1 50%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            max-width: 800px;
+        }
+
+        .hero p {
+            font-size: 1.4rem;
+            color: #4a5568;
+            max-width: 600px;
+            margin: 0 0 3rem 0;
+            font-weight: 400;
+            line-height: 1.7;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 1.2rem 2.5rem;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.4s ease;
+            border: none;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        /* About Section */
+        .about {
+            padding: 8rem 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .about::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 70%, rgba(120, 119, 198, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(255, 119, 198, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6rem;
+            align-items: start;
+            position: relative;
+            z-index: 2;
+        }
+
+        .about-content > div:first-child {
+            transform: translateX(-20px);
+        }
+
+        .about-content > div:last-child {
+            transform: translateX(20px);
+        }
+
+        .about-text h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .about-text p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .skill-tag {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Experience Section */
+        .experience {
+            padding: 6rem 0;
+        }
+
+        .timeline {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline-item {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            padding: 2.5rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .timeline-item:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .timeline-item:nth-child(odd) {
+            transform: translateX(-20px);
+        }
+
+        .timeline-item:nth-child(even) {
+            transform: translateX(20px);
+        }
+
+        .timeline-item:nth-child(odd):hover,
+        .timeline-item:nth-child(even):hover {
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        .timeline-date {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .timeline-content h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-content .company {
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .timeline-content p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Projects Section */
+        .projects {
+            padding: 8rem 0;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .projects::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 80% 80%, rgba(120, 119, 198, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 20% 20%, rgba(255, 119, 198, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .project-image {
+            height: 200px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .project-content {
+            padding: 1.5rem;
+        }
+
+        .project-content h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-content p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .project-tag {
+            background: #f0f0f0;
+            color: #666;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 6rem 0;
+        }
+
+        .contact-content {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact-content p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 1rem 2rem;
+            border: 2px solid #6366f1;
+            border-radius: 50px;
+            transition: all 0.4s ease;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .contact-link:hover {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Footer */
+        footer {
+            padding: 2rem 0;
+            border-top: 1px solid #f0f0f0;
+            text-align: center;
+            color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .hero {
+                text-align: center;
+                padding: 6rem 0 4rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+                max-width: 100%;
+            }
+
+            .hero p {
+                margin: 0 auto 2rem auto;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .about-content > div:first-child,
+            .about-content > div:last-child {
+                transform: none;
+            }
+
+            .timeline-item {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .timeline-item:nth-child(odd),
+            .timeline-item:nth-child(even) {
+                transform: none;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">Stephen White</a>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#experience">Experience</a></li>
+                        <li><a href="#projects">Projects</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="fade-in-up">Better Design for Everyone</h1>
+            <p class="fade-in-up">I lead the Product Design team at AudienceView, creating robust software solutions for the ticketing industry. My focus is on designing products that are simple, clear, and accessible for everyone.</p>
+            <a href="#contact" class="cta-button fade-in-up">Get in Touch</a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title fade-in-up">About Me</h2>
+            <div class="about-content">
+                <div class="about-text fade-in-up">
+                    <h3>Design Leadership & Accessibility</h3>
+                    <p>I lead a team of designers to make software products that are clear, useful, and work for everyone. My job is to ensure the user experience is thoughtful, user-friendly, and accessible. I work closely with product managers, engineers, and users to solve real problems.</p>
+                    <p>I believe interfaces should help users feel confident and in control. With over 12 years of design experience, I focus on creating products that work well for everyone, not just the average user.</p>
+                    
+                    <div class="skills">
+                        <span class="skill-tag">Team Leadership</span>
+                        <span class="skill-tag">Accessibility</span>
+                        <span class="skill-tag">Product Design</span>
+                        <span class="skill-tag">UX/UI Design</span>
+                        <span class="skill-tag">Senior Stakeholder Management</span>
+                        <span class="skill-tag">User Research</span>
+                        <span class="skill-tag">Design Systems</span>
+                        <span class="skill-tag">Graphic Design</span>
+                    </div>
+                </div>
+                <div class="about-text fade-in-up">
+                    <h3>What I Focus On</h3>
+                    <p>Designing products that are simple, clear, and accessible. Working with teams to solve real problems for real people. Helping designers grow and do their best work.</p>
+                    <p>I keep the big picture in mind while sweating the small details, ensuring our products work well for everyone. Based in Bonnechere Valley, Ontario, I work remotely with teams across Canada.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section id="experience" class="experience">
+        <div class="container">
+            <h2 class="section-title fade-in-up">Experience</h2>
+            <div class="timeline">
+                <div class="timeline-item fade-in-up">
+                    <div class="timeline-date">Feb 2025 - Present</div>
+                    <div class="timeline-content">
+                        <h4>Director of Product Design</h4>
+                        <div class="company">AudienceView</div>
+                        <p>Leading the Product Design team at AudienceView, creating robust software solutions for the ticketing industry. I lead a team of designers to make software products that are clear, useful, and work for everyone. Focus on ensuring user experience is thoughtful, user-friendly, and accessible.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item fade-in-up">
+                    <div class="timeline-date">Mar 2019 - Feb 2025</div>
+                    <div class="timeline-content">
+                        <h4>Product Design Team Lead</h4>
+                        <div class="company">AudienceView</div>
+                        <p>Led a team of product designers creating, testing and releasing updates and improvements to AudienceView's industry-leading ticketing software. Worked closely with product managers, engineers, and users to solve real problems.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item fade-in-up">
+                    <div class="timeline-date">Mar 2017 - Mar 2019</div>
+                    <div class="timeline-content">
+                        <h4>Senior Designer</h4>
+                        <div class="company">Elite Digital Inc.</div>
+                        <p>Senior design role focusing on graphic and web design projects. Developed creative solutions for various clients and industries.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item fade-in-up">
+                    <div class="timeline-date">Jun 2016 - Mar 2017</div>
+                    <div class="timeline-content">
+                        <h4>Graphic and Web Designer</h4>
+                        <div class="company">Elite Digital Inc.</div>
+                        <p>Created visual designs and web solutions for clients, building on foundational design skills and client relationships.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item fade-in-up">
+                    <div class="timeline-date">Jan 2012 - Nov 2016</div>
+                    <div class="timeline-content">
+                        <h4>Freelance Graphic Designer</h4>
+                        <div class="company">Self-Employed</div>
+                        <p>Worked freelance for many clients over the course of my design career, building a diverse portfolio and client base across various industries.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="projects">
+        <div class="container">
+            <h2 class="section-title fade-in-up">Featured Projects</h2>
+            <div class="projects-grid">
+                <div class="project-card fade-in-up">
+                    <div class="project-image">Ticketing Platform</div>
+                    <div class="project-content">
+                        <h4>AudienceView Ticketing Software</h4>
+                        <p>Leading design for industry-leading ticketing software used by venues and event creators worldwide. Focus on creating accessible, user-friendly experiences for both event organizers and ticket buyers.</p>
+                        <div class="project-tags">
+                            <span class="project-tag">Product Design</span>
+                            <span class="project-tag">Accessibility</span>
+                            <span class="project-tag">Team Leadership</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="project-card fade-in-up">
+                    <div class="project-image">Design Team</div>
+                    <div class="project-content">
+                        <h4>Design Team Leadership</h4>
+                        <p>Built and led a high-performing product design team, establishing processes and best practices that improved team efficiency and product quality. Mentored designers and fostered a culture of continuous learning.</p>
+                        <div class="project-tags">
+                            <span class="project-tag">Team Leadership</span>
+                            <span class="project-tag">DesignOps</span>
+                            <span class="project-tag">Mentorship</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="project-card fade-in-up">
+                    <div class="project-image">Brand Identity</div>
+                    <div class="project-content">
+                        <h4>Brand Identity Design</h4>
+                        <p>Created brand identities and visual designs for various clients during freelance work. Developed comprehensive design solutions that helped businesses establish strong visual presence and brand recognition.</p>
+                        <div class="project-tags">
+                            <span class="project-tag">Brand Design</span>
+                            <span class="project-tag">Graphic Design</span>
+                            <span class="project-tag">Client Work</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="contact-content">
+                <h2 class="section-title fade-in-up">Let's Connect</h2>
+                <p class="fade-in-up">I'm always interested in new opportunities, collaborations, and conversations about design, accessibility, and building great teams. Based in Bonnechere Valley, Ontario, Canada.</p>
+                <div class="contact-links fade-in-up">
+                    <a href="mailto:stephen@example.com" class="contact-link">
+                        <span>📧</span>
+                        Email
+                    </a>
+                    <a href="https://linkedin.com/in/stephen-white-750403126/" class="contact-link">
+                        <span>💼</span>
+                        LinkedIn
+                    </a>
+                    <a href="#contact" class="contact-link">
+                        <span>📍</span>
+                        Bonnechere Valley, ON
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Stephen White. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all fade-in-up elements
+        document.querySelectorAll('.fade-in-up').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+            observer.observe(el);
+        });
+
+        // Header scroll effect
+        let lastScroll = 0;
+        const header = document.querySelector('header');
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > lastScroll && currentScroll > 100) {
+                header.style.transform = 'translateY(-100%)';
+            } else {
+                header.style.transform = 'translateY(0)';
+            }
+            
+            lastScroll = currentScroll;
+        });
+    </script>
+</body>
+</html> 
