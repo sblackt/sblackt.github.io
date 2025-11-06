@@ -402,7 +402,7 @@
 
         // Adjust thresholds/behaviour per feed as needed.
         const FEEDS = [
-            { id: 'home.temperature', name: 'Temperature', unit: '°C', color: '#6366f1', coldBelow: 19, showCard: true, showDetail: true },
+            { id: 'home.temperature', name: 'Temperature', unit: '°C', color: '#6366f1', coldBelow: 19, showCard: true, showDetail: true, offset: -3.3 },
             { id: 'home.humidity', name: 'Humidity', unit: '%', color: '#22c55e', goodRange: [30, 60], showCard: true, showDetail: true },
             { id: 'home.pressure', name: 'Pressure', unit: 'hPa', color: '#f97316', goodRange: [980, 1025], showCard: true, showDetail: true },
             { id: 'home.gas', name: 'Gas', unit: 'Ω', color: '#facc15', preferLower: true, showCard: false, showDetail: true },
@@ -482,11 +482,21 @@
                 }
 
                 const raw = await response.json();
+                const adjustValue = typeof feed.adjust === 'function'
+                    ? feed.adjust
+                    : (value => value + (typeof feed.offset === 'number' ? feed.offset : 0));
+
                 const data = Array.isArray(raw)
-                    ? raw.map(entry => ({
-                        value: Number.parseFloat(entry.value),
-                        createdAt: entry.created_at
-                    })).filter(entry => Number.isFinite(entry.value))
+                    ? raw.map(entry => {
+                        const rawValue = Number.parseFloat(entry.value);
+                        if (!Number.isFinite(rawValue)) {
+                            return null;
+                        }
+                        const adjusted = adjustValue(rawValue);
+                        return Number.isFinite(adjusted)
+                            ? { value: adjusted, createdAt: entry.created_at }
+                            : null;
+                    }).filter(Boolean)
                     : [];
 
                 return { ...feed, data };
