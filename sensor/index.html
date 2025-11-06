@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stonehedge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <style>
+        :root {
+            color-scheme: light dark;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            background: radial-gradient(circle at 10% 20%, rgba(54, 79, 199, 0.1) 0%, transparent 40%), radial-gradient(circle at 80% 0%, rgba(20, 184, 166, 0.1) 0%, transparent 50%), #f8fafc;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 1.5rem;
+        }
+
+        .layout {
+            width: min(1100px, 100%);
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+            backdrop-filter: blur(14px);
+            padding: 3rem clamp(1.5rem, 2vw, 3rem);
+            display: grid;
+            gap: 2.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .page-header__text {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .page-header h1 {
+            font-size: clamp(2.1rem, 4vw, 2.7rem);
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #0f172a;
+        }
+
+        .status-message {
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
+        .refresh-button {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            border: none;
+            border-radius: 999px;
+            padding: 0.65rem 1.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-left: auto;
+        }
+
+        .refresh-button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+        }
+
+        .refresh-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .metric-card {
+            border-radius: 22px;
+            padding: 1.5rem;
+            color: #f8fafc;
+            display: grid;
+            gap: 1.25rem;
+            background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+            box-shadow: 0 15px 35px -20px rgba(15, 23, 42, 0.7);
+        }
+
+        .metric-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .metric-value {
+            display: flex;
+            align-items: baseline;
+            gap: 0.3rem;
+            font-size: clamp(1.9rem, 4.5vw, 2.8rem);
+            font-weight: 600;
+        }
+
+        .metric-value span:last-child {
+            font-size: clamp(1.05rem, 1.1vw, 1.4rem);
+            opacity: 0.8;
+            font-weight: 500;
+        }
+
+        .metric-extrema {
+            display: flex;
+            justify-content: space-between;
+            gap: 1.25rem;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .metric-extrema__item {
+            display: grid;
+            gap: 0.25rem;
+        }
+
+        .metric-extrema__label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.85;
+        }
+
+        .metric-extrema__value {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .metric-extrema__time {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .metric-error {
+            font-size: 0.85rem;
+            color: #fca5a5;
+            font-weight: 500;
+        }
+
+        .metric-card.metric-card--cold {
+            background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 40%, #38bdf8 100%);
+        }
+
+        .metric-card.metric-card--warm {
+            background: linear-gradient(135deg, #b91c1c 0%, #f97316 45%, #fbbf24 100%);
+        }
+
+        .metric-card.metric-card--ok {
+            background: linear-gradient(135deg, #064e3b 0%, #10b981 45%, #34d399 100%);
+        }
+
+        .metric-card.metric-card--alert {
+            background: linear-gradient(135deg, #7f1d1d 0%, #dc2626 45%, #f97316 100%);
+        }
+
+        .metric-card.metric-card--error {
+            background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.75rem;
+        }
+
+        .detail-card {
+            background: rgba(248, 250, 252, 0.88);
+            border-radius: 24px;
+            padding: 1.75rem;
+            border: 1px solid rgba(203, 213, 225, 0.6);
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .detail-header {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .detail-title {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .detail-summary {
+            color: #475569;
+        }
+
+        .detail-chart {
+            height: clamp(220px, 40vh, 320px);
+        }
+
+        .detail-chart canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .detail-list {
+            list-style: none;
+            display: grid;
+            gap: 0.6rem;
+            font-size: 0.95rem;
+            color: #1f2937;
+        }
+
+        .detail-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed rgba(148, 163, 184, 0.4);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .detail-list li:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .detail-error {
+            color: #b91c1c;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            .layout {
+                padding: 2.25rem 1.5rem;
+            }
+
+            .refresh-button {
+                width: 100%;
+                max-width: 260px;
+                margin: 0 auto;
+            }
+
+            .metric-extrema {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .layout {
+                padding: 0.5rem;
+                gap: 0.8rem;
+            }
+
+            .page-header {
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .page-header__text {
+                width: 100%;
+            }
+
+            .refresh-button {
+                width: 100%;
+                margin: 0 auto;
+            }
+
+            .metric-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.5rem;
+            }
+
+            .metric-card {
+                padding: 0.9rem 0.5rem;
+                border-radius: 16px;
+                min-height: 132px;
+            }
+
+            .metric-title {
+                font-size: 0.55rem;
+            }
+
+            .metric-value {
+                font-size: 0.9rem;
+            }
+
+            .metric-extrema {
+                gap: 0.5rem;
+            }
+
+            .metric-extrema__label {
+                font-size: 0.5rem;
+            }
+
+            .metric-extrema__value {
+                font-size: 0.7rem;
+            }
+
+            .metric-extrema__time {
+                font-size: 0.5rem;
+            }
+
+            .detail-card {
+                padding: 0.5rem;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            .metric-card {
+                gap: 0.1rem;
+            }
+            .metric-value span:last-child {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="layout">
+        <header class="page-header">
+            <div class="page-header__text">
+                <h1>Stonehedge</h1>
+                <p id="status-message" class="status-message">Loading sensor data…</p>
+            </div>
+            <button id="refresh-btn" type="button" class="refresh-button">Refresh</button>
+        </header>
+
+        <section id="metric-cards" class="metric-grid" aria-live="polite"></section>
+
+        <section id="feed-details" class="detail-grid"></section>
+    </main>
+
+    <script>
+        const REFRESH_INTERVAL = 60000;
+        const USERNAME = 'sblackt';
+        const DATA_LIMIT = 60;
+
+        // Adjust thresholds/behaviour per feed as needed.
+        const FEEDS = [
+            { id: 'home.temperature', name: 'Temperature', unit: '°C', color: '#6366f1', coldBelow: 19, showCard: true, showDetail: true },
+            { id: 'home.humidity', name: 'Humidity', unit: '%', color: '#22c55e', goodRange: [30, 60], showCard: true, showDetail: true },
+            { id: 'home.pressure', name: 'Pressure', unit: 'hPa', color: '#f97316', goodRange: [980, 1025], showCard: true, showDetail: true },
+            { id: 'home.gas', name: 'Gas', unit: 'Ω', color: '#facc15', preferLower: true, showCard: false, showDetail: true },
+            { id: 'home.altitude', name: 'Altitude', unit: 'm', color: '#0ea5e9', preferLower: true, showCard: false, showDetail: false }
+        ];
+
+        const CARD_STATE_CLASSES = {
+            cold: 'metric-card--cold',
+            warm: 'metric-card--warm',
+            ok: 'metric-card--ok',
+            alert: 'metric-card--alert',
+            error: 'metric-card--error'
+        };
+
+        const CARD_STATE_CLASS_VALUES = Object.values(CARD_STATE_CLASSES);
+
+        const dom = {
+            status: document.getElementById('status-message'),
+            refresh: document.getElementById('refresh-btn'),
+            metricGrid: document.getElementById('metric-cards'),
+            detailGrid: document.getElementById('feed-details')
+        };
+
+        const charts = new Map();
+        let refreshTimer = null;
+
+        init();
+
+        function init() {
+            dom.refresh.addEventListener('click', () => requestData(true));
+            requestData(true);
+            scheduleRefresh();
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
+
+        function scheduleRefresh() {
+            clearInterval(refreshTimer);
+            refreshTimer = setInterval(() => requestData(false), REFRESH_INTERVAL);
+        }
+
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                clearInterval(refreshTimer);
+            } else {
+                requestData(false);
+                scheduleRefresh();
+            }
+        }
+
+        async function requestData(manualTrigger = false) {
+            if (manualTrigger) {
+                dom.status.textContent = 'Refreshing…';
+            }
+            dom.refresh.disabled = true;
+
+            try {
+                const feeds = await Promise.all(FEEDS.map(feed => fetchFeedData(feed)));
+                updateDashboard(feeds);
+                dom.status.textContent = `Updated ${formatDateTime(new Date())} · ${USERNAME} · Last ${DATA_LIMIT} points`;
+            } catch (error) {
+                console.error(error);
+                dom.status.textContent = `Unable to load sensor data: ${error.message}`;
+            } finally {
+                dom.refresh.disabled = false;
+            }
+        }
+
+        async function fetchFeedData(feed) {
+            const url = `https://io.adafruit.com/api/v2/${encodeURIComponent(USERNAME)}/feeds/${encodeURIComponent(feed.id)}/data?limit=${DATA_LIMIT}`;
+            try {
+                const response = await fetch(url, { cache: 'no-store' });
+                if (response.status === 404) {
+                    throw new Error('Feed not found or not public');
+                }
+                if (!response.ok) {
+                    throw new Error(`Request failed (${response.status})`);
+                }
+
+                const raw = await response.json();
+                const data = Array.isArray(raw)
+                    ? raw.map(entry => ({
+                        value: Number.parseFloat(entry.value),
+                        createdAt: entry.created_at
+                    })).filter(entry => Number.isFinite(entry.value))
+                    : [];
+
+                return { ...feed, data };
+            } catch (error) {
+                return { ...feed, data: [], error: error.message };
+            }
+        }
+
+        function updateDashboard(feeds) {
+            const seen = new Set();
+
+            feeds.forEach(feed => {
+                if (!feed || !feed.id) {
+                    return;
+                }
+                seen.add(feed.id);
+                if (feed.showCard !== false) {
+                    renderMetricCard(feed);
+                }
+                if (feed.showDetail !== false) {
+                    renderDetailCard(feed);
+                }
+            });
+
+            removeStaleCards(dom.metricGrid, seen, 'card');
+            removeStaleCards(dom.detailGrid, seen, 'detail');
+        }
+
+        function renderMetricCard(feed) {
+            const { id, name, unit, data = [], error } = feed;
+            let card = dom.metricGrid.querySelector(`[data-feed-id="${id}"]`);
+
+            if (!card) {
+                card = document.createElement('article');
+                card.className = 'metric-card';
+                card.dataset.feedId = id;
+                card.innerHTML = `
+                    <div class="metric-title">
+                        <span class="metric-name">${escapeHtml(name || id)}</span>
+                    </div>
+                    <div class="metric-value">
+                        <span class="metric-number">--</span>
+                        <span class="metric-unit">${unit ? escapeHtml(unit) : ''}</span>
+                    </div>
+                    <div class="metric-extrema">
+                        <div class="metric-extrema__item">
+                            <span class="metric-extrema__label">High</span>
+                            <span class="metric-extrema__value metric-high">--</span>
+                            <span class="metric-extrema__time metric-high-time"></span>
+                        </div>
+                        <div class="metric-extrema__item">
+                            <span class="metric-extrema__label">Low</span>
+                            <span class="metric-extrema__value metric-low">--</span>
+                            <span class="metric-extrema__time metric-low-time"></span>
+                        </div>
+                    </div>
+                    <span class="metric-error"></span>
+                `;
+                dom.metricGrid.appendChild(card);
+            }
+
+            const numberEl = card.querySelector('.metric-number');
+            const unitEl = card.querySelector('.metric-unit');
+            const highEl = card.querySelector('.metric-high');
+            const highTimeEl = card.querySelector('.metric-high-time');
+            const lowEl = card.querySelector('.metric-low');
+            const lowTimeEl = card.querySelector('.metric-low-time');
+            const errorEl = card.querySelector('.metric-error');
+
+            unitEl.textContent = unit || '';
+
+            if (error) {
+                setCardVisualState(card, 'error');
+                numberEl.textContent = '--';
+                highEl.textContent = '--';
+                lowEl.textContent = '--';
+                highTimeEl.textContent = '';
+                lowTimeEl.textContent = '';
+                errorEl.textContent = error;
+                return;
+            }
+
+            errorEl.textContent = '';
+
+            if (!data.length) {
+                setCardVisualState(card, 'alert');
+                numberEl.textContent = '--';
+                highEl.textContent = '--';
+                lowEl.textContent = '--';
+                highTimeEl.textContent = '';
+                lowTimeEl.textContent = '';
+                return;
+            }
+
+            const state = determineCardState(feed, data);
+            setCardVisualState(card, state);
+
+            const latest = data[0];
+            numberEl.textContent = formatNumber(latest.value);
+
+            if (data.length > 1) {
+                const high = data.reduce((acc, entry) => entry.value > acc.value ? entry : acc, data[0]);
+                const low = data.reduce((acc, entry) => entry.value < acc.value ? entry : acc, data[0]);
+                highEl.textContent = formatNumber(high.value);
+                highTimeEl.textContent = formatTime(high.createdAt);
+                lowEl.textContent = formatNumber(low.value);
+                lowTimeEl.textContent = formatTime(low.createdAt);
+            } else {
+                highEl.textContent = formatNumber(latest.value);
+                lowEl.textContent = formatNumber(latest.value);
+                highTimeEl.textContent = '';
+                lowTimeEl.textContent = '';
+            }
+        }
+
+        function renderDetailCard(feed) {
+            const { id, name, unit, data = [], error } = feed;
+            let detail = dom.detailGrid.querySelector(`[data-feed-id="${id}"]`);
+
+            if (!detail) {
+                detail = document.createElement('section');
+                detail.className = 'detail-card';
+                detail.dataset.feedId = id;
+                detail.innerHTML = `
+                    <div class="detail-header">
+                        <h3 class="detail-title">${escapeHtml(name || id)}</h3>
+                        <p class="detail-summary"></p>
+                    </div>
+                    <div class="detail-chart">
+                        <canvas aria-label="${escapeHtml(name || id)} trend chart"></canvas>
+                    </div>
+                    <ul class="detail-list"></ul>
+                    <p class="detail-error"></p>
+                `;
+                dom.detailGrid.appendChild(detail);
+            }
+
+            const summaryEl = detail.querySelector('.detail-summary');
+            const listEl = detail.querySelector('.detail-list');
+            const errorEl = detail.querySelector('.detail-error');
+            const canvas = detail.querySelector('canvas');
+
+            if (error) {
+                summaryEl.textContent = '';
+                listEl.innerHTML = '';
+                errorEl.textContent = error;
+                resetChart(id);
+                return;
+            }
+
+            errorEl.textContent = '';
+
+            if (!data.length) {
+                summaryEl.textContent = 'No readings available.';
+                listEl.innerHTML = '';
+                resetChart(id);
+                return;
+            }
+
+            const latest = data[0];
+            const average = data.reduce((sum, entry) => sum + entry.value, 0) / data.length;
+            summaryEl.textContent = `Latest ${formatNumber(latest.value)} ${unit || ''} · Average ${formatNumber(average)} ${unit || ''} across ${data.length} reading${data.length === 1 ? '' : 's'}`;
+
+            const listEntries = data.slice(0, 1);
+            listEl.innerHTML = listEntries
+                .map(entry => `<li><span>${formatNumber(entry.value)} ${unit || ''}</span><time>${formatDateTime(entry.createdAt)}</time></li>`)
+                .join('');
+
+            renderChart(feed, canvas, data);
+        }
+
+        function renderChart(feed, canvas, data) {
+            const chartColour = feed.color || '#0ea5e9';
+            const points = data.slice().reverse().map(item => ({
+                x: new Date(item.createdAt),
+                y: item.value
+            }));
+
+            if (!charts.has(feed.id)) {
+                const chart = new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        datasets: [{
+                            label: feed.unit || 'Value',
+                            data: points,
+                            borderColor: chartColour,
+                            backgroundColor: chartColour,
+                            fill: false,
+                            tension: 0.3,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            parsing: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    tooltipFormat: 'MMM d, h:mm a',
+                                    displayFormats: {
+                                        hour: 'MMM d, h a',
+                                        minute: 'h:mm a'
+                                    }
+                                },
+                                ticks: {
+                                    color: '#475569'
+                                },
+                                grid: {
+                                    color: 'rgba(226, 232, 240, 0.6)'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#475569'
+                                },
+                                grid: {
+                                    color: 'rgba(226, 232, 240, 0.6)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label(context) {
+                                        return ` ${formatNumber(context.parsed.y)}${feed.unit ? ` ${feed.unit}` : ''}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                charts.set(feed.id, chart);
+            } else {
+                const chart = charts.get(feed.id);
+                chart.data.datasets[0].data = points;
+                chart.update('none');
+            }
+        }
+
+        function resetChart(feedId) {
+            if (!charts.has(feedId)) {
+                return;
+            }
+            const chart = charts.get(feedId);
+            chart.data.datasets[0].data = [];
+            chart.update('none');
+        }
+
+        function removeStaleCards(container, seenSet, type) {
+            Array.from(container.children).forEach(child => {
+                if (!seenSet.has(child.dataset.feedId)) {
+                    const chart = charts.get(child.dataset.feedId);
+                    if (chart) {
+                        chart.destroy();
+                        charts.delete(child.dataset.feedId);
+                    }
+                    child.remove();
+                } else if (type === 'card') {
+                    const feed = FEEDS.find(item => item.id === child.dataset.feedId);
+                    if (feed && feed.showCard === false) {
+                        const chart = charts.get(child.dataset.feedId);
+                        if (chart) {
+                            chart.destroy();
+                            charts.delete(child.dataset.feedId);
+                        }
+                        child.remove();
+                    }
+                } else if (type === 'detail') {
+                    const feed = FEEDS.find(item => item.id === child.dataset.feedId);
+                    if (feed && feed.showDetail === false) {
+                        const chart = charts.get(child.dataset.feedId);
+                        if (chart) {
+                            chart.destroy();
+                            charts.delete(child.dataset.feedId);
+                        }
+                        child.remove();
+                    }
+                }
+
+            });
+        }
+
+        function setCardVisualState(card, state) {
+            CARD_STATE_CLASS_VALUES.forEach(cls => card.classList.remove(cls));
+            const nextClass = CARD_STATE_CLASSES[state] || CARD_STATE_CLASSES.ok;
+            card.classList.add(nextClass);
+        }
+
+        function determineCardState(feed, readings) {
+            if (!readings.length) {
+                return 'alert';
+            }
+            const latest = readings[0];
+
+            if (typeof feed.coldBelow === 'number') {
+                return latest.value < feed.coldBelow ? 'cold' : 'warm';
+            }
+
+            if (Array.isArray(feed.goodRange) && feed.goodRange.length === 2) {
+                const [min, max] = feed.goodRange;
+                if (latest.value >= min && latest.value <= max) {
+                    return 'ok';
+                }
+                return 'alert';
+            }
+
+            if (feed.preferLower) {
+                const average = readings.reduce((sum, entry) => sum + entry.value, 0) / readings.length;
+                return latest.value <= average ? 'ok' : 'alert';
+            }
+
+            if (feed.preferHigher) {
+                const average = readings.reduce((sum, entry) => sum + entry.value, 0) / readings.length;
+                return latest.value >= average ? 'ok' : 'alert';
+            }
+
+            return 'ok';
+        }
+
+        function formatNumber(value) {
+            if (!Number.isFinite(Number(value))) {
+                return '--';
+            }
+            const numberValue = Number(value);
+            const absValue = Math.abs(numberValue);
+            const digits = absValue >= 100 ? 1 : absValue >= 10 ? 2 : 2;
+            return numberValue.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: digits
+            });
+        }
+
+        function formatDateTime(input) {
+            const date = input instanceof Date ? input : new Date(input);
+            if (Number.isNaN(date.getTime())) {
+                return '';
+            }
+            return date.toLocaleString([], {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatTime(input) {
+            const date = new Date(input);
+            if (Number.isNaN(date.getTime())) {
+                return '';
+            }
+            return date.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+    </script>
+</body>
+</html>
