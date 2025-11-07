@@ -92,25 +92,31 @@
         }
 
         .refresh-button {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             border: none;
-            border-radius: 999px;
-            padding: 0.65rem 1.7rem;
-            font-weight: 600;
+            background: rgba(248, 250, 252, 0.15);
+            color: #e0e7ff;
+            font-size: 1.3rem;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            margin-left: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            box-shadow: 0 12px 30px -18px rgba(15, 23, 42, 0.9);
         }
 
         .refresh-button:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+            transform: translateY(-2px) rotate(10deg);
+            background: rgba(99, 102, 241, 0.25);
+            box-shadow: 0 12px 30px -12px rgba(99, 102, 241, 0.4);
         }
 
         .refresh-button:disabled {
-            opacity: 0.6;
+            opacity: 0.4;
             cursor: not-allowed;
+            transform: none;
             box-shadow: none;
         }
 
@@ -355,9 +361,10 @@
             }
 
             .refresh-button {
-                width: 100%;
-                max-width: 260px;
-                margin: 0 auto;
+                width: 36px;
+                height: 36px;
+                font-size: 1.1rem;
+                margin-left: auto;
             }
 
             .metric-extrema {
@@ -382,8 +389,10 @@
             }
 
             .refresh-button {
-                width: 100%;
-                margin: 0 auto;
+                width: 34px;
+                height: 34px;
+                font-size: 1rem;
+                margin-left: auto;
             }
 
             .metric-grid {
@@ -448,7 +457,9 @@
                 <h1>Stonehedge</h1>
                 <p id="status-message" class="status-message">Loading sensor data…</p>
             </div>
-            <button id="refresh-btn" type="button" class="refresh-button">Refresh</button>
+            <button id="refresh-btn" type="button" class="refresh-button" aria-label="Refresh">
+                <span aria-hidden="true">⟳</span>
+            </button>
         </header>
 
         <section id="metric-cards" class="metric-grid" aria-live="polite"></section>
@@ -627,6 +638,10 @@
         }
 
         function updateDashboard(feeds) {
+            const latestPayload = buildLatestPayload(feeds);
+            if (latestPayload) {
+                exposeLatestJson(latestPayload);
+            }
             const seen = new Set();
 
             feeds.forEach(feed => {
@@ -644,11 +659,6 @@
 
             removeStaleCards(dom.metricGrid, seen, 'card');
             removeStaleCards(dom.detailGrid, seen, 'detail');
-
-            const latestPayload = buildLatestPayload(feeds);
-            if (latestPayload) {
-                exposeLatestJson(latestPayload);
-            }
         }
 
         function renderMetricCard(feed) {
