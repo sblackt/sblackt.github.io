@@ -140,6 +140,23 @@
             pointer-events: none;
         }
 
+        .metric-emoji {
+            position: absolute;
+            font-size: clamp(8.5rem, 9vw, 5.5rem);
+            opacity: 0.4;
+            top: -0.4rem;
+            right: -0.2rem;
+            z-index: 0;
+            filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.35));
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .metric-card > *:not(.metric-emoji) {
+            position: relative;
+            z-index: 1;
+        }
+
         .metric-title {
             display: flex;
             justify-content: space-between;
@@ -169,6 +186,12 @@
             gap: 1.25rem;
             font-size: 0.85rem;
             opacity: 0.9;
+        }
+
+        .metric-timestamp {
+            font-size: 0.85rem;
+            color: rgba(248, 250, 252, 0.85);
+            letter-spacing: 0.02em;
         }
 
         .metric-extrema__item {
@@ -208,11 +231,27 @@
         }
 
         .metric-card.metric-card--ok {
-            background: linear-gradient(135deg, rgba(4, 120, 87, 0.95) 0%, rgba(16, 185, 129, 0.92) 45%, rgba(52, 211, 153, 0.9) 100%);
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.95) 0%, rgba(34, 197, 94, 0.92) 50%, rgba(52, 211, 153, 0.9) 100%);
         }
 
         .metric-card.metric-card--alert {
-            background: linear-gradient(135deg, rgba(127, 29, 29, 0.95) 0%, rgba(220, 38, 38, 0.92) 45%, rgba(249, 115, 22, 0.9) 100%);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(249, 115, 22, 0.92) 50%, rgba(255, 195, 113, 0.9) 100%);
+        }
+
+        .metric-card.metric-card--humidity-ok {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.95) 0%, rgba(56, 189, 248, 0.9) 30%, rgba(45, 212, 191, 0.9) 100%);
+        }
+
+        .metric-card.metric-card--humidity-alert {
+            background: linear-gradient(135deg, rgba(244, 196, 94, 0.95) 0%, rgba(251, 191, 36, 0.9) 40%, rgba(245, 158, 11, 0.9) 100%);
+        }
+
+        .metric-card.metric-card--pressure-ok {
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.95) 0%, rgba(129, 140, 248, 0.92) 55%, rgba(226, 232, 240, 0.95) 100%);
+        }
+
+        .metric-card.metric-card--pressure-alert {
+            background: linear-gradient(135deg, rgba(71, 85, 105, 0.95) 0%, rgba(15, 23, 42, 0.92) 50%, rgba(55, 65, 81, 0.9) 100%);
         }
 
         .metric-card.metric-card--error {
@@ -221,17 +260,37 @@
 
         .detail-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1.75rem;
         }
 
         .detail-card {
-            background: rgba(248, 250, 252, 0.88);
+            background: rgba(248, 250, 252, 0.7);
             border-radius: 24px;
             padding: 1.75rem;
-            border: 1px solid rgba(203, 213, 225, 0.6);
+            border: 1px solid rgba(203, 213, 225, 0.8);
             display: grid;
             gap: 1.5rem;
+        }
+
+        .detail-card.temperature-detail {
+            background: linear-gradient(145deg, rgba(255, 231, 244, 0.9), rgba(255, 239, 176, 0.8));
+            color: #1f2937;
+        }
+
+        .detail-card.humidity-detail {
+            background: linear-gradient(145deg, rgba(206, 218, 223, 0.9), rgba(153, 211, 203, 0.8));
+            color: #0f172a;
+        }
+
+        .detail-card.pressure-detail {
+            background: linear-gradient(145deg, rgba(232, 233, 252, 0.9), rgba(168, 197, 243, 0.8));
+            color: #0f172a;
+        }
+
+        .detail-card.air-detail {
+            background: linear-gradient(145deg, rgba(224, 244, 233, 0.9), rgba(212, 238, 226, 0.8));
+            color: #422006;
         }
 
         .detail-header {
@@ -244,11 +303,12 @@
         .detail-title {
             font-size: 1.35rem;
             font-weight: 600;
-            color: #1e293b;
+            color: inherit;
         }
 
         .detail-summary {
-            color: #475569;
+            color: inherit;
+            opacity: 0.85;
         }
 
         .detail-chart {
@@ -364,8 +424,12 @@
                 font-size: 0.7rem;
             }
 
+            .metric-timestamp {
+                font-size: 0.75rem;
+            }
+
             .detail-card {
-                padding: 0.5rem;
+                padding: 1rem;
             }
 
             .detail-grid {
@@ -402,11 +466,62 @@
 
         // Adjust thresholds/behaviour per feed as needed.
         const FEEDS = [
-            { id: 'home.temperature', name: 'Temperature', unit: '°C', color: '#6366f1', coldBelow: 19, showCard: true, showDetail: true, offset: -3.3 },
-            { id: 'home.humidity', name: 'Humidity', unit: '%', color: '#22c55e', goodRange: [30, 60], showCard: true, showDetail: true },
-            { id: 'home.pressure', name: 'Pressure', unit: 'hPa', color: '#f97316', goodRange: [980, 1025], showCard: true, showDetail: true },
-            { id: 'home.gas', name: 'Gas', unit: 'Ω', color: '#facc15', preferLower: true, showCard: false, showDetail: true },
-            { id: 'home.altitude', name: 'Altitude', unit: 'm', color: '#0ea5e9', preferLower: true, showCard: false, showDetail: false }
+            {
+                id: 'home.temperature',
+                name: 'Temperature',
+                unit: '°C',
+                color: '#6366f1',
+                coldBelow: 19,
+                warmAbove: 21,
+                showCard: true,
+                showDetail: true,
+                offset: -3.3,
+                emoji: { warm: '😅', cold: '🥶', ok: '🔥', default: '🔥' }
+            },
+            {
+                id: 'home.humidity',
+                name: 'Humidity',
+                unit: '%',
+                color: '#22c55e',
+                goodRange: [40, 60],
+                showCard: true,
+                showDetail: true,
+                emoji: { ok: '💧', alert: '🌵', default: '💧' }
+            },
+            {
+                id: 'home.pressure',
+                name: 'Pressure',
+                unit: 'hPa',
+                color: '#f97316',
+                goodRange: [980, 1025],
+                showCard: true,
+                showDetail: true,
+                emoji: { ok: '☁️', alert: '🌪️', default: '🌤️' }
+            },
+            {
+                id: 'home.gas',
+                name: 'Air Quality',
+                unit: 'IAQ',
+                color: '#facc15',
+                preferLower: true,
+                showCard: false,
+                showDetail: true,
+                emoji: { ok: '🌿', alert: '🏭', default: '🌿' },
+                interpret(value) {
+                    if (value >= 200) return { label: 'Fresh', advice: 'Air smells great. Keep it up!' };
+                    if (value >= 120) return { label: 'Normal', advice: 'Comfortable. Crack a window occasionally.' };
+                    return { label: 'Stuffy', advice: 'VOC buildup detected. Ventilate the room.' };
+                }
+            },
+            {
+                id: 'home.altitude',
+                name: 'Altitude',
+                unit: 'm',
+                color: '#0ea5e9',
+                preferLower: true,
+                showCard: false,
+                showDetail: false
+            }
         ];
 
         const CARD_STATE_CLASSES = {
@@ -534,6 +649,7 @@
                 card.className = 'metric-card';
                 card.dataset.feedId = id;
                 card.innerHTML = `
+                    <span class="metric-emoji" aria-hidden="true"></span>
                     <div class="metric-title">
                         <span class="metric-name">${escapeHtml(name || id)}</span>
                     </div>
@@ -541,6 +657,7 @@
                         <span class="metric-number">--</span>
                         <span class="metric-unit">${unit ? escapeHtml(unit) : ''}</span>
                     </div>
+                    <span class="metric-timestamp"></span>
                     <div class="metric-extrema">
                         <div class="metric-extrema__item">
                             <span class="metric-extrema__label">High</span>
@@ -558,8 +675,10 @@
                 dom.metricGrid.appendChild(card);
             }
 
+            const emojiEl = card.querySelector('.metric-emoji');
             const numberEl = card.querySelector('.metric-number');
             const unitEl = card.querySelector('.metric-unit');
+            const timestampEl = card.querySelector('.metric-timestamp');
             const highEl = card.querySelector('.metric-high');
             const highTimeEl = card.querySelector('.metric-high-time');
             const lowEl = card.querySelector('.metric-low');
@@ -570,12 +689,14 @@
 
             if (error) {
                 setCardVisualState(card, 'error');
+                if (emojiEl) emojiEl.textContent = getEmojiForFeed(feed, 'error');
                 numberEl.textContent = '--';
                 highEl.textContent = '--';
                 lowEl.textContent = '--';
                 highTimeEl.textContent = '';
                 lowTimeEl.textContent = '';
                 errorEl.textContent = error;
+                if (timestampEl) timestampEl.textContent = '';
                 return;
             }
 
@@ -583,19 +704,25 @@
 
             if (!data.length) {
                 setCardVisualState(card, 'alert');
+                if (emojiEl) emojiEl.textContent = getEmojiForFeed(feed, 'alert');
                 numberEl.textContent = '--';
                 highEl.textContent = '--';
                 lowEl.textContent = '--';
                 highTimeEl.textContent = '';
                 lowTimeEl.textContent = '';
+                if (timestampEl) timestampEl.textContent = '';
                 return;
             }
 
             const state = determineCardState(feed, data);
-            setCardVisualState(card, state);
+            setCardVisualState(card, state, feed.id);
+            if (emojiEl) emojiEl.textContent = getEmojiForFeed(feed, state);
 
             const latest = data[0];
             numberEl.textContent = formatNumber(latest.value);
+            if (timestampEl) {
+                timestampEl.textContent = formatTime(latest.createdAt);
+            }
 
             if (data.length > 1) {
                 const high = data.reduce((acc, entry) => entry.value > acc.value ? entry : acc, data[0]);
@@ -634,6 +761,8 @@
                 dom.detailGrid.appendChild(detail);
             }
 
+            setDetailCardTheme(detail, feed.id);
+
             const summaryEl = detail.querySelector('.detail-summary');
             const listEl = detail.querySelector('.detail-list');
             const errorEl = detail.querySelector('.detail-error');
@@ -658,7 +787,7 @@
 
             const latest = data[0];
             const average = data.reduce((sum, entry) => sum + entry.value, 0) / data.length;
-            summaryEl.textContent = `Latest ${formatNumber(latest.value)} ${unit || ''} · Average ${formatNumber(average)} ${unit || ''} across ${data.length} reading${data.length === 1 ? '' : 's'}`;
+            summaryEl.textContent = buildDetailSummary(feed, latest.value, average, unit, data.length);
 
             const listEntries = data.slice(0, 1);
             listEl.innerHTML = listEntries
@@ -783,9 +912,9 @@
             });
         }
 
-        function setCardVisualState(card, state) {
+        function setCardVisualState(card, state, feedId) {
             CARD_STATE_CLASS_VALUES.forEach(cls => card.classList.remove(cls));
-            const nextClass = CARD_STATE_CLASSES[state] || CARD_STATE_CLASSES.ok;
+            const nextClass = resolveStateClass(state, feedId);
             card.classList.add(nextClass);
         }
 
@@ -796,6 +925,15 @@
             const latest = readings[0];
 
             if (typeof feed.coldBelow === 'number') {
+                if (typeof feed.warmAbove === 'number') {
+                    if (latest.value >= feed.warmAbove) {
+                        return 'warm';
+                    }
+                    if (latest.value < feed.coldBelow) {
+                        return 'cold';
+                    }
+                    return 'ok';
+                }
                 return latest.value < feed.coldBelow ? 'cold' : 'warm';
             }
 
@@ -818,6 +956,72 @@
             }
 
             return 'ok';
+        }
+
+        function resolveStateClass(state, feedId) {
+            if (feedId === 'home.humidity') {
+                return state === 'alert' ? 'metric-card--humidity-alert' : 'metric-card--humidity-ok';
+            }
+            if (feedId === 'home.pressure') {
+                return state === 'alert' ? 'metric-card--pressure-alert' : 'metric-card--pressure-ok';
+            }
+            return CARD_STATE_CLASSES[state] || CARD_STATE_CLASSES.ok;
+        }
+
+        function setDetailCardTheme(detailEl, feedId) {
+            detailEl.classList.remove('temperature-detail', 'humidity-detail', 'pressure-detail', 'air-detail');
+            if (feedId === 'home.temperature') {
+                detailEl.classList.add('temperature-detail');
+            } else if (feedId === 'home.humidity') {
+                detailEl.classList.add('humidity-detail');
+            } else if (feedId === 'home.pressure') {
+                detailEl.classList.add('pressure-detail');
+            } else if (feedId === 'home.gas') {
+                detailEl.classList.add('air-detail');
+            }
+        }
+
+        function getEmojiForFeed(feed, state) {
+            if (!feed || !feed.emoji) {
+                return '✨';
+            }
+            return feed.emoji[state] || feed.emoji.default || '✨';
+        }
+
+        function buildDetailSummary(feed, latestValue, average, unit, sampleCount) {
+            const base = `Latest ${formatNumber(latestValue)} ${unit || ''} · Avg ${formatNumber(average)} ${unit || ''} (${sampleCount} points)`;
+
+            if (!feed) {
+                return base;
+            }
+
+            if (feed.id === 'home.temperature') {
+                if (latestValue >= 21) return `${base} · Cozy and warm.`;
+                if (latestValue < 19) return `${base} · Chilly. Time for a sweater?`;
+                return `${base} · Right in the comfort zone.`;
+            }
+
+            if (feed.id === 'home.humidity') {
+                if (latestValue < 40) return `${base} · Air is dry—consider a humidifier.`;
+                if (latestValue > 60) return `${base} · Humidity is high—watch for condensation.`;
+                return `${base} · Ideal humidity for most rooms.`;
+            }
+
+            if (feed.id === 'home.pressure') {
+                if (latestValue < 1000) return `${base} · Low pressure—stormy weather likely.`;
+                if (latestValue > 1020) return `${base} · High pressure—expect clear skies.`;
+                return `${base} · Pressure is steady.`;
+            }
+
+            if (feed.id === 'home.gas') {
+                const insight = typeof feed.interpret === 'function' ? feed.interpret(latestValue) : null;
+                if (insight) {
+                    return `${base} · ${insight.label}: ${insight.advice}`;
+                }
+                return `${base} · VOC sensor active.`;
+            }
+
+            return base;
         }
 
         function formatNumber(value) {
