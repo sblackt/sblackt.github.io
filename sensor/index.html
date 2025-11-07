@@ -6,7 +6,7 @@
     <title>Stonehedge</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hepta+Slab:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <style>
@@ -78,9 +78,10 @@
         }
 
         .page-header h1 {
-            font-size: clamp(2.1rem, 4vw, 2.7rem);
-            font-weight: 700;
-            letter-spacing: -0.01em;
+            font-family: 'Hepta Slab', 'Inter', serif;
+            font-size: clamp(2.2rem, 4.2vw, 3rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
             color: #f8fafc;
             text-shadow: 0 10px 25px rgba(15, 23, 42, 0.5);
         }
@@ -162,6 +163,7 @@
             justify-content: space-between;
             align-items: baseline;
             gap: 0.75rem;
+            font-family: 'Hepta Slab', 'Inter', serif;
             font-weight: 600;
             letter-spacing: 0.02em;
         }
@@ -297,11 +299,13 @@
             font-size: 1.35rem;
             font-weight: 600;
             color: inherit;
+            font-family: 'Hepta Slab', 'Inter', serif;
         }
 
         .detail-summary {
             color: inherit;
             opacity: 0.85;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         .detail-chart {
@@ -450,6 +454,8 @@
         <section id="metric-cards" class="metric-grid" aria-live="polite"></section>
 
         <section id="feed-details" class="detail-grid"></section>
+
+        <script id="stonehedge-latest-json" type="application/json">{"status":"pending"}</script>
     </main>
 
     <script>
@@ -638,6 +644,11 @@
 
             removeStaleCards(dom.metricGrid, seen, 'card');
             removeStaleCards(dom.detailGrid, seen, 'detail');
+
+            const latestPayload = buildLatestPayload(feeds);
+            if (latestPayload) {
+                exposeLatestJson(latestPayload);
+            }
         }
 
         function renderMetricCard(feed) {
@@ -1028,6 +1039,59 @@
             }
 
             return base;
+        }
+
+        function buildLatestPayload(feeds) {
+            const payload = {};
+            let latestTs = 0;
+
+            const capture = (id, setter) => {
+                const feed = feeds.find(item => item.id === id);
+                if (!feed || !feed.data || !feed.data.length) {
+                    return;
+                }
+                setter(feed.data[0]);
+                const ts = Date.parse(feed.data[0].createdAt);
+                if (!Number.isNaN(ts)) {
+                    latestTs = Math.max(latestTs, ts);
+                }
+            };
+
+            capture('home.temperature', reading => {
+                payload.tempC = Number(reading.value.toFixed(2));
+            });
+            capture('home.humidity', reading => {
+                payload.humidity = Number(reading.value.toFixed(2));
+            });
+            capture('home.pressure', reading => {
+                payload.hPa = Number(reading.value.toFixed(1));
+            });
+            capture('home.gas', reading => {
+                payload.gas_kohm = Number((reading.value / 1000).toFixed(1));
+            });
+            capture('home.altitude', reading => {
+                payload.alt_m = Number(reading.value.toFixed(1));
+            });
+
+            payload.updated = latestTs
+                ? new Date(latestTs).toISOString()
+                : new Date().toISOString();
+
+            return payload;
+        }
+
+        function exposeLatestJson(payload) {
+            const scriptId = 'stonehedge-latest-json';
+            const jsonString = JSON.stringify(payload);
+            let script = document.getElementById(scriptId);
+            if (!script) {
+                script = document.createElement('script');
+                script.type = 'application/json';
+                script.id = scriptId;
+                document.body.appendChild(script);
+            }
+            script.textContent = jsonString;
+            script.dataset.updated = payload.updated || '';
         }
 
         function formatNumber(value) {
