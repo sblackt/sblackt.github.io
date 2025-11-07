@@ -234,6 +234,10 @@
             background: linear-gradient(135deg, rgba(14, 165, 233, 0.95) 0%, rgba(34, 197, 94, 0.92) 50%, rgba(52, 211, 153, 0.9) 100%);
         }
 
+        .metric-card.metric-card--temperature-ok {
+            background: linear-gradient(135deg, rgba(249, 90, 22, 0.95) 0%, rgba(251, 124, 60, 0.92) 45%, rgba(253, 224, 71, 0.9) 100%);
+        }
+
         .metric-card.metric-card--alert {
             background: linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(249, 115, 22, 0.92) 50%, rgba(255, 195, 113, 0.9) 100%);
         }
@@ -476,7 +480,7 @@
                 showCard: true,
                 showDetail: true,
                 offset: -3.3,
-                emoji: { warm: '😅', cold: '🥶', ok: '🔥', default: '🔥' }
+                emoji: { warm: '🔥', cold: '🥶', ok: '😅', default: '😅' }
             },
             {
                 id: 'home.humidity',
@@ -532,7 +536,14 @@
             error: 'metric-card--error'
         };
 
-        const CARD_STATE_CLASS_VALUES = Object.values(CARD_STATE_CLASSES);
+        const CARD_STATE_CLASS_VALUES = [
+            ...Object.values(CARD_STATE_CLASSES),
+            'metric-card--humidity-ok',
+            'metric-card--humidity-alert',
+            'metric-card--pressure-ok',
+            'metric-card--pressure-alert',
+            'metric-card--temperature-ok'
+        ];
 
         const dom = {
             status: document.getElementById('status-message'),
@@ -959,6 +970,12 @@
         }
 
         function resolveStateClass(state, feedId) {
+            if (feedId === 'home.temperature') {
+                if (state === 'ok') {
+                    return 'metric-card--temperature-ok';
+                }
+                return CARD_STATE_CLASSES[state] || CARD_STATE_CLASSES.ok;
+            }
             if (feedId === 'home.humidity') {
                 return state === 'alert' ? 'metric-card--humidity-alert' : 'metric-card--humidity-ok';
             }
