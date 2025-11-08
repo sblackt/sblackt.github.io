@@ -201,6 +201,7 @@
     }
 
     .pair-card {
+      --avatar-image: none;
       padding: 1.4rem;
       border-radius: 20px;
       border: 1px solid rgba(255, 255, 255, 0.4);
@@ -213,8 +214,23 @@
       color: var(--card-text);
     }
 
+    .pair-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: var(--avatar-image);
+      background-repeat: no-repeat;
+      background-size: 55%;
+      background-position: 95% 110%;
+      opacity: 0.4;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
     .pair-card span {
       display: block;
+      position: relative;
+      z-index: 1;
     }
 
     .pair-card .giver {
@@ -253,6 +269,8 @@
       cursor: pointer;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
       width: fit-content;
+      position: relative;
+      z-index: 1;
     }
 
     .reveal-button:hover {
@@ -484,6 +502,14 @@
       acc[name] = index;
       return acc;
     }, {});
+    const giverAvatars = {
+      Michael: './img/mike.png',
+      Diane: './img/diane.png',
+      Sarah: './img/sarah.png',
+      Chris: './img/chris.png',
+      Steve: './img/steve.png',
+      Jess: './img/jess.png'
+    };
     const disallowedPairs = new Set([
       'Chris|Sarah',
       'Sarah|Chris',
@@ -617,6 +643,11 @@
       ordered.forEach(({ giver, receiver }) => {
         const card = document.createElement('article');
         card.className = 'pair-card';
+        if (giverAvatars[giver]) {
+          card.style.setProperty('--avatar-image', `url("${giverAvatars[giver]}")`);
+        } else {
+          card.style.removeProperty('--avatar-image');
+        }
 
         const giverSpan = document.createElement('span');
         giverSpan.className = 'giver';
