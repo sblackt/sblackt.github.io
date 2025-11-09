@@ -247,6 +247,10 @@
         }
 
         .metric-card.metric-card--temperature-ok {
+            background: linear-gradient(135deg, rgba(146, 64, 14, 0.9) 0%, rgba(234, 178, 80, 0.9) 45%, rgba(253, 224, 71, 0.85) 100%);
+        }
+
+        .metric-card.metric-card--temperature-superwarm {
             background: linear-gradient(135deg, rgba(148, 44, 22, 0.98) 0%, rgba(220, 38, 38, 0.94) 45%, rgba(245, 158, 11, 0.92) 100%);
         }
 
@@ -476,7 +480,7 @@
     <script>
         const REFRESH_INTERVAL = 60000;
         const USERNAME = 'sblackt';
-        const DATA_LIMIT = 240;
+        const DATA_LIMIT = 1200;
 
         // Adjust thresholds/behaviour per feed as needed.
         const FEEDS = [
@@ -487,11 +491,12 @@
                 color: '#6366f1',
                 coldBelow: 19,
                 superColdBelow: 17,
-                warmAbove: 21,
+                warmAbove: 22,
+                warmMidAbove: 20,
                 showCard: true,
                 showDetail: true,
                 offset: -3.3,
-                emoji: { warm: '🔥', supercold: '🧊', cold: '🥶', ok: '😅', default: '😅' }
+                emoji: { warm: '🔥', superwarm: '😅', supercold: '🧊', cold: '🥶', ok: '😌', default: '😌' }
             },
             {
                 id: 'home.humidity',
@@ -955,9 +960,13 @@
                 const coldThreshold = feed.coldBelow;
                 const superColdThreshold = typeof feed.superColdBelow === 'number' ? feed.superColdBelow : null;
                 const warmThreshold = typeof feed.warmAbove === 'number' ? feed.warmAbove : null;
+                const warmMidThreshold = typeof feed.warmMidAbove === 'number' ? feed.warmMidAbove : null;
 
                 if (warmThreshold !== null && latest.value >= warmThreshold) {
                     return 'warm';
+                }
+                if (warmMidThreshold !== null && latest.value >= warmMidThreshold) {
+                    return 'superwarm';
                 }
                 if (superColdThreshold !== null && latest.value < superColdThreshold) {
                     return 'supercold';
@@ -996,6 +1005,9 @@
                 }
                 if (state === 'supercold') {
                     return 'metric-card--supercold';
+                }
+                if (state === 'superwarm') {
+                    return 'metric-card--temperature-superwarm';
                 }
                 return CARD_STATE_CLASSES[state] || CARD_STATE_CLASSES.ok;
             }
