@@ -17,6 +17,7 @@ export interface Event {
   participants: string[];
   isActive: boolean;
   isCompleted: boolean;
+  reactions?: Record<string, number>;
 }
 
 export interface AvailabilityResponse {
@@ -27,4 +28,3 @@ export interface AvailabilityResponse {
   notes?: string;
   timestamp?: string;
 }
-

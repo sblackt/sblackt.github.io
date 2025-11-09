@@ -6,6 +6,8 @@ import AvailabilityHeatmap from './AvailabilityHeatmap';
 import { parseLocalDate } from '../utils/dateUtils';
 import './EventDetail.css';
 
+const REACTION_EMOJIS = ['🎲', '🎉', '🔥', '🍕', '❤️', '🤘'];
+
 interface EventDetailProps {
   event: Event;
   onEventUpdated: () => void;
@@ -21,7 +23,9 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const [savedName, setSavedName] = useState('');
   const [justSaved, setJustSaved] = useState(false);
   const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
+  const [reactionPickerOpen, setReactionPickerOpen] = useState(false);
   const actionsMenuRef = useRef<HTMLDivElement | null>(null);
+  const reactionPickerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // Load existing responses for this event
@@ -70,19 +74,37 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   }, [event.id, savedName]);
 
   useEffect(() => {
-    if (!actionsMenuOpen) {
+    if (!actionsMenuOpen && !reactionPickerOpen) {
       return;
     }
 
     const handleDocumentClick = (event: MouseEvent) => {
-      if (actionsMenuRef.current && !actionsMenuRef.current.contains(event.target as Node)) {
+      const targetNode = event.target as Node;
+      if (
+        actionsMenuOpen &&
+        actionsMenuRef.current &&
+        !actionsMenuRef.current.contains(targetNode)
+      ) {
         setActionsMenuOpen(false);
+      }
+
+      if (
+        reactionPickerOpen &&
+        reactionPickerRef.current &&
+        !reactionPickerRef.current.contains(targetNode)
+      ) {
+        setReactionPickerOpen(false);
       }
     };
 
     const handleDocumentKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setActionsMenuOpen(false);
+        if (actionsMenuOpen) {
+          setActionsMenuOpen(false);
+        }
+        if (reactionPickerOpen) {
+          setReactionPickerOpen(false);
+        }
       }
     };
 
@@ -93,7 +115,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
       document.removeEventListener('mousedown', handleDocumentClick);
       document.removeEventListener('keydown', handleDocumentKeyDown);
     };
-  }, [actionsMenuOpen]);
+  }, [actionsMenuOpen, reactionPickerOpen]);
 
   const handleDateToggle = (date: string) => {
     if (!participantName.trim()) {
@@ -262,6 +284,21 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
 
   // Get unique participants from responses
   const uniqueParticipants = Array.from(new Set(responses.map(r => r.participantName)));
+  const reactionCounts: Record<string, number> = event.reactions ?? {};
+  const sortedReactions = Object.entries(reactionCounts)
+    .filter(([, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1]);
+  const hasReactions = sortedReactions.length > 0;
+
+  const handleReactionClick = async (emoji: string) => {
+    try {
+      await firebaseService.addReaction(event.id, emoji);
+      setReactionPickerOpen(false);
+    } catch (error) {
+      console.error('Error adding reaction:', error);
+      alert('Failed to add reaction. Please try again.');
+    }
+  };
 
   return (
     <div className="event-detail">
@@ -272,6 +309,48 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
             <span className="event-date">{format(new Date(event.createdAt), 'MMM d, yyyy')}</span>
           </div>
           {event.description && <p className="event-description">{event.description}</p>}
+
+          <div className="reaction-inline">
+            <div className="reaction-summary">
+              {hasReactions ? (
+                sortedReactions.map(([emoji, count]) => (
+                  <span key={emoji} className="event-reaction-pill">
+                    <span className="event-reaction-emoji" aria-hidden="true">{emoji}</span>
+                    <span className="event-reaction-count">{count}</span>
+                  </span>
+                ))
+              ) : (
+                <p className="reaction-empty">No reactions yet. Be the first!</p>
+              )}
+            </div>
+            <div className="reaction-add" ref={reactionPickerRef}>
+              <button
+                type="button"
+                className="reaction-add-button"
+                onClick={() => setReactionPickerOpen(prev => !prev)}
+                aria-expanded={reactionPickerOpen}
+                aria-haspopup="true"
+              >
+                <span aria-hidden="true">＋</span>
+                <span>Add reaction</span>
+              </button>
+              {reactionPickerOpen && (
+                <div className="reaction-picker" role="menu">
+                  {REACTION_EMOJIS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      className="reaction-option"
+                      onClick={() => void handleReactionClick(emoji)}
+                      role="menuitem"
+                    >
+                      <span className="reaction-option-emoji" aria-hidden="true">{emoji}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         
         <div className="event-actions" ref={actionsMenuRef}>

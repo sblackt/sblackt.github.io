@@ -7,6 +7,7 @@
   background: white;
   border-radius: 12px;
   padding: 24px;
+  padding-right: 76px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -15,6 +16,12 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.event-info {
+  flex: 1;
 }
 
 .event-title-row {
@@ -58,29 +65,116 @@
 }
 
 .event-actions {
-  position: relative;
+  position: absolute;
+  top: 20px;
+  right: 20px;
   flex-shrink: 0;
 }
 
-.actions-toggle {
-  background: #f1f3f5;
-  border: 2px solid #e1e5e9;
-  color: #495057;
+.reaction-inline {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.reaction-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+}
+
+.reaction-empty {
+  margin: 0;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.reaction-add {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 5;
+  align-self: center;
+}
+
+.reaction-add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px dashed #c3d0ff;
+  border-radius: 999px;
+  padding: 8px 16px;
+  background: rgba(99, 102, 241, 0.08);
+  color: #4c51bf;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reaction-add-button:hover,
+.reaction-add-button:focus-visible {
+  background: rgba(99, 102, 241, 0.15);
+  outline: none;
+}
+
+.reaction-picker {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  z-index: 20;
+}
+
+.reaction-option {
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  width: 44px;
-  height: 44px;
+  border: 1px solid transparent;
+  background: #f8f9fa;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 30px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+}
+
+.reaction-option:hover,
+.reaction-option:focus-visible {
+  border-color: #cbd5f5;
+  background: #edf2ff;
+  outline: none;
+}
+
+.reaction-option-emoji {
+  pointer-events: none;
+}
+
+.actions-toggle {
+  background: transparent;
+  border: none;
+  color: #adb5bd;
+  font-size: 26px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s ease;
 }
 
 .actions-toggle:hover,
 .actions-toggle:focus-visible {
-  background: #e9ecef;
-  border-color: #ced4da;
+  color: #495057;
   outline: none;
 }
 

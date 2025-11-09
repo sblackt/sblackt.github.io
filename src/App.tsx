@@ -13,16 +13,33 @@ function App() {
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [view, setView] = useState<'list' | 'detail' | 'create'>('list');
   const [loading, setLoading] = useState(true);
+  const [eventsFilter, setEventsFilter] = useState<'active' | 'history'>('active');
 
   useEffect(() => {
-    // Subscribe to real-time updates for active events
-    const unsubscribe = firebaseService.subscribeToActiveEvents((updatedEvents) => {
+    // Subscribe to real-time updates for active or archived events
+    setLoading(true);
+    const subscribe = eventsFilter === 'active'
+      ? firebaseService.subscribeToActiveEvents
+      : firebaseService.subscribeToArchivedEvents;
+
+    const unsubscribe = subscribe((updatedEvents) => {
       setEvents(updatedEvents);
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [eventsFilter]);
+
+  useEffect(() => {
+    if (!currentEvent) {
+      return;
+    }
+
+    const updated = events.find((evt) => evt.id === currentEvent.id);
+    if (updated && updated.updatedAt !== currentEvent.updatedAt) {
+      setCurrentEvent(updated);
+    }
+  }, [events, currentEvent]);
 
   const handleEventClick = (event: Event) => {
     setCurrentEvent(event);
@@ -75,6 +92,8 @@ function App() {
             events={events}
             onEventClick={handleEventClick}
             onCreateEvent={handleCreateEvent}
+            filter={eventsFilter}
+            onFilterChange={setEventsFilter}
           />
         )}
         

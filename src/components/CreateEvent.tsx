@@ -77,7 +77,8 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
         timeSlots,
         participants: [], // Start with empty participants list
         isActive: true,
-        isCompleted: false
+        isCompleted: false,
+        reactions: {}
       };
 
       const eventId = await firebaseService.createEvent(eventData);

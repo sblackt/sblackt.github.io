@@ -8,7 +8,8 @@ import {
   onSnapshot, 
   query, 
   where,
-  orderBy
+  orderBy,
+  increment
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Event, TimeSlot, AvailabilityResponse } from '../types';
@@ -84,6 +85,15 @@ export const firebaseService = {
     await this.updateEvent(eventId, { isActive: false });
   },
 
+  // Add an emoji reaction to an event
+  async addReaction(eventId: string, emoji: string): Promise<void> {
+    const docRef = doc(db, EVENTS_COLLECTION, eventId);
+    await updateDoc(docRef, {
+      [`reactions.${emoji}`]: increment(1),
+      updatedAt: new Date().toISOString()
+    });
+  },
+
   // Add time slots to an event
   async addTimeSlots(eventId: string, timeSlots: TimeSlot[]): Promise<void> {
     const event = await this.getEvent(eventId);
@@ -150,6 +160,28 @@ export const firebaseService = {
     } catch (error) {
       console.error('Firebase error setting up listener:', error);
       // Return a no-op function
+      return () => {};
+    }
+  },
+
+  // Real-time listener for archived/completed events
+  subscribeToArchivedEvents(callback: (events: Event[]) => void): () => void {
+    try {
+      const q = query(
+        collection(db, EVENTS_COLLECTION),
+        where('isActive', '==', false),
+        orderBy('updatedAt', 'desc')
+      );
+
+      return onSnapshot(q, (querySnapshot) => {
+        const events = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Event);
+        callback(events);
+      }, (error) => {
+        console.error('Firebase listener error (archived):', error);
+        callback([]);
+      });
+    } catch (error) {
+      console.error('Firebase error setting up archived listener:', error);
       return () => {};
     }
   }
