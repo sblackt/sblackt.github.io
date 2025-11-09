@@ -234,6 +234,10 @@
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.97) 0%, rgba(37, 99, 235, 0.95) 45%, rgba(14, 165, 233, 0.92) 100%);
         }
 
+        .metric-card.metric-card--supercold {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 64, 175, 0.96) 45%, rgba(8, 47, 73, 0.94) 100%);
+        }
+
         .metric-card.metric-card--warm {
             background: linear-gradient(135deg, rgba(124, 45, 18, 0.98) 0%, rgba(194, 65, 12, 0.95) 50%, rgba(245, 158, 11, 0.9) 100%);
         }
@@ -472,7 +476,7 @@
     <script>
         const REFRESH_INTERVAL = 60000;
         const USERNAME = 'sblackt';
-        const DATA_LIMIT = 60;
+        const DATA_LIMIT = 240;
 
         // Adjust thresholds/behaviour per feed as needed.
         const FEEDS = [
@@ -482,11 +486,12 @@
                 unit: '°C',
                 color: '#6366f1',
                 coldBelow: 19,
+                superColdBelow: 17,
                 warmAbove: 21,
                 showCard: true,
                 showDetail: true,
                 offset: -3.3,
-                emoji: { warm: '🔥', cold: '🥶', ok: '😅', default: '😅' }
+                emoji: { warm: '🔥', supercold: '🧊', cold: '🥶', ok: '😅', default: '😅' }
             },
             {
                 id: 'home.humidity',
@@ -548,7 +553,8 @@
             'metric-card--humidity-alert',
             'metric-card--pressure-ok',
             'metric-card--pressure-alert',
-            'metric-card--temperature-ok'
+            'metric-card--temperature-ok',
+            'metric-card--supercold'
         ];
 
         const dom = {
@@ -946,16 +952,20 @@
             const latest = readings[0];
 
             if (typeof feed.coldBelow === 'number') {
-                if (typeof feed.warmAbove === 'number') {
-                    if (latest.value >= feed.warmAbove) {
-                        return 'warm';
-                    }
-                    if (latest.value < feed.coldBelow) {
-                        return 'cold';
-                    }
-                    return 'ok';
+                const coldThreshold = feed.coldBelow;
+                const superColdThreshold = typeof feed.superColdBelow === 'number' ? feed.superColdBelow : null;
+                const warmThreshold = typeof feed.warmAbove === 'number' ? feed.warmAbove : null;
+
+                if (warmThreshold !== null && latest.value >= warmThreshold) {
+                    return 'warm';
                 }
-                return latest.value < feed.coldBelow ? 'cold' : 'warm';
+                if (superColdThreshold !== null && latest.value < superColdThreshold) {
+                    return 'supercold';
+                }
+                if (latest.value < coldThreshold) {
+                    return 'cold';
+                }
+                return 'ok';
             }
 
             if (Array.isArray(feed.goodRange) && feed.goodRange.length === 2) {
@@ -983,6 +993,9 @@
             if (feedId === 'home.temperature') {
                 if (state === 'ok') {
                     return 'metric-card--temperature-ok';
+                }
+                if (state === 'supercold') {
+                    return 'metric-card--supercold';
                 }
                 return CARD_STATE_CLASSES[state] || CARD_STATE_CLASSES.ok;
             }
