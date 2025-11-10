@@ -1115,19 +1115,25 @@
             return payload;
         }
 
-        function exposeLatestJson(payload) {
-            const scriptId = 'stonehedge-latest-json';
-            const jsonString = JSON.stringify(payload);
-            let script = document.getElementById(scriptId);
-            if (!script) {
-                script = document.createElement('script');
-                script.type = 'application/json';
-                script.id = scriptId;
-                document.body.appendChild(script);
-            }
-            script.textContent = jsonString;
-            script.dataset.updated = payload.updated || '';
-        }
+      
+function exposeLatestJson(payload) {
+  const scriptId = 'stonehedge-latest-json';
+  const jsonString = JSON.stringify(payload);
+  let script = document.getElementById(scriptId);
+  if (!script) {
+    script = document.createElement('script');
+    script.type = 'application/json';
+    script.id = scriptId;
+    document.body.appendChild(script);
+  }
+  script.textContent = jsonString;
+  script.dataset.updated = payload.updated || '';
+
+  // NEW: mirror to a window global so Scriptable can read it immediately
+  window.STONEHEDGE_LATEST = payload;
+}
+
+
 
         function formatNumber(value) {
             if (!Number.isFinite(Number(value))) {
@@ -1174,6 +1180,13 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
         }
+        (function () {
+  const q = new URLSearchParams(location.search);
+  if (q.has('widget')) {
+    // Ensure we build + expose right away for the widget WebView
+    try { requestData(true); } catch (e) {}
+  }
+})();
     </script>
 </body>
 </html>
