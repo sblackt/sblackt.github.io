@@ -360,6 +360,33 @@
       font-size: 1.1rem;
     }
 
+    .suggestion-preview {
+      margin-top: 0.65rem;
+      padding: 0.85rem 1rem;
+      border-radius: 14px;
+      border: 1px dashed rgba(4, 52, 34, 0.15);
+      background: rgba(4, 52, 34, 0.03);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--card-text);
+      word-break: break-word;
+    }
+
+    .suggestion-preview[hidden] {
+      display: none;
+    }
+
+    .suggestion-preview a {
+      display: block;
+      color: var(--accent-secondary);
+      text-decoration: underline;
+      margin-bottom: 0.35rem;
+    }
+
+    .suggestion-preview a:last-child {
+      margin-bottom: 0;
+    }
+
     textarea {
       width: 100%;
       min-height: 180px;
@@ -523,6 +550,7 @@
     const revealStorageKey = 'whiteFamilySecretSantaReveals_v1';
     const adminPassword = 'eganville';
     const adminStorageKey = 'whiteFamilySantaAdmin';
+    const urlPattern = /((https?:\/\/|www\.)[^\s]+)/gi;
 
     const pairingsGrid = document.getElementById('pairingsGrid');
     const pairingsStatus = document.getElementById('pairingsStatus');
@@ -534,6 +562,7 @@
 
     const indicators = new Map();
     const textareas = new Map();
+    const previews = new Map();
     const pendingSaves = new Map();
 
     let wishlistDocRef = null;
@@ -832,6 +861,45 @@
       return hasAdminAccess || requestAdminAccess();
     }
 
+    function extractLinks(text = '') {
+      urlPattern.lastIndex = 0;
+      let match;
+      const links = [];
+      while ((match = urlPattern.exec(text)) !== null) {
+        const [raw] = match;
+        links.push({
+          raw,
+          href: raw.startsWith('http') ? raw : `https://${raw}`
+        });
+      }
+      return links;
+    }
+
+    function updatePreviewElement(preview, value) {
+      preview.replaceChildren();
+      const links = extractLinks(value);
+      if (!links.length) {
+        preview.hidden = true;
+        return;
+      }
+
+      preview.hidden = false;
+      links.forEach(({ raw, href }) => {
+        const anchor = document.createElement('a');
+        anchor.href = href;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.textContent = raw;
+        preview.appendChild(anchor);
+      });
+    }
+
+    function updatePreviewFor(name, value) {
+      const preview = previews.get(name);
+      if (!preview) return;
+      updatePreviewElement(preview, value);
+    }
+
     function renderSuggestions(initialValues = {}) {
       suggestionsGrid.innerHTML = '';
       people.forEach((name) => {
@@ -854,17 +922,24 @@
 
         textarea.addEventListener('input', () => handleInput(name, textarea.value));
 
+        const preview = document.createElement('div');
+        preview.className = 'suggestion-preview';
+        updatePreviewElement(preview, textarea.value);
+
         card.appendChild(title);
         card.appendChild(textarea);
+        card.appendChild(preview);
         card.appendChild(indicator);
         suggestionsGrid.appendChild(card);
 
         textareas.set(name, textarea);
         indicators.set(name, indicator);
+        previews.set(name, preview);
       });
     }
 
     function handleInput(name, value) {
+      updatePreviewFor(name, value);
       suggestionValues[name] = value;
       writeWishlistBackup(suggestionValues);
       updateIndicator(name, value ? 'saving' : 'idle', value ? 'Saving…' : 'Nothing saved yet');
@@ -923,6 +998,7 @@
         } else {
           updateIndicator(name, 'idle', 'Nothing saved yet');
         }
+        updatePreviewFor(name, value || '');
       });
     }
 
