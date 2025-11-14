@@ -481,6 +481,82 @@
         const REFRESH_INTERVAL = 60000;
         const USERNAME = 'sblackt';
         const DATA_LIMIT = 288;
+        const HUMOR_LINES = {
+            'home.temperature': {
+                warm: [
+                    'Cozy furnace vibes achieved.',
+                    'Windows are fogging just thinking about it.',
+                    'Perfect excuse for iced coffee indoors.'
+                ],
+                hot: [
+                    'It is full-on sauna cosplay in here.',
+                    'Thermostat called—said "you up?"',
+                    'Air smells vaguely of toasted socks.'
+                ],
+                cold: [
+                    'Official sweater weather advisory in effect.',
+                    'Thermostat is filing a missing heat report.',
+                    'Penguins are browsing Zillow listings.'
+                ],
+                supercold: [
+                    'Bananas are now legitimate hammers.',
+                    'Frost giants demand rent.',
+                    'Your breath just entered a new tax bracket.'
+                ],
+                ok: [
+                    'Goldilocks signed off on these vibes.',
+                    'Climate control perfection. High-five.',
+                    'This is the thermostat victory lap.'
+                ]
+            },
+            'home.humidity': {
+                low: [
+                    'Air is so dry it crackles.',
+                    'Skin just texted "moisturize me."',
+                    'Dust bunnies are unionizing.'
+                ],
+                high: [
+                    'Congratulations, it’s a terrarium.',
+                    'Humidity has achieved soup status.',
+                    'Walls considering moss as a lifestyle.'
+                ],
+                ok: [
+                    'Hydration is dialed in.',
+                    'Air has the bounce of a good mattress.',
+                    'Plants and people are both nodding approvingly.'
+                ]
+            },
+            'home.pressure': {
+                low: [
+                    'Storm goblins sharpening their lightning.',
+                    'Weather app just added dramatic violins.',
+                    'Barometer is writing gloomy poetry.'
+                ],
+                high: [
+                    'Skies practicing their best postcard impression.',
+                    'Clouds are on PTO.',
+                    'Considerable sunshine swagger detected.'
+                ],
+                ok: [
+                    'Pressure is chill. Carry on.',
+                    'Atmosphere currently in cruise control.',
+                    'Zero drama from the sky today.'
+                ]
+            },
+            'home.gas': {
+                ok: [
+                    'VOC dragon sleeps soundly.',
+                    'Air quality crisp enough to crunch.',
+                    'Sensors are sipping mint tea.'
+                ],
+                alert: [
+                    'Maybe crack a window before the plants do it.',
+                    'Air is auditioning for a noir film.',
+                    'Time to banish suspicious smells.'
+                ]
+            }
+        };
+        const humorCursor = new Map();
 
         // Adjust thresholds/behaviour per feed as needed.
         const FEEDS = [
@@ -1047,33 +1123,64 @@
                 return base;
             }
 
+            let mood = 'ok';
+            let extra = '';
+
             if (feed.id === 'home.temperature') {
-                if (latestValue >= 21) return `${base} · Cozy and warm.`;
-                if (latestValue < 19) return `${base} · Chilly. Time for a sweater?`;
-                return `${base} · Right in the comfort zone.`;
-            }
-
-            if (feed.id === 'home.humidity') {
-                if (latestValue < 40) return `${base} · Air is dry—consider a humidifier.`;
-                if (latestValue > 60) return `${base} · Humidity is high—watch for condensation.`;
-                return `${base} · Ideal humidity for most rooms.`;
-            }
-
-            if (feed.id === 'home.pressure') {
-                if (latestValue < 1000) return `${base} · Low pressure—stormy weather likely.`;
-                if (latestValue > 1020) return `${base} · High pressure—expect clear skies.`;
-                return `${base} · Pressure is steady.`;
-            }
-
-            if (feed.id === 'home.gas') {
-                const insight = typeof feed.interpret === 'function' ? feed.interpret(latestValue) : null;
-                if (insight) {
-                    return `${base} · ${insight.label}: ${insight.advice}`;
+                if (latestValue >= 24) {
+                    mood = 'hot';
+                } else if (latestValue >= 21) {
+                    mood = 'warm';
+                } else if (latestValue < 16) {
+                    mood = 'supercold';
+                } else if (latestValue < 19) {
+                    mood = 'cold';
                 }
-                return `${base} · VOC sensor active.`;
+            } else if (feed.id === 'home.humidity') {
+                if (latestValue < 35) {
+                    mood = 'low';
+                } else if (latestValue > 65) {
+                    mood = 'high';
+                }
+            } else if (feed.id === 'home.pressure') {
+                if (latestValue < 1000) {
+                    mood = 'low';
+                } else if (latestValue > 1020) {
+                    mood = 'high';
+                }
+            } else if (feed.id === 'home.gas') {
+                const insight = typeof feed.interpret === 'function' ? feed.interpret(latestValue) : null;
+                if (insight && insight.label && insight.advice) {
+                    extra = `${insight.label}: ${insight.advice}`;
+                    if (insight.alert) {
+                        mood = 'alert';
+                    }
+                } else if (latestValue > 200) {
+                    mood = 'alert';
+                }
             }
 
-            return base;
+            const humor = pickHumorLine(feed.id, mood);
+            const parts = [base];
+            if (extra) {
+                parts.push(extra);
+            }
+            if (humor) {
+                parts.push(humor);
+            }
+            return parts.join(' · ');
+        }
+
+        function pickHumorLine(feedId, mood) {
+            const options = HUMOR_LINES[feedId]?.[mood];
+            if (!options || !options.length) {
+                return '';
+            }
+            const key = `${feedId}:${mood}`;
+            const idx = humorCursor.get(key) || 0;
+            const line = options[idx % options.length];
+            humorCursor.set(key, (idx + 1) % options.length);
+            return line;
         }
 
         function buildLatestPayload(feeds) {
