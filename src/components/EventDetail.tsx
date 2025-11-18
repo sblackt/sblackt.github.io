@@ -314,7 +314,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
       .slice(0, 3);
   };
 
-  const bestSlots = getBestTimeSlots();
+  const bestSlots = getBestTimeSlots().slice(0, 6);
   const plannedSlot = event.confirmedTimeSlotId
     ? event.timeSlots.find(slot => slot.id === event.confirmedTimeSlotId)
     : undefined;

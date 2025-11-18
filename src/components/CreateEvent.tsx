@@ -29,8 +29,8 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
     try {
       // Ensure the date is in YYYY-MM-DD format in local timezone
       const [year, month, day] = date.split('-').map(Number);
-      const localDate = new Date(year, month - 1, day);
-      const localDateString = localDate.toISOString().split('T')[0];
+      const pad = (value: number) => value.toString().padStart(2, '0');
+      const localDateString = `${year}-${pad(month)}-${pad(day)}`;
       
       setSelectedDates(prev => 
         prev.includes(localDateString) 

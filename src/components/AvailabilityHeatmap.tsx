@@ -133,6 +133,9 @@ const AvailabilityHeatmap: React.FC<AvailabilityHeatmapProps> = ({
       <div className="heatmap-grid">
         {dateAvailability.map(({ date, availableCount, isSelected, isPending }) => {
           const palette = getHeatMapColors(availableCount);
+          const selectedBg = rgba(strongAccent, 0.85);
+          const selectedBorder = strongAccent;
+          const selectedText = '#ffffff';
           return (
             <button
               key={date}
@@ -140,11 +143,15 @@ const AvailabilityHeatmap: React.FC<AvailabilityHeatmapProps> = ({
               style={{
                 backgroundColor: palette.bg,
                 color: palette.text,
-                border: isPending ? '3px solid #eab308' : isSelected ? '3px solid #3b82f6' : `1px solid ${palette.chipBorder}`,
+                border: isPending ? '3px solid #eab308' : isSelected ? `3px solid ${selectedBorder}` : `1px solid ${palette.chipBorder}`,
                 // CSS variable to keep nested elements in sync
                 ['--heatmap-chip-bg' as string]: palette.chipBg,
                 ['--heatmap-chip-border' as string]: palette.chipBorder,
-                ['--heatmap-text' as string]: palette.text
+                ['--heatmap-text' as string]: palette.text,
+                ['--heatmap-selected-bg' as string]: selectedBg,
+                ['--heatmap-selected-border' as string]: selectedBorder,
+                ['--heatmap-selected-text' as string]: selectedText,
+                ['--heatmap-selected-chip-bg' as string]: 'rgba(255,255,255,0.2)'
               }}
               onClick={() => handleDateClick(date)}
               disabled={!participantName.trim()}
