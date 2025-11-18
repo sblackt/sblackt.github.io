@@ -4,6 +4,7 @@ import { Event, TimeSlot } from '../types';
 import { firebaseService } from '../services/firebaseService';
 // format import removed since it's no longer used
 import Calendar from './Calendar';
+import { DEFAULT_EVENT_TYPE, EVENT_TYPE_OPTIONS } from '../constants/eventTypes';
 import './CreateEvent.css';
 
 interface CreateEventProps {
@@ -14,6 +15,10 @@ interface CreateEventProps {
 const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [eventType, setEventType] = useState(DEFAULT_EVENT_TYPE);
+  const [links, setLinks] = useState<Array<{ label: string; url: string }>>([
+    { label: '', url: '' }
+  ]);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
@@ -36,6 +41,20 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
       console.error('Error toggling date:', error);
       alert('Error selecting date. Please try again.');
     }
+  };
+
+  const handleLinkChange = (index: number, field: 'label' | 'url', value: string) => {
+    setLinks((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const addLink = () => setLinks((prev) => [...prev, { label: '', url: '' }]);
+
+  const removeLink = (index: number) => {
+    setLinks((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Time selection removed - focusing on dates only
@@ -70,15 +89,24 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
     try {
       const timeSlots = generateTimeSlots();
       
+      const sanitizedLinks = links
+        .map(({ label, url }) => ({
+          label: label.trim(),
+          url: url.trim()
+        }))
+        .filter(({ label, url }) => label || url);
+
       const eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'> = {
         title: title.trim(),
         description: description.trim() || '',
+        eventType,
         createdBy: 'Anonymous', // You could add user management later
         timeSlots,
         participants: [], // Start with empty participants list
         isActive: true,
         isCompleted: false,
-        reactions: {}
+        reactions: {},
+        ...(sanitizedLinks.length ? { links: sanitizedLinks } : {})
       };
 
       const eventId = await firebaseService.createEvent(eventData);
@@ -127,6 +155,73 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
               placeholder="Describe your event, location, what to bring, etc."
               rows={3}
             />
+          </div>
+
+          <div className="form-group">
+            <label>Links (optional)</label>
+            <p className="form-helper">Add URLs for virtual tables, maps, or RSVP forms.</p>
+            <div className="links-grid">
+              {links.map((link, index) => (
+                <div key={index} className="link-row">
+                  <input
+                    type="text"
+                    placeholder="Label (e.g., Roll20, Zoom, Map)"
+                    value={link.label}
+                    onChange={(e) => handleLinkChange(index, 'label', e.target.value)}
+                  />
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={link.url}
+                    onChange={(e) => handleLinkChange(index, 'url', e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="remove-link-button"
+                    onClick={() => removeLink(index)}
+                    aria-label="Remove link"
+                    disabled={links.length === 1}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button type="button" className="add-link-button" onClick={addLink}>
+              + Add link
+            </button>
+          </div>
+
+          <div className="form-group">
+            <label>Event Type &amp; Theme</label>
+            <p className="form-helper">Pick a vibe so friends immediately know what to expect.</p>
+            <div className="event-type-grid">
+              {EVENT_TYPE_OPTIONS.map((option) => (
+                <button
+                  type="button"
+                  key={option.value}
+                  className={`event-type-card ${eventType === option.value ? 'selected' : ''}`}
+                  onClick={() => setEventType(option.value)}
+                  style={
+                    {
+                      '--accent-color': option.accent,
+                      '--accent-strong': option.accentStrong,
+                      '--accent-bg': option.background,
+                      '--accent-text': option.text
+                    } as React.CSSProperties
+                  }
+                  aria-pressed={eventType === option.value}
+                >
+                  <div className="event-type-icon" aria-hidden="true">
+                    {option.icon}
+                  </div>
+                  <div className="event-type-copy">
+                    <div className="event-type-label">{option.label}</div>
+                    <div className="event-type-description">{option.description}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

@@ -6,10 +6,15 @@ export interface TimeSlot {
   unavailable: string[];
 }
 
+export type EventCategory = 'board-game' | 'hangout' | 'worker-bee' | 'dnd' | 'other';
+
 export interface Event {
   id: string;
   title: string;
   description?: string;
+  eventType?: EventCategory;
+  confirmedTimeSlotId?: string | null;
+  links?: Array<{ label: string; url: string }>;
   createdBy: string;
   createdAt: string;
   updatedAt: string;

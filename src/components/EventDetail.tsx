@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Event, AvailabilityResponse } from '../types';
+import { Event, AvailabilityResponse, EventCategory } from '../types';
 import { firebaseService } from '../services/firebaseService';
 import { format } from 'date-fns';
 import AvailabilityHeatmap from './AvailabilityHeatmap';
 import { parseLocalDate } from '../utils/dateUtils';
+import { EVENT_TYPE_OPTIONS, getEventTypeConfig } from '../constants/eventTypes';
 import './EventDetail.css';
-
-const REACTION_EMOJIS = ['🎲', '🎉', '🔥', '🍕', '❤️', '🤘'];
 
 interface EventDetailProps {
   event: Event;
@@ -24,8 +23,12 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const [justSaved, setJustSaved] = useState(false);
   const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
   const [reactionPickerOpen, setReactionPickerOpen] = useState(false);
+  const [planning, setPlanning] = useState(false);
+  const [updatingType, setUpdatingType] = useState(false);
   const actionsMenuRef = useRef<HTMLDivElement | null>(null);
   const reactionPickerRef = useRef<HTMLDivElement | null>(null);
+  const theme = getEventTypeConfig(event.eventType);
+  const reactionEmojis = theme.reactions;
 
   useEffect(() => {
     // Load existing responses for this event
@@ -261,6 +264,37 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     }
   };
 
+  const handleConfirmTimeSlot = async (timeSlotId: string | null) => {
+    setPlanning(true);
+    try {
+      await firebaseService.updateEvent(event.id, { confirmedTimeSlotId: timeSlotId ?? null });
+      onEventUpdated();
+    } catch (error) {
+      console.error('Error setting planned time:', error);
+      alert('Failed to update planned time. Please try again.');
+    } finally {
+      setPlanning(false);
+    }
+  };
+
+  const handleChangeEventType = async (type: EventCategory) => {
+    if (type === event.eventType) {
+      setActionsMenuOpen(false);
+      return;
+    }
+    setUpdatingType(true);
+    try {
+      await firebaseService.updateEvent(event.id, { eventType: type });
+      onEventUpdated();
+      setActionsMenuOpen(false);
+    } catch (error) {
+      console.error('Error updating event type:', error);
+      alert('Failed to update event type. Please try again.');
+    } finally {
+      setUpdatingType(false);
+    }
+  };
+
   const getAvailabilityForTimeSlot = (timeSlotId: string) => {
     const slotResponses = responses.filter(r => r.timeSlotId === timeSlotId);
     const available = slotResponses.filter(r => r.available).map(r => r.participantName);
@@ -281,6 +315,9 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   };
 
   const bestSlots = getBestTimeSlots();
+  const plannedSlot = event.confirmedTimeSlotId
+    ? event.timeSlots.find(slot => slot.id === event.confirmedTimeSlotId)
+    : undefined;
 
   // Get unique participants from responses
   const uniqueParticipants = Array.from(new Set(responses.map(r => r.participantName)));
@@ -301,12 +338,33 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   };
 
   return (
-    <div className="event-detail">
+    <div
+      className="event-detail"
+      style={
+        {
+          '--accent-color': theme.accent,
+          '--accent-strong': theme.accentStrong,
+          '--accent-bg': theme.background,
+          '--accent-text': theme.text,
+          '--card-surface': theme.cardSurface,
+          '--card-pattern': theme.cardPattern
+        } as React.CSSProperties
+      }
+    >
       <div className="event-header">
         <div className="event-info">
           <div className="event-title-row">
+            <div className="event-type-chip">
+              <span className="event-type-icon" aria-hidden="true">{theme.icon}</span>
+              <span className="event-type-label">{theme.label}</span>
+            </div>
             <h1>{event.title}</h1>
             <span className="event-date">{format(new Date(event.createdAt), 'MMM d, yyyy')}</span>
+            {plannedSlot && (
+              <span className="planned-badge">
+                Planned: {format(parseLocalDate(plannedSlot.date), 'EEE, MMM d')}
+              </span>
+            )}
           </div>
           {event.description && <p className="event-description">{event.description}</p>}
 
@@ -336,7 +394,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
               </button>
               {reactionPickerOpen && (
                 <div className="reaction-picker" role="menu">
-                  {REACTION_EMOJIS.map((emoji) => (
+                  {reactionEmojis.map((emoji) => (
                     <button
                       key={emoji}
                       type="button"
@@ -389,6 +447,22 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
               >
                 Archive Event
               </button>
+              <div className="actions-menu-divider" role="separator"></div>
+              <div className="actions-menu-subtitle">Change Event Type</div>
+              <div className="actions-type-grid">
+                {EVENT_TYPE_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`actions-type-button ${event.eventType === option.value ? 'active' : ''}`}
+                    onClick={() => void handleChangeEventType(option.value)}
+                    disabled={updatingType}
+                  >
+                    <span className="actions-type-icon" aria-hidden="true">{option.icon}</span>
+                    <span className="actions-type-label">{option.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -407,6 +481,28 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
                 <div className="availability-summary">
                   <span className="available-count">✓ {slot.available.length}</span>
                   <span className="unavailable-count">✗ {slot.unavailable.length}</span>
+                </div>
+                <div className="planned-actions">
+                  {event.confirmedTimeSlotId === slot.id ? (
+                    <button
+                      type="button"
+                      className="planned-chip planned-chip--active"
+                      onClick={() => handleConfirmTimeSlot(null)}
+                      disabled={planning}
+                    >
+                      Planned
+                      <span className="planned-chip__action">Clear</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="planned-chip"
+                      onClick={() => handleConfirmTimeSlot(slot.id)}
+                      disabled={planning}
+                    >
+                      Set as planned
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -470,6 +566,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
         onDateToggle={handleDateToggle}
         selectedDates={selectedDates}
         pendingChanges={pendingChanges}
+        theme={theme}
       />
 
       {uniqueParticipants.length > 0 && (
@@ -478,11 +575,36 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
           <div className="availability-details-grid">
             {event.timeSlots.map((slot) => {
               const { available, unavailable } = getAvailabilityForTimeSlot(slot.id);
+              const isPlanned = event.confirmedTimeSlotId === slot.id;
               return (
                 <div key={slot.id} className="availability-detail-item">
                   <div className="date-header">
-                    <strong>{format(parseLocalDate(slot.date), 'EEE, MMM d')}</strong>
-                    <span>{slot.time === 'all-day' ? 'All Day' : slot.time}</span>
+                    <div className="date-header-left">
+                      <strong>{format(parseLocalDate(slot.date), 'EEE, MMM d')}</strong>
+                      <span>{slot.time === 'all-day' ? 'All Day' : slot.time}</span>
+                    </div>
+                    <div className="planned-actions">
+                      {isPlanned ? (
+                        <button
+                          type="button"
+                          className="planned-chip planned-chip--active"
+                          onClick={() => handleConfirmTimeSlot(null)}
+                          disabled={planning}
+                        >
+                          Planned
+                          <span className="planned-chip__action">Clear</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="planned-chip"
+                          onClick={() => handleConfirmTimeSlot(slot.id)}
+                          disabled={planning}
+                        >
+                          Set as planned
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {available.length > 0 && (
                     <div className="available-participants">
