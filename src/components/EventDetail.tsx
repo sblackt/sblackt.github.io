@@ -337,6 +337,30 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     }
   };
 
+  const handleCopyLink = async () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('eventId', event.id);
+
+    const plannedDateText = plannedSlot
+      ? format(parseLocalDate(plannedSlot.date), 'EEE, MMM d')
+      : null;
+
+    const shareLines = [
+      `${theme.icon} ${event.title}`,
+      `Type: ${theme.label}${plannedDateText ? ` • Planned date: ${plannedDateText}` : ''}`,
+      url.toString()
+    ];
+
+    try {
+      await navigator.clipboard.writeText(shareLines.join('\n'));
+      setActionsMenuOpen(false);
+      alert('Event link copied to clipboard');
+    } catch (error) {
+      console.error('Error copying event link:', error);
+      alert('Could not copy the event link. Please try again.');
+    }
+  };
+
   return (
     <div
       className="event-detail"
@@ -423,6 +447,14 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
           </button>
           {actionsMenuOpen && (
             <div className="actions-menu" role="menu">
+              <button
+                type="button"
+                className="actions-menu-item"
+                role="menuitem"
+                onClick={handleCopyLink}
+              >
+                Copy event link
+              </button>
               {!event.isCompleted && (
                 <button
                   type="button"

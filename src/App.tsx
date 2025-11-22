@@ -14,6 +14,19 @@ function App() {
   const [view, setView] = useState<'list' | 'detail' | 'create'>('list');
   const [loading, setLoading] = useState(true);
   const [eventsFilter, setEventsFilter] = useState<'active' | 'history'>('active');
+  const [deepLinkEventId, setDeepLinkEventId] = useState<string | null>(null);
+  const [initialDeepLinkHandled, setInitialDeepLinkHandled] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get('eventId');
+
+    if (eventId) {
+      setDeepLinkEventId(eventId);
+    } else {
+      setInitialDeepLinkHandled(true);
+    }
+  }, []);
 
   useEffect(() => {
     // Subscribe to real-time updates for active or archived events
@@ -29,6 +42,53 @@ function App() {
 
     return () => unsubscribe();
   }, [eventsFilter]);
+
+  useEffect(() => {
+    if (!deepLinkEventId || initialDeepLinkHandled) {
+      return;
+    }
+
+    const matchFromList = events.find((evt) => evt.id === deepLinkEventId);
+
+    const loadEvent = async () => {
+      if (matchFromList) {
+        setCurrentEvent(matchFromList);
+        setView('detail');
+        setEventsFilter(matchFromList.isActive ? 'active' : 'history');
+        setInitialDeepLinkHandled(true);
+        return;
+      }
+
+      try {
+        const fetchedEvent = await firebaseService.getEvent(deepLinkEventId);
+        if (fetchedEvent) {
+          setCurrentEvent(fetchedEvent);
+          setView('detail');
+          setEventsFilter(fetchedEvent.isActive ? 'active' : 'history');
+        }
+      } catch (error) {
+        console.error('Error loading linked event:', error);
+      } finally {
+        setInitialDeepLinkHandled(true);
+      }
+    };
+
+    void loadEvent();
+  }, [deepLinkEventId, events, initialDeepLinkHandled]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (view === 'detail' && currentEvent) {
+      params.set('eventId', currentEvent.id);
+    } else {
+      params.delete('eventId');
+    }
+
+    const newSearch = params.toString();
+    const newUrl = newSearch ? `${window.location.pathname}?${newSearch}` : window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+  }, [view, currentEvent]);
 
   useEffect(() => {
     if (!currentEvent) {
