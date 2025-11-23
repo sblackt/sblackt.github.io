@@ -23,6 +23,10 @@ export interface Event {
   isActive: boolean;
   isCompleted: boolean;
   reactions?: Record<string, number>;
+  reminderSettings?: {
+    daysBefore?: number[];
+  };
+  remindersSent?: Record<string, string>;
 }
 
 export interface AvailabilityResponse {

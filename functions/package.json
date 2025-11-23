@@ -1,0 +1,20 @@
+{
+  "name": "meeple-planner-functions",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "deploy": "firebase deploy --only functions"
+  },
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^5.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

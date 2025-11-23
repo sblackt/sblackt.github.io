@@ -1,0 +1,21 @@
+name: Event Reminders
+
+on:
+  schedule:
+    - cron: '0 15 * * *' # daily at 15:00 UTC (~8am PT)
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call reminder endpoint
+        env:
+          REMINDER_FUNCTION_URL: ${{ secrets.REMINDER_FUNCTION_URL }}
+          REMINDER_FUNCTION_TOKEN: ${{ secrets.REMINDER_FUNCTION_TOKEN }}
+        run: |
+          if [ -z "$REMINDER_FUNCTION_URL" ] || [ -z "$REMINDER_FUNCTION_TOKEN" ]; then
+            echo "Missing REMINDER_FUNCTION_URL or REMINDER_FUNCTION_TOKEN secrets"
+            exit 1
+          fi
+          curl -X POST "${REMINDER_FUNCTION_URL}?token=${REMINDER_FUNCTION_TOKEN}"

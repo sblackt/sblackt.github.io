@@ -7,6 +7,19 @@ import { parseLocalDate } from '../utils/dateUtils';
 import { EVENT_TYPE_OPTIONS, getEventTypeConfig } from '../constants/eventTypes';
 import './EventDetail.css';
 
+const EVENT_PREVIEW_BASE_URL = process.env.REACT_APP_EVENT_PREVIEW_BASE_URL;
+
+const buildShareLink = (eventId: string): string => {
+  if (EVENT_PREVIEW_BASE_URL) {
+    const separator = EVENT_PREVIEW_BASE_URL.includes('?') ? '&' : '?';
+    return `${EVENT_PREVIEW_BASE_URL}${separator}eventId=${encodeURIComponent(eventId)}`;
+  }
+
+  const url = new URL(window.location.href);
+  url.searchParams.set('eventId', eventId);
+  return url.toString();
+};
+
 interface EventDetailProps {
   event: Event;
   onEventUpdated: () => void;
@@ -338,9 +351,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   };
 
   const handleCopyLink = async () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('eventId', event.id);
-
+    const shareLink = buildShareLink(event.id);
     const plannedDateText = plannedSlot
       ? format(parseLocalDate(plannedSlot.date), 'EEE, MMM d')
       : null;
@@ -348,7 +359,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     const shareLines = [
       `${theme.icon} ${event.title}`,
       `Type: ${theme.label}${plannedDateText ? ` • Planned date: ${plannedDateText}` : ''}`,
-      url.toString()
+      shareLink
     ];
 
     try {
