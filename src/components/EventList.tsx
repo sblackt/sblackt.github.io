@@ -3,6 +3,7 @@ import { Event } from '../types';
 import { format } from 'date-fns';
 import CalendarIcon from './CalendarIcon';
 import { getEventTypeConfig } from '../constants/eventTypes';
+import { parseLocalDate } from '../utils/dateUtils';
 import './EventList.css';
 
 interface EventListProps {
@@ -111,7 +112,7 @@ const EventList: React.FC<EventListProps> = ({
 
                 {plannedSlot && (
                   <div className="event-planned-pill">
-                    Planned: {format(new Date(plannedSlot.date), 'MMM d, yyyy')}
+                    Planned: {format(parseLocalDate(plannedSlot.date), 'MMM d, yyyy')}
                   </div>
                 )}
                 
