@@ -72,6 +72,39 @@
             flex-wrap: wrap;
         }
 
+        .view-tabs {
+            display: inline-flex;
+            gap: 0.5rem;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.35rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            width: fit-content;
+        }
+
+        .view-tab {
+            border: none;
+            background: transparent;
+            color: rgba(248, 250, 252, 0.85);
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.5rem 1.35rem;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .view-tab:hover {
+            color: #fff;
+        }
+
+        .view-tab--active {
+            background: rgba(248, 250, 252, 0.22);
+            color: #0f172a;
+            box-shadow: 0 10px 20px -15px rgba(15, 23, 42, 0.8);
+        }
+
         .page-header__text {
             display: grid;
             gap: 0.5rem;
@@ -186,6 +219,15 @@
             font-size: clamp(1.3rem, 1.7vw, 2rem);
             opacity: 0.85;
             font-weight: 500;
+        }
+
+        .view {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .view[hidden] {
+            display: none !important;
         }
 
         .metric-extrema {
@@ -358,6 +400,132 @@
             font-weight: 500;
         }
 
+        .insight-hero {
+            background: rgba(15, 23, 42, 0.75);
+            border-radius: 24px;
+            padding: 1.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 35px -25px rgba(15, 23, 42, 0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            color: #f1f5f9;
+        }
+
+        .insight-hero h2 {
+            font-size: 2rem;
+            margin-bottom: 0.35rem;
+            font-family: 'Hepta Slab', 'Inter', serif;
+        }
+
+        .insight-hero p {
+            color: rgba(248, 250, 252, 0.8);
+            font-size: 1rem;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.1rem;
+        }
+
+        .insight-card {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 22px;
+            padding: 1.5rem;
+            border: 1px solid rgba(203, 213, 225, 0.6);
+            display: grid;
+            gap: 0.75rem;
+            box-shadow: 0 15px 30px -20px rgba(15, 23, 42, 0.5);
+        }
+
+        .insight-card--fire {
+            background: linear-gradient(135deg, rgba(248, 113, 113, 0.8), rgba(255, 244, 215, 0.8));
+            border-color: rgba(248, 113, 113, 0.6);
+        }
+
+        .insight-card--risk {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(180, 212, 201, 0.8));
+            border-color: rgba(59, 130, 246, 0.55);
+        }
+
+        .insight-card--weather {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.8), rgba(200, 201, 239, 0.8));
+            border-color: rgba(14, 165, 233, 0.55);
+        }
+
+        .insight-card__icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            background: rgba(15, 23, 42, 0.08);
+            font-size: 1.4rem;
+        }
+
+        .insight-card__header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .insight-card__label {
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+
+        .insight-card__value {
+            font-size: clamp(1.8rem, 3vw, 2.6rem);
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .insight-card__summary {
+            color: #334155;
+            font-size: 0.95rem;
+        }
+
+        .insight-card__meta {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .insight-empty {
+            color: rgba(248, 250, 252, 0.9);
+            font-size: 1rem;
+        }
+
+        .insight-card__progress {
+            display: grid;
+            gap: 0.3rem;
+        }
+
+        .insight-progress-bar {
+            width: 100%;
+            height: 0.45rem;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.4);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .insight-progress-bar span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #f87171, #fb923c);
+            border-radius: inherit;
+        }
+
+        .insight-progress-label {
+            font-size: 0.8rem;
+            color: #475569;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 0;
@@ -366,6 +534,11 @@
             .layout {
                 padding: 2.25rem 1.5rem;
                 border-radius: 0px;
+            }
+
+            .view-tabs {
+                width: 100%;
+                justify-content: center;
             }
 
             .refresh-button {
@@ -455,6 +628,9 @@
             .metric-value span:last-child {
                 font-size: 1rem;
             }
+            .insights-grid {
+                grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            }
         }
     </style>
 </head>
@@ -470,9 +646,29 @@
             </button>
         </header>
 
-        <section id="metric-cards" class="metric-grid" aria-live="polite"></section>
+        <nav id="view-tabs" class="view-tabs" role="tablist" aria-label="Sensor views">
+            <button id="tab-dashboard" type="button" role="tab" aria-selected="true" class="view-tab view-tab--active" data-view-tab="dashboard">
+                Live dashboard
+            </button>
+            <button id="tab-insights" type="button" role="tab" aria-selected="false" class="view-tab" data-view-tab="insights" tabindex="-1">
+                Insights
+            </button>
+        </nav>
 
-        <section id="feed-details" class="detail-grid"></section>
+        <section id="dashboard-view" class="view view--active" role="tabpanel" aria-labelledby="tab-dashboard">
+            <section id="metric-cards" class="metric-grid" aria-live="polite"></section>
+            <section id="feed-details" class="detail-grid"></section>
+        </section>
+
+        <section id="insights-view" class="view" role="tabpanel" aria-labelledby="tab-insights" hidden>
+            <div class="insight-hero">
+                <div>
+                    <h2>Insights</h2>
+                    <p id="insights-summary">Waiting for enough readings to build insights.</p>
+                </div>
+            </div>
+            <section id="insights-grid" class="insights-grid" aria-live="polite"></section>
+        </section>
 
         <script id="stonehedge-latest-json" type="application/json" data-status="pending"></script>
     </main>
@@ -557,6 +753,11 @@
             }
         };
         const humorCursor = new Map();
+        const WEATHER_LOCATION = {
+            name: 'Eganville, ON',
+            latitude: 45.54,
+            longitude: -77.1
+        };
 
         // Adjust thresholds/behaviour per feed as needed.
         const FEEDS = [
@@ -642,19 +843,70 @@
             status: document.getElementById('status-message'),
             refresh: document.getElementById('refresh-btn'),
             metricGrid: document.getElementById('metric-cards'),
-            detailGrid: document.getElementById('feed-details')
+            detailGrid: document.getElementById('feed-details'),
+            viewTabs: document.getElementById('view-tabs'),
+            dashboardView: document.getElementById('dashboard-view'),
+            insightsView: document.getElementById('insights-view'),
+            insightsGrid: document.getElementById('insights-grid'),
+            insightsSummary: document.getElementById('insights-summary')
         };
 
         const charts = new Map();
         let refreshTimer = null;
+        let activeView = 'dashboard';
+        let latestWeather = null;
 
         init();
 
         function init() {
-            dom.refresh.addEventListener('click', () => requestData(true));
+            initViewTabs();
+            if (dom.refresh) {
+                dom.refresh.addEventListener('click', () => requestData(true));
+            }
             requestData(true);
             scheduleRefresh();
             document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
+
+        function initViewTabs() {
+            if (!dom.viewTabs) {
+                return;
+            }
+            const buttons = dom.viewTabs.querySelectorAll('[data-view-tab]');
+            buttons.forEach(button => {
+                button.addEventListener('click', () => switchView(button.dataset.viewTab));
+            });
+        }
+
+        function switchView(nextView) {
+            if (!nextView || nextView === activeView) {
+                return;
+            }
+            activeView = nextView;
+
+            if (dom.viewTabs) {
+                const buttons = dom.viewTabs.querySelectorAll('[data-view-tab]');
+                buttons.forEach(button => {
+                    const isTarget = button.dataset.viewTab === nextView;
+                    button.classList.toggle('view-tab--active', isTarget);
+                    button.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+                    button.tabIndex = isTarget ? 0 : -1;
+                });
+            }
+
+            const views = [
+                { id: 'dashboard', node: dom.dashboardView },
+                { id: 'insights', node: dom.insightsView }
+            ];
+
+            views.forEach(view => {
+                if (!view.node) {
+                    return;
+                }
+                const shouldShow = view.id === nextView;
+                view.node.classList.toggle('view--active', shouldShow);
+                view.node.hidden = !shouldShow;
+            });
         }
 
         function scheduleRefresh() {
@@ -678,8 +930,12 @@
             dom.refresh.disabled = true;
 
             try {
-                const feeds = await Promise.all(FEEDS.map(feed => fetchFeedData(feed)));
-                updateDashboard(feeds);
+                const [feeds, weather] = await Promise.all([
+                    Promise.all(FEEDS.map(feed => fetchFeedData(feed))),
+                    fetchWeatherData()
+                ]);
+                latestWeather = weather;
+                updateDashboard(feeds, weather);
                 dom.status.textContent = `Updated ${formatDateTime(new Date())} · ${USERNAME} · Last ${DATA_LIMIT} points`;
             } catch (error) {
                 console.error(error);
@@ -724,7 +980,47 @@
             }
         }
 
-        function updateDashboard(feeds) {
+        async function fetchWeatherData() {
+            if (!WEATHER_LOCATION || !Number.isFinite(WEATHER_LOCATION.latitude) || !Number.isFinite(WEATHER_LOCATION.longitude)) {
+                return null;
+            }
+            const params = new URLSearchParams({
+                latitude: WEATHER_LOCATION.latitude,
+                longitude: WEATHER_LOCATION.longitude,
+                current: 'temperature_2m,relative_humidity_2m,dew_point_2m',
+                timezone: 'auto'
+            });
+            try {
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error('weather unavailable');
+                }
+                const payload = await response.json();
+                const current = payload?.current || {};
+                const temperature = Number(current.temperature_2m);
+                const humidity = Number(current.relative_humidity_2m);
+                const dewPoint = Number.isFinite(Number(current.dew_point_2m))
+                    ? Number(current.dew_point_2m)
+                    : computeDewPoint(temperature, humidity);
+                const fetchedAt = current.time ? new Date(current.time) : new Date();
+                if (!Number.isFinite(temperature)) {
+                    return null;
+                }
+                return {
+                    location: WEATHER_LOCATION.name,
+                    temperature,
+                    humidity: Number.isFinite(humidity) ? humidity : null,
+                    dewPoint: Number.isFinite(dewPoint) ? dewPoint : null,
+                    fetchedAt,
+                    source: 'Open-Meteo'
+                };
+            } catch (error) {
+                console.warn('Weather fetch failed', error);
+                return null;
+            }
+        }
+
+        function updateDashboard(feeds, weather) {
             const latestPayload = buildLatestPayload(feeds);
             if (latestPayload) {
                 exposeLatestJson(latestPayload);
@@ -746,6 +1042,137 @@
 
             removeStaleCards(dom.metricGrid, seen, 'card');
             removeStaleCards(dom.detailGrid, seen, 'detail');
+            updateInsights(feeds, weather);
+        }
+
+        function updateInsights(feeds, weather) {
+            if (!dom.insightsGrid) {
+                return;
+            }
+
+            const temperatureFeed = feeds.find(feed => feed.id === 'home.temperature');
+            const humidityFeed = feeds.find(feed => feed.id === 'home.humidity');
+            const pressureFeed = feeds.find(feed => feed.id === 'home.pressure');
+            const airFeed = feeds.find(feed => feed.id === 'home.gas');
+            const fireAnalysis = analyzeFireCycles(temperatureFeed);
+
+            const coverage = deriveCoverage([temperatureFeed, humidityFeed, pressureFeed, airFeed]);
+            if (dom.insightsSummary) {
+                const parts = [];
+                if (coverage) {
+                    parts.push(`Based on ${coverage.totalMs ? formatDuration(coverage.totalMs) : 'recent'} indoor readings`);
+                    if (weather?.fetchedAt) {
+                        parts.push(`Weather synced ${formatTime(weather.fetchedAt)}`);
+                    }
+                    dom.insightsSummary.textContent = `${parts.join(' · ')}`;
+                } else {
+                    dom.insightsSummary.textContent = 'Waiting for enough readings to build insights.';
+                }
+            }
+
+            const cards = [];
+            const tempComfort = buildComfortInsight(temperatureFeed, { min: 19, max: 22, label: 'Temperature comfort' });
+            if (tempComfort) {
+                cards.push(tempComfort);
+            }
+
+            const tempSwing = buildTemperatureSwingInsight(temperatureFeed);
+            if (tempSwing) {
+                cards.push(tempSwing);
+            }
+
+            const tempMicro = buildTemperatureMicroSwingInsight(temperatureFeed);
+            if (tempMicro) {
+                cards.push(tempMicro);
+            }
+
+            const fireCadence = buildFireCadenceInsight(fireAnalysis, temperatureFeed);
+            if (fireCadence) {
+                cards.push(fireCadence);
+            }
+
+            const fireTiming = buildFireTimingInsight(fireAnalysis, temperatureFeed);
+            if (fireTiming) {
+                cards.push(fireTiming);
+            }
+
+            const humidityComfort = buildComfortInsight(humidityFeed, { min: 40, max: 60, label: 'Humidity sweet spot' });
+            if (humidityComfort) {
+                cards.push(humidityComfort);
+            }
+
+            const condensation = buildCondensationInsight(temperatureFeed, humidityFeed);
+            if (condensation) {
+                cards.push(condensation);
+            }
+
+            const windowRisk = buildWindowCondensationInsight(temperatureFeed, humidityFeed, weather);
+            if (windowRisk) {
+                cards.push(windowRisk);
+            }
+
+            const pressureTrend = buildPressureTrendInsight(pressureFeed);
+            if (pressureTrend) {
+                cards.push(pressureTrend);
+            }
+
+            const airInsight = buildAirInsight(airFeed);
+            if (airInsight) {
+                cards.push(airInsight);
+            }
+
+            const outdoor = buildOutdoorWeatherInsight(weather);
+            if (outdoor) {
+                cards.push(outdoor);
+            }
+
+            renderInsightCards(cards);
+        }
+
+        function renderInsightCards(items) {
+            if (!dom.insightsGrid) {
+                return;
+            }
+            if (!items.length) {
+                dom.insightsGrid.innerHTML = '<p class="insight-empty">Need more data to surface insights.</p>';
+                return;
+            }
+            const sortedItems = items.slice().sort((a, b) => {
+                const priorityA = Number.isFinite(a.priority) ? a.priority : 99;
+                const priorityB = Number.isFinite(b.priority) ? b.priority : 99;
+                if (priorityA === priorityB) {
+                    return (a.label || '').localeCompare(b.label || '');
+                }
+                return priorityA - priorityB;
+            });
+            dom.insightsGrid.innerHTML = '';
+            sortedItems.forEach(item => {
+                const card = document.createElement('article');
+                const variantClass = item.variant ? ` insight-card--${item.variant}` : '';
+                card.className = `insight-card${variantClass}`;
+                card.dataset.insightId = item.id;
+                const progressMarkup = typeof item.progress === 'number'
+                    ? `
+                        <div class="insight-card__progress">
+                            <p class="insight-progress-label">${escapeHtml(item.progressLabel || 'Progress')}</p>
+                            <div class="insight-progress-bar">
+                                <span style="width:${Math.min(Math.max(item.progress, 0), 1) * 100}%"></span>
+                            </div>
+                        </div>
+                    `
+                    : '';
+                card.innerHTML = `
+                    <div class="insight-card__header">
+                        ${item.icon ? `<span class="insight-card__icon" aria-hidden="true">${escapeHtml(item.icon)}</span>` : ''}
+                        <p class="insight-card__label">${escapeHtml(item.label)}</p>
+                    </div>
+                    <p class="insight-card__value">${escapeHtml(item.value)}</p>
+                    <p class="insight-card__summary">${escapeHtml(item.summary)}</p>
+                    ${progressMarkup}
+                    ${item.meta ? `<p class="insight-card__meta">${escapeHtml(item.meta)}</p>` : ''}
+                `;
+                dom.insightsGrid.appendChild(card);
+            });
         }
 
         function renderMetricCard(feed) {
@@ -1240,6 +1667,710 @@ function exposeLatestJson(payload) {
   window.STONEHEDGE_LATEST = payload;
 }
 
+        function buildComfortInsight(feed, options = {}) {
+            if (!feed || !Array.isArray(feed.data) || feed.data.length < 2) {
+                return null;
+            }
+            const { min, max, label } = options;
+            if (!Number.isFinite(min) || !Number.isFinite(max)) {
+                return null;
+            }
+            const stats = computeRangeStats(feed.data, value => Number.isFinite(value) && value >= min && value <= max);
+            if (!stats) {
+                return null;
+            }
+            const unitLabel = feed.unit ? ` ${feed.unit}` : '';
+            const totalDuration = stats.totalMs ? formatDuration(stats.totalMs) : '';
+            const comfortDuration = stats.inRangeMs ? formatDuration(stats.inRangeMs) : '0m';
+            const percent = stats.totalMs ? Math.round((stats.inRangeMs / stats.totalMs) * 100) : 0;
+            const summary = stats.totalMs
+                ? `Within ${min}–${max}${unitLabel} for ${comfortDuration} of ${totalDuration}.`
+                : `Tracking ${feed.name || feed.id}.`;
+            const meta = stats.longestMs && stats.longestEnd
+                ? `Longest streak ${formatDuration(stats.longestMs)} ending ${formatDateTime(stats.longestEnd)}.`
+                : '';
+            return {
+                id: `${feed.id}-comfort`,
+                label: label || `${feed.name || feed.id} comfort`,
+                value: `${percent}%`,
+                summary,
+                meta
+            };
+        }
+
+        function buildTemperatureSwingInsight(feed) {
+            if (!feed || !Array.isArray(feed.data) || feed.data.length < 2) {
+                return null;
+            }
+            const unitLabel = feed.unit ? ` ${feed.unit}` : '';
+            const high = feed.data.reduce((acc, entry) => (entry.value > acc.value ? entry : acc), feed.data[0]);
+            const low = feed.data.reduce((acc, entry) => (entry.value < acc.value ? entry : acc), feed.data[0]);
+            if (!Number.isFinite(high.value) || !Number.isFinite(low.value)) {
+                return null;
+            }
+            const swing = high.value - low.value;
+            const summary = `High ${formatNumber(high.value)}${unitLabel} at ${formatDateTime(high.createdAt)} · Low ${formatNumber(low.value)}${unitLabel} at ${formatDateTime(low.createdAt)}`;
+            const meta = Math.abs(swing) >= 2
+                ? 'Notable temperature swings suggest HVAC cycles or drafts.'
+                : 'Temperature stayed relatively stable.';
+            return {
+                id: `${feed.id}-swing`,
+                label: 'Daily swing',
+                value: `${formatNumber(Math.abs(swing))}${unitLabel}`,
+                summary,
+                meta
+            };
+        }
+
+        function buildTemperatureMicroSwingInsight(feed) {
+            if (!feed || !Array.isArray(feed.data) || feed.data.length < 3) {
+                return null;
+            }
+            const readings = feed.data
+                .map(entry => {
+                    const timestamp = Date.parse(entry.created_at ?? entry.createdAt);
+                    return {
+                        value: Number(entry.value),
+                        timestamp
+                    };
+                })
+                .filter(item => Number.isFinite(item.value) && !Number.isNaN(item.timestamp))
+                .sort((a, b) => a.timestamp - b.timestamp);
+
+            if (readings.length < 3) {
+                return null;
+            }
+
+            const segments = [];
+            for (let i = 1; i < readings.length; i++) {
+                const prev = readings[i - 1];
+                const curr = readings[i];
+                const deltaValue = Math.abs(curr.value - prev.value);
+                const deltaMs = curr.timestamp - prev.timestamp;
+                if (deltaMs <= 0) {
+                    continue;
+                }
+                const perHour = deltaMs ? (deltaValue * 3600000) / deltaMs : 0;
+                segments.push({ deltaValue, perHour });
+            }
+
+            if (!segments.length) {
+                return null;
+            }
+
+            const avgDelta = segments.reduce((sum, seg) => sum + seg.deltaValue, 0) / segments.length;
+            const avgRate = segments.reduce((sum, seg) => sum + seg.perHour, 0) / segments.length;
+            const maxSegment = segments.reduce((acc, seg) => (seg.deltaValue > acc.deltaValue ? seg : acc), segments[0]);
+            const activeShare = segments.filter(seg => seg.deltaValue >= 0.3).length / segments.length;
+
+            const unitLabel = feed.unit ? ` ${feed.unit}` : '';
+            const summary = `Avg step change ${formatNumber(avgDelta)}${unitLabel} · Largest micro jump ${formatNumber(maxSegment.deltaValue)}${unitLabel}`;
+
+            let behaviour;
+            if (avgRate < 0.2) {
+                behaviour = 'Room sits calm between samples.';
+            } else if (avgRate < 0.5) {
+                behaviour = 'Gentle HVAC nudges show up regularly.';
+            } else {
+                behaviour = 'Frequent quick swings hint at drafts or busy traffic.';
+            }
+
+            let activityLine;
+            if (activeShare >= 0.6) {
+                activityLine = 'Most readings include micro corrections.';
+            } else if (activeShare >= 0.3) {
+                activityLine = 'About a third of samples show noticeable wiggles.';
+            } else {
+                activityLine = 'Only occasional micro adjustments detected.';
+            }
+
+            return {
+                id: `${feed.id}-micro`,
+                label: 'Micro swings',
+                value: `${formatNumber(avgRate)}${unitLabel}/hr`,
+                summary,
+                meta: `${behaviour} ${activityLine}`
+            };
+        }
+
+        function analyzeFireCycles(feed) {
+            if (!feed || !Array.isArray(feed.data) || feed.data.length < 3) {
+                return null;
+            }
+            const series = feed.data
+                .map(entry => {
+                    const timestamp = Date.parse(entry.created_at ?? entry.createdAt);
+                    const value = Number(entry.value);
+                    if (!Number.isFinite(value) || Number.isNaN(timestamp)) {
+                        return null;
+                    }
+                    return { value, timestamp };
+                })
+                .filter(Boolean)
+                .sort((a, b) => a.timestamp - b.timestamp);
+
+            if (series.length < 3) {
+                return null;
+            }
+
+            const events = [];
+            const coolingSegments = [];
+            const MIN_HEAT_DELTA = 0.15;
+            const MIN_FIRE_RISE = 1;
+            const TARGET_TEMP = 18;
+            let heating = null;
+
+            for (let i = 1; i < series.length; i++) {
+                const prev = series[i - 1];
+                const curr = series[i];
+                const deltaTemp = curr.value - prev.value;
+                const deltaMs = curr.timestamp - prev.timestamp;
+                if (deltaMs <= 0) {
+                    continue;
+                }
+
+                if (deltaTemp < -0.05) {
+                    const rate = Math.abs(deltaTemp) * 3600000 / deltaMs;
+                    if (Number.isFinite(rate)) {
+                        coolingSegments.push({ rate, timestamp: curr.timestamp });
+                    }
+                }
+
+                if (deltaTemp > MIN_HEAT_DELTA) {
+                    if (!heating) {
+                        heating = {
+                            startTime: prev.timestamp,
+                            startValue: prev.value,
+                            startIndex: i - 1,
+                            rise: 0,
+                            peakValue: prev.value,
+                            peakTime: prev.timestamp,
+                            peakIndex: i - 1,
+                            endTime: curr.timestamp,
+                            endValue: curr.value
+                        };
+                    }
+                    heating.rise += deltaTemp;
+                    if (curr.value >= heating.peakValue) {
+                        heating.peakValue = curr.value;
+                        heating.peakTime = curr.timestamp;
+                        heating.peakIndex = i;
+                    }
+                    heating.endTime = curr.timestamp;
+                    heating.endValue = curr.value;
+                } else if (deltaTemp <= 0) {
+                    if (heating) {
+                        const endTime = heating.endTime ?? prev.timestamp;
+                        const durationMs = endTime - heating.startTime;
+                        if (heating.rise >= MIN_FIRE_RISE && durationMs >= 15 * 60 * 1000) {
+                            events.push({
+                                startTime: heating.startTime,
+                                startValue: heating.startValue,
+                                peakTime: heating.peakTime,
+                                peakValue: heating.peakValue,
+                                peakIndex: heating.peakIndex ?? i - 1,
+                                rise: heating.rise,
+                                durationMs
+                            });
+                        }
+                        heating = null;
+                    }
+                }
+            }
+
+            if (heating) {
+                const durationMs = (heating.endTime ?? heating.peakTime) - heating.startTime;
+                if (heating.rise >= MIN_FIRE_RISE && durationMs >= 15 * 60 * 1000) {
+                    events.push({
+                        startTime: heating.startTime,
+                        startValue: heating.startValue,
+                        peakTime: heating.peakTime,
+                        peakValue: heating.peakValue,
+                        peakIndex: heating.peakIndex ?? series.length - 1,
+                        rise: heating.rise,
+                        durationMs
+                    });
+                }
+            }
+
+            const coverageHours = (series[series.length - 1].timestamp - series[0].timestamp) / 3600000;
+            const avgRise = events.length
+                ? events.reduce((sum, event) => sum + event.rise, 0) / events.length
+                : null;
+            let avgIntervalHours = null;
+            if (events.length > 1) {
+                let totalInterval = 0;
+                for (let i = 1; i < events.length; i++) {
+                    totalInterval += (events[i].startTime - events[i - 1].startTime) / 3600000;
+                }
+                avgIntervalHours = totalInterval / (events.length - 1);
+            }
+
+            const dropDurations = [];
+            events.forEach(event => {
+                const dropTs = findDropTimestamp(series, event.peakIndex ?? 0, TARGET_TEMP);
+                if (Number.isFinite(dropTs)) {
+                    dropDurations.push((dropTs - event.peakTime) / 3600000);
+                }
+            });
+            const avgHoldHours = dropDurations.length
+                ? dropDurations.reduce((sum, value) => sum + value, 0) / dropDurations.length
+                : null;
+
+            const avgCoolingRate = coolingSegments.length
+                ? coolingSegments.reduce((sum, segment) => sum + segment.rate, 0) / coolingSegments.length
+                : null;
+            const recentCutoff = series[series.length - 1].timestamp - 4 * 3600000;
+            const recentSegments = coolingSegments.filter(segment => segment.timestamp >= recentCutoff);
+            const recentCoolingRate = recentSegments.length
+                ? recentSegments.reduce((sum, segment) => sum + segment.rate, 0) / recentSegments.length
+                : avgCoolingRate;
+
+            const currentPoint = series[series.length - 1];
+            let predictedHoursToTarget = null;
+            let nextFireTime = null;
+            if (recentCoolingRate && recentCoolingRate > 0 && currentPoint.value > TARGET_TEMP) {
+                predictedHoursToTarget = (currentPoint.value - TARGET_TEMP) / recentCoolingRate;
+                nextFireTime = currentPoint.timestamp + predictedHoursToTarget * 3600000;
+            }
+
+            const firesPerDay = coverageHours > 0
+                ? events.length / (coverageHours / 24)
+                : null;
+
+            return {
+                events,
+                coverageHours,
+                firesPerDay,
+                avgIntervalHours,
+                avgHoldHours,
+                avgRise,
+                avgCoolingRate,
+                recentCoolingRate,
+                predictedHoursToTarget,
+                nextFireTime,
+                lastFireTime: events.length ? events[events.length - 1].peakTime : null,
+                targetTemp: TARGET_TEMP,
+                currentTemp: currentPoint.value
+            };
+        }
+
+        function buildFireCadenceInsight(analysis, feed) {
+            if (!analysis || !feed) {
+                return null;
+            }
+            const unitLabel = feed.unit || '°C';
+            const summaryParts = [];
+            if (analysis.events.length) {
+                const coverageLabel = analysis.coverageHours
+                    ? `over ${formatDuration(analysis.coverageHours * 3600000)}`
+                    : '';
+                summaryParts.push(`${analysis.events.length} fires ${coverageLabel}`.trim());
+                if (analysis.firesPerDay) {
+                    summaryParts.push(`${formatNumber(analysis.firesPerDay)} fires/day`);
+                }
+                if (analysis.avgIntervalHours) {
+                    summaryParts.push(`~${formatNumber(analysis.avgIntervalHours)}h apart`);
+                }
+                if (analysis.avgRise) {
+                    summaryParts.push(`avg boost ${formatNumber(analysis.avgRise)}${unitLabel}`);
+                }
+            } else {
+                summaryParts.push('No strong heating cycles detected in this window.');
+            }
+
+            const metaParts = [];
+            if (analysis.avgHoldHours) {
+                metaParts.push(`Hold to ${analysis.targetTemp ?? 18}°: ${formatDuration(analysis.avgHoldHours * 3600000)}`);
+            }
+            if (analysis.avgCoolingRate) {
+                metaParts.push(`Cooling ${formatNumber(analysis.avgCoolingRate)}${unitLabel}/hr`);
+            }
+
+            return {
+                id: `${feed.id}-fire-cadence`,
+                label: 'Fire cadence',
+                value: analysis.events.length ? `${analysis.events.length} fires` : 'No fires',
+                summary: summaryParts.join(' · '),
+                meta: metaParts.join(' · '),
+                priority: 1,
+                variant: 'fire',
+                icon: '🔥'
+            };
+        }
+
+        function buildFireTimingInsight(analysis, feed) {
+            if (!analysis || !feed) {
+                return null;
+            }
+            const unitLabel = feed.unit || '°C';
+            const target = analysis.targetTemp ?? 18;
+            const value = analysis.predictedHoursToTarget !== null
+                ? formatDuration(analysis.predictedHoursToTarget * 3600000)
+                : 'Monitor temps';
+            const summaryParts = [];
+            if (analysis.predictedHoursToTarget !== null) {
+                summaryParts.push(`Reach ${target}° in ${formatDuration(analysis.predictedHoursToTarget * 3600000)}`);
+            } else if (analysis.currentTemp <= target) {
+                summaryParts.push(`Already below ${target}° comfort floor.`);
+            } else {
+                summaryParts.push('Cooling trend too flat to forecast.');
+            }
+            if (analysis.recentCoolingRate) {
+                summaryParts.push(`Current cooling ${formatNumber(analysis.recentCoolingRate)}${unitLabel}/hr`);
+            }
+
+            const metaParts = [];
+            if (analysis.nextFireTime) {
+                metaParts.push(`Plan fire ~${formatTime(new Date(analysis.nextFireTime))}`);
+            }
+            if (analysis.lastFireTime) {
+                metaParts.push(`Last fire ${formatTime(new Date(analysis.lastFireTime))}`);
+            }
+            if (analysis.avgIntervalHours) {
+                metaParts.push(`Typical spacing ${formatNumber(analysis.avgIntervalHours)}h`);
+            }
+
+            let progress = null;
+            let progressLabel = '';
+            if (analysis.lastFireTime && analysis.nextFireTime && analysis.nextFireTime > analysis.lastFireTime) {
+                const total = analysis.nextFireTime - analysis.lastFireTime;
+                progress = Math.min(Math.max((Date.now() - analysis.lastFireTime) / total, 0), 1);
+                progressLabel = 'Next fire countdown';
+            }
+
+            return {
+                id: `${feed.id}-fire-timing`,
+                label: 'Next fire ETA',
+                value,
+                summary: summaryParts.join(' · '),
+                meta: metaParts.join(' · '),
+                priority: 2,
+                variant: 'fire',
+                icon: '🪵',
+                progress,
+                progressLabel
+            };
+        }
+
+        function buildCondensationInsight(tempFeed, humidityFeed) {
+            if (!tempFeed || !humidityFeed || !Array.isArray(tempFeed.data) || !Array.isArray(humidityFeed.data)) {
+                return null;
+            }
+            const sampleCount = Math.min(tempFeed.data.length, humidityFeed.data.length);
+            if (sampleCount < 2) {
+                return null;
+            }
+
+            const pairs = [];
+            for (let i = 0; i < sampleCount; i++) {
+                const tempEntry = tempFeed.data[i];
+                const humidityEntry = humidityFeed.data[i];
+                const tempValue = Number(tempEntry.value);
+                const humidityValue = Number(humidityEntry.value);
+                if (!Number.isFinite(tempValue) || !Number.isFinite(humidityValue) || humidityValue <= 0) {
+                    continue;
+                }
+                const dewPoint = computeDewPoint(tempValue, humidityValue);
+                if (!Number.isFinite(dewPoint)) {
+                    continue;
+                }
+                const timestamp = Date.parse(tempEntry.created_at ?? tempEntry.createdAt ?? humidityEntry.created_at ?? humidityEntry.createdAt);
+                pairs.push({
+                    temp: tempValue,
+                    humidity: humidityValue,
+                    dew: dewPoint,
+                    delta: tempValue - dewPoint,
+                    timestamp: Number.isNaN(timestamp) ? null : new Date(timestamp)
+                });
+            }
+
+            if (!pairs.length) {
+                return null;
+            }
+
+            const latest = pairs[0];
+            const riskThreshold = 2;
+            const severeThreshold = 1;
+            const riskySamples = pairs.filter(pair => pair.delta <= riskThreshold).length;
+            const severeSamples = pairs.filter(pair => pair.delta <= severeThreshold).length;
+            const riskPercent = Math.round((riskySamples / pairs.length) * 100);
+            const severePercent = Math.round((severeSamples / pairs.length) * 100);
+            const unitLabel = tempFeed.unit || '°C';
+
+            const deltaNow = latest.delta;
+            let descriptor = 'Plenty of buffer before water condenses.';
+            if (deltaNow <= severeThreshold) {
+                descriptor = 'Dew point is nearly the same as room temperature—expect foggy windows.';
+            } else if (deltaNow <= riskThreshold + 1) {
+                descriptor = 'Air is humid enough that cool glass or walls could sweat.';
+            }
+
+            const meta = `Condensation risk in ${riskPercent}% of readings${severePercent ? ` (${severePercent}% severe)` : ''}.`;
+
+            return {
+                id: `${tempFeed.id}-condensation`,
+                label: 'Dew point risk',
+                value: `${formatNumber(latest.dew)} ${unitLabel}`,
+                summary: `Dew point ${formatNumber(latest.dew)} ${unitLabel} · ${formatNumber(deltaNow)} ${unitLabel} below room temp. ${descriptor}`,
+                meta
+            };
+        }
+
+        function buildWindowCondensationInsight(tempFeed, humidityFeed, weather) {
+            if (!weather || !tempFeed || !humidityFeed || !tempFeed.data?.length || !humidityFeed.data?.length) {
+                return null;
+            }
+            const tempEntry = tempFeed.data[0];
+            const humidityEntry = humidityFeed.data[0];
+            const indoorTemp = Number(tempEntry.value);
+            const indoorHumidity = Number(humidityEntry.value);
+            if (!Number.isFinite(indoorTemp) || !Number.isFinite(indoorHumidity)) {
+                return null;
+            }
+            const dewPoint = computeDewPoint(indoorTemp, indoorHumidity);
+            if (!Number.isFinite(dewPoint) || !Number.isFinite(weather.temperature)) {
+                return null;
+            }
+            const estimatedWindowTemp = estimateWindowTemperature(indoorTemp, weather.temperature);
+            if (!Number.isFinite(estimatedWindowTemp)) {
+                return null;
+            }
+            const margin = estimatedWindowTemp - dewPoint;
+            const unitLabel = tempFeed.unit || '°C';
+            let descriptor = 'Window panes should stay dry.';
+            if (margin <= 0.5) {
+                descriptor = 'Expect condensation on the coldest glass.';
+            } else if (margin <= 2) {
+                descriptor = 'Crack a window or run the fan to avoid foggy glass.';
+            }
+            return {
+                id: `${tempFeed.id}-window-risk`,
+                label: 'Window condensation',
+                value: `${formatNumber(Math.max(estimatedWindowTemp, -50))} ${unitLabel}`,
+                summary: `Estimated pane temp ${formatNumber(estimatedWindowTemp)} ${unitLabel} vs dew point ${formatNumber(dewPoint)} ${unitLabel}.`,
+                meta: `${descriptor} Outdoor ${formatNumber(weather.temperature)} ${unitLabel} in ${weather.location || 'your area'}.`,
+                priority: 3,
+                variant: 'risk',
+                icon: '💧'
+            };
+        }
+
+        function buildPressureTrendInsight(feed) {
+            if (!feed || !Array.isArray(feed.data) || feed.data.length < 2) {
+                return null;
+            }
+            const latest = feed.data[0];
+            const oldest = feed.data[feed.data.length - 1];
+            if (!latest || !oldest) {
+                return null;
+            }
+            const delta = latest.value - oldest.value;
+            if (!Number.isFinite(delta)) {
+                return null;
+            }
+            const direction = delta > 0 ? 'rising' : delta < 0 ? 'falling' : 'steady';
+            const descriptor = Math.abs(delta) >= 3 ? 'noticeably' : 'slightly';
+            const unitLabel = feed.unit ? ` ${feed.unit}` : '';
+            const summary = direction === 'steady'
+                ? 'Pressure held steady across this window.'
+                : `Pressure is ${direction} ${descriptor} over the sampled window.`;
+            const meta = direction === 'falling'
+                ? 'Falling pressure can precede stormy outdoor weather.'
+                : direction === 'rising'
+                    ? 'Rising pressure usually signals clearing conditions.'
+                    : 'Expect a calm, consistent feel indoors.';
+            return {
+                id: `${feed.id}-trend`,
+                label: 'Pressure trend',
+                value: `${delta >= 0 ? '+' : ''}${formatNumber(delta)}${unitLabel}`,
+                summary,
+                meta
+            };
+        }
+
+        function buildAirInsight(feed) {
+            if (!feed || !Array.isArray(feed.data) || !feed.data.length) {
+                return null;
+            }
+            const latest = feed.data[0];
+            if (!latest || !Number.isFinite(latest.value)) {
+                return null;
+            }
+            const values = feed.data
+                .map(entry => entry.value)
+                .filter(value => Number.isFinite(value))
+                .sort((a, b) => a - b);
+            if (!values.length) {
+                return null;
+            }
+            const median = values[Math.floor(values.length / 2)];
+            const delta = latest.value - median;
+            const interpreter = typeof feed.interpret === 'function' ? feed.interpret(latest.value) : null;
+            const label = interpreter?.label || (latest.value >= 200 ? 'Fresh' : latest.value >= 120 ? 'Normal' : 'Stuffy');
+            const advice = interpreter?.advice || (latest.value >= 200 ? 'Air is crisp and ventilated.' : latest.value >= 120 ? 'Comfortable baseline.' : 'Consider airing out the room.');
+            const meta = Math.abs(delta) < 8
+                ? 'Holding close to the typical daily baseline.'
+                : delta > 0
+                    ? 'Improved compared with today’s median.'
+                    : 'More stagnant than today’s baseline.';
+            return {
+                id: `${feed.id}-air`,
+                label: 'Air quality',
+                value: `${formatNumber(latest.value)}${feed.unit ? ` ${feed.unit}` : ''}`,
+                summary: `${label} · ${advice}`,
+                meta
+            };
+        }
+
+        function buildOutdoorWeatherInsight(weather) {
+            if (!weather) {
+                return null;
+            }
+            const unitLabel = '°C';
+            const humidityLabel = Number.isFinite(weather.humidity) ? `${formatNumber(weather.humidity)}%` : '—';
+            const dewLabel = Number.isFinite(weather.dewPoint) ? `${formatNumber(weather.dewPoint)} ${unitLabel}` : 'n/a';
+            const summary = `Outdoor ${formatNumber(weather.temperature)} ${unitLabel} · RH ${humidityLabel} · Dew ${dewLabel}`;
+            const meta = weather.fetchedAt
+                ? `Synced ${formatDateTime(weather.fetchedAt)} from ${weather.source || 'weather service'}`
+                : weather.source || '';
+            return {
+                id: 'outdoor-weather',
+                label: weather.location || 'Outdoor conditions',
+                value: `${formatNumber(weather.temperature)} ${unitLabel}`,
+                summary,
+                meta,
+                priority: 4,
+                variant: 'weather',
+                icon: '🌤️'
+            };
+        }
+
+        function deriveCoverage(feeds) {
+            const timestamps = [];
+            feeds.forEach(feed => {
+                if (!feed || !Array.isArray(feed.data)) {
+                    return;
+                }
+                feed.data.forEach(entry => {
+                    const ts = Date.parse(entry.created_at ?? entry.createdAt);
+                    if (!Number.isNaN(ts)) {
+                        timestamps.push(ts);
+                    }
+                });
+            });
+            if (!timestamps.length) {
+                return null;
+            }
+            const latestTs = Math.max(...timestamps);
+            const earliestTs = Math.min(...timestamps);
+            return {
+                totalMs: Math.max(0, latestTs - earliestTs),
+                latest: new Date(latestTs)
+            };
+        }
+
+        function computeRangeStats(readings, predicate) {
+            if (!Array.isArray(readings) || readings.length < 2 || typeof predicate !== 'function') {
+                return null;
+            }
+            const sorted = readings.slice().sort((a, b) => {
+                const aTs = Date.parse(a.created_at ?? a.createdAt);
+                const bTs = Date.parse(b.created_at ?? b.createdAt);
+                if (Number.isNaN(aTs) || Number.isNaN(bTs)) {
+                    return 0;
+                }
+                return aTs - bTs;
+            });
+
+            let totalMs = 0;
+            let inRangeMs = 0;
+            let currentRunMs = 0;
+            let longestMs = 0;
+            let longestEndTs = null;
+
+            for (let i = 1; i < sorted.length; i++) {
+                const prev = sorted[i - 1];
+                const curr = sorted[i];
+                const prevTs = Date.parse(prev.created_at ?? prev.createdAt);
+                const currTs = Date.parse(curr.created_at ?? curr.createdAt);
+                if (Number.isNaN(prevTs) || Number.isNaN(currTs) || currTs <= prevTs) {
+                    continue;
+                }
+                const delta = currTs - prevTs;
+                totalMs += delta;
+                if (predicate(prev.value)) {
+                    inRangeMs += delta;
+                    currentRunMs += delta;
+                    if (currentRunMs > longestMs) {
+                        longestMs = currentRunMs;
+                        longestEndTs = currTs;
+                    }
+                } else {
+                    currentRunMs = 0;
+                }
+            }
+
+            const longestEnd = typeof longestEndTs === 'number' ? new Date(longestEndTs) : null;
+            return {
+                totalMs,
+                inRangeMs,
+                longestMs,
+                longestEnd
+            };
+        }
+
+        function findDropTimestamp(series, startIndex, targetTemp) {
+            if (!Array.isArray(series) || !series.length || !Number.isFinite(targetTemp)) {
+                return null;
+            }
+            const begin = Math.max(0, startIndex || 0);
+            for (let i = begin; i < series.length; i++) {
+                if (series[i].value <= targetTemp) {
+                    return series[i].timestamp;
+                }
+            }
+            return null;
+        }
+
+        function computeDewPoint(tempC, humidity) {
+            if (!Number.isFinite(tempC) || !Number.isFinite(humidity) || humidity <= 0 || humidity > 100) {
+                return null;
+            }
+            const a = 17.62;
+            const b = 243.12;
+            const gamma = Math.log(humidity / 100) + (a * tempC) / (b + tempC);
+            const dewPoint = (b * gamma) / (a - gamma);
+            return Number.isFinite(dewPoint) ? dewPoint : null;
+        }
+
+        function estimateWindowTemperature(indoorTemp, outdoorTemp) {
+            if (!Number.isFinite(indoorTemp) || !Number.isFinite(outdoorTemp)) {
+                return null;
+            }
+            const transferFactor = 0.3; // heuristic for double-pane performance
+            return outdoorTemp + (indoorTemp - outdoorTemp) * transferFactor;
+        }
+
+        function formatDuration(ms) {
+            if (!Number.isFinite(ms) || ms <= 0) {
+                return '0m';
+            }
+            const minutes = Math.round(ms / 60000);
+            if (minutes < 1) {
+                return '<1m';
+            }
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+            const parts = [];
+            if (hours) {
+                parts.push(`${hours}h`);
+            }
+            if (remainingMinutes) {
+                parts.push(`${remainingMinutes}m`);
+            }
+            return parts.length ? parts.join(' ') : '0m';
+        }
 
 
         function formatNumber(value) {
