@@ -12,6 +12,7 @@ The planner app now ships with a small Firebase Cloud Functions bundle that powe
 | --- | --- |
 | `eventPreview` | HTTP endpoint that returns Open Graph tags for an event (Discord unfurls get the title, emoji, type, and planned date) and then redirects the visitor to the planner UI. |
 | `triggerEventReminders` | HTTPS endpoint that runs the reminder job when called with a shared token. A GitHub Actions workflow (below) calls it daily so we keep everything on the free Firebase tier. |
+| `onEventPlanned` | Firestore trigger that fires the same Discord reminder logic as soon as an event is planned for the first time, so channels get notified right away. |
 
 ### Runtime configuration
 

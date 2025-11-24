@@ -411,3 +411,65 @@ export const triggerEventReminders = functions.https.onRequest(async (req, res) 
     res.status(500).send('Reminder job failed');
   }
 });
+
+export const onEventPlanned = functions.firestore
+  .document(`${EVENTS_COLLECTION}/{eventId}`)
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() as PlannerEvent | undefined;
+    const after = change.after.data() as PlannerEvent | undefined;
+
+    if (!after) {
+      return;
+    }
+
+    const wasPlanned = Boolean(before?.confirmedTimeSlotId);
+    const isPlanned = Boolean(after.confirmedTimeSlotId);
+    const announcementAlreadySent = Boolean(before?.remindersSent?.plannedAnnouncement);
+
+    if (!isPlanned || wasPlanned || announcementAlreadySent) {
+      return;
+    }
+
+    const plannedSlot = getPlannedSlot(after);
+    if (!plannedSlot) {
+      functions.logger.warn('onEventPlanned: planned slot not found', { eventId: context.params.eventId });
+      return;
+    }
+
+    const now = new Date();
+    const plannedDate = parseLocalDate(plannedSlot.date);
+    const daysUntil = differenceInCalendarDays(plannedDate, now);
+
+    if (!Number.isFinite(daysUntil) || daysUntil < 0) {
+      functions.logger.warn('onEventPlanned: invalid daysUntil value', {
+        eventId: context.params.eventId,
+        plannedSlot,
+        daysUntil
+      });
+      return;
+    }
+
+    try {
+      await sendDiscordReminder({
+        event: after,
+        eventId: context.params.eventId,
+        plannedDate,
+        daysUntil
+      });
+
+      const todaysKey = format(now, 'yyyy-MM-dd');
+      const reminderKey = String(daysUntil);
+
+      await change.after.ref.set({
+        remindersSent: {
+          ...(after.remindersSent ?? {}),
+          [reminderKey]: todaysKey,
+          plannedAnnouncement: todaysKey
+        }
+      }, { merge: true });
+
+      functions.logger.info('Sent planning announcement', { eventId: context.params.eventId, reminderKey });
+    } catch (error) {
+      functions.logger.error('Failed to send planning announcement', { eventId: context.params.eventId, error });
+    }
+  });
