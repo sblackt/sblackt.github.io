@@ -1814,7 +1814,6 @@ function exposeLatestJson(payload) {
             }
 
             const events = [];
-            const coolingSegments = [];
             const MIN_HEAT_DELTA = 0.15;
             const MIN_FIRE_RISE = 1;
             const TARGET_TEMP = 18;
@@ -1827,13 +1826,6 @@ function exposeLatestJson(payload) {
                 const deltaMs = curr.timestamp - prev.timestamp;
                 if (deltaMs <= 0) {
                     continue;
-                }
-
-                if (deltaTemp < -0.05) {
-                    const rate = Math.abs(deltaTemp) * 3600000 / deltaMs;
-                    if (Number.isFinite(rate)) {
-                        coolingSegments.push({ rate, timestamp: curr.timestamp });
-                    }
                 }
 
                 if (deltaTemp > MIN_HEAT_DELTA) {
@@ -1907,24 +1899,55 @@ function exposeLatestJson(payload) {
             }
 
             const dropDurations = [];
+            const dropRateStats = [];
             events.forEach(event => {
                 const dropTs = findDropTimestamp(series, event.peakIndex ?? 0, TARGET_TEMP);
                 if (Number.isFinite(dropTs)) {
-                    dropDurations.push((dropTs - event.peakTime) / 3600000);
+                    const durationHours = (dropTs - event.peakTime) / 3600000;
+                    if (durationHours > 0) {
+                        dropDurations.push(durationHours);
+                        const dropAmount = Math.max(event.peakValue - TARGET_TEMP, 0);
+                        if (dropAmount > 0.1) {
+                            dropRateStats.push({
+                                rate: dropAmount / durationHours,
+                                durationHours
+                            });
+                        }
+                    }
                 }
             });
             const avgHoldHours = dropDurations.length
                 ? dropDurations.reduce((sum, value) => sum + value, 0) / dropDurations.length
                 : null;
 
-            const avgCoolingRate = coolingSegments.length
-                ? coolingSegments.reduce((sum, segment) => sum + segment.rate, 0) / coolingSegments.length
-                : null;
-            const recentCutoff = series[series.length - 1].timestamp - 4 * 3600000;
-            const recentSegments = coolingSegments.filter(segment => segment.timestamp >= recentCutoff);
-            const recentCoolingRate = recentSegments.length
-                ? recentSegments.reduce((sum, segment) => sum + segment.rate, 0) / recentSegments.length
-                : avgCoolingRate;
+            let avgCoolingRate = null;
+            if (dropRateStats.length) {
+                const totalWeight = dropRateStats.reduce((sum, entry) => sum + entry.durationHours, 0);
+                if (totalWeight > 0) {
+                    avgCoolingRate = dropRateStats.reduce((sum, entry) => sum + (entry.rate * entry.durationHours), 0) / totalWeight;
+                }
+            }
+
+            const lastEvent = events.length ? events[events.length - 1] : null;
+            const coverageWindowHours = coverageHours
+                ? Math.min(Math.max(coverageHours, 2), 12)
+                : 6;
+            if (!Number.isFinite(avgCoolingRate)) {
+                avgCoolingRate = computeCoolingTrendRate(series, {
+                    windowMs: coverageWindowHours * 3600000,
+                    minPoints: 4,
+                    minDrop: 0.2,
+                    minSpanMs: 45 * 60 * 1000
+                });
+            }
+
+            const recentCoolingRate = computeCoolingTrendRate(series, {
+                windowMs: 3 * 3600000,
+                minPoints: 4,
+                minDrop: 0.2,
+                minSpanMs: 45 * 60 * 1000,
+                startTime: lastEvent?.peakTime ?? null
+            }) ?? avgCoolingRate;
 
             const currentPoint = series[series.length - 1];
             let predictedHoursToTarget = null;
@@ -2331,6 +2354,67 @@ function exposeLatestJson(payload) {
                 }
             }
             return null;
+        }
+
+        function computeCoolingTrendRate(series, options = {}) {
+            if (!Array.isArray(series) || series.length < 2) {
+                return null;
+            }
+            const {
+                windowMs = 3 * 3600000,
+                minPoints = 5,
+                minDrop = 0.2,
+                minSpanMs = 45 * 60 * 1000,
+                startTime = null
+            } = options;
+
+            const earliest = series[0].timestamp;
+            const latest = series[series.length - 1].timestamp;
+
+            let cutoff = earliest;
+            if (Number.isFinite(windowMs)) {
+                cutoff = Math.max(cutoff, latest - windowMs);
+            }
+            if (Number.isFinite(startTime)) {
+                cutoff = Math.max(cutoff, startTime);
+            }
+
+            const window = series.filter(point => point.timestamp >= cutoff && point.timestamp <= latest);
+            if (window.length < minPoints) {
+                return null;
+            }
+
+            const spanMs = window[window.length - 1].timestamp - window[0].timestamp;
+            if (!Number.isFinite(spanMs) || spanMs < minSpanMs) {
+                return null;
+            }
+
+            const totalDrop = window[0].value - window[window.length - 1].value;
+            if (!Number.isFinite(totalDrop) || totalDrop < minDrop) {
+                return null;
+            }
+
+            const meanTime = window.reduce((sum, point) => sum + point.timestamp, 0) / window.length;
+            const meanTemp = window.reduce((sum, point) => sum + point.value, 0) / window.length;
+            let numerator = 0;
+            let denominator = 0;
+            window.forEach(point => {
+                const timeOffset = point.timestamp - meanTime;
+                numerator += timeOffset * (point.value - meanTemp);
+                denominator += timeOffset * timeOffset;
+            });
+
+            if (denominator === 0) {
+                return null;
+            }
+
+            const slopePerMs = numerator / denominator;
+            const slopePerHour = slopePerMs * 3600000;
+            if (!Number.isFinite(slopePerHour) || slopePerHour >= -0.02) {
+                return null;
+            }
+
+            return Math.abs(slopePerHour);
         }
 
         function computeDewPoint(tempC, humidity) {

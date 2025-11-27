@@ -9,6 +9,21 @@ import './EventDetail.css';
 
 const EVENT_PREVIEW_BASE_URL = process.env.REACT_APP_EVENT_PREVIEW_BASE_URL;
 
+const formatSlotTime = (value: string): string => {
+  if (value === 'all-day') {
+    return 'All Day';
+  }
+
+  const [hours, minutes] = value.split(':').map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return value;
+  }
+
+  const displayDate = new Date();
+  displayDate.setHours(hours, minutes, 0, 0);
+  return format(displayDate, 'h:mm a');
+};
+
 const buildShareLink = (eventId: string): string => {
   if (EVENT_PREVIEW_BASE_URL) {
     const separator = EVENT_PREVIEW_BASE_URL.includes('?') ? '&' : '?';
@@ -519,7 +534,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
               <div key={slot.id} className="best-time-slot">
                 <div className="time-info">
                   <strong>{format(parseLocalDate(slot.date), 'EEE, MMM d')}</strong>
-                  <span>{slot.time === 'all-day' ? 'All Day' : slot.time}</span>
+                  <span>{formatSlotTime(slot.time)}</span>
                 </div>
                 <div className="availability-summary">
                   <span className="available-count">✓ {slot.available.length}</span>
@@ -624,7 +639,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
                   <div className="date-header">
                     <div className="date-header-left">
                       <strong>{format(parseLocalDate(slot.date), 'EEE, MMM d')}</strong>
-                      <span>{slot.time === 'all-day' ? 'All Day' : slot.time}</span>
+                      <span>{formatSlotTime(slot.time)}</span>
                     </div>
                     <div className="planned-actions">
                       {isPlanned ? (

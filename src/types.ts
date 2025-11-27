@@ -1,7 +1,7 @@
 export interface TimeSlot {
   id: string;
   date: string; // ISO date string (YYYY-MM-DD)
-  time: string; // 'all-day' or HH:mm range
+  time: string; // 'all-day' or HH:mm start time
   available: string[];
   unavailable: string[];
 }

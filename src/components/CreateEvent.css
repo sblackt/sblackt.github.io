@@ -193,7 +193,116 @@
   transform: translateY(-1px);
 }
 
-/* Time selection removed - focusing on dates only */
+.time-planner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.date-time-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fdfdfd;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.06);
+}
+
+.date-time-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.date-time-count {
+  margin-left: 8px;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.time-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.time-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eef2ff;
+  color: #1d4ed8;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.time-chip button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.smart-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.smart-suggestions-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.smart-button {
+  border: 1px dashed #cbd5f5;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  color: #1d4ed8;
+  transition: all 0.2s ease;
+}
+
+.smart-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.smart-button:not(:disabled):hover {
+  background: #e0e7ff;
+}
+
+.custom-time-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.custom-time-row input[type="time"] {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+.custom-time-row button {
+  border: none;
+  background: #1d4ed8;
+  color: white;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
 
 .form-actions {
   display: flex;

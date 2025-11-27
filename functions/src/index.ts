@@ -252,6 +252,7 @@ const sendDiscordReminder = async (params: {
     : daysUntil === 1
       ? 'is happening tomorrow'
       : `is happening in ${daysUntil} days`;
+  const friendlyLink = `[Open event details](${shareLink})`;
 
   const payload = {
     username: 'Meeple Planner',
@@ -266,7 +267,7 @@ const sendDiscordReminder = async (params: {
         }
       }
     ],
-    content: `Heads up! **${event.title}** ${friendlyTiming}. ${shareLink}`
+    content: `Heads up! **${event.title}** ${friendlyTiming}.\n${shareLink}\n${friendlyLink}`
   };
 
   const response = await fetch(webhookUrl, {

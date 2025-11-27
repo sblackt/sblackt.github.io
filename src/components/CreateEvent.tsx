@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Event, TimeSlot } from '../types';
 import { firebaseService } from '../services/firebaseService';
-// format import removed since it's no longer used
+import { format, parseISO } from 'date-fns';
 import Calendar from './Calendar';
 import { DEFAULT_EVENT_TYPE, EVENT_TYPE_OPTIONS } from '../constants/eventTypes';
 import './CreateEvent.css';
@@ -12,6 +12,76 @@ interface CreateEventProps {
   onCancel: () => void;
 }
 
+const DEFAULT_TIME_SUGGESTIONS = ['17:00', '18:30', '20:00'];
+
+const formatDateLabel = (isoDate: string): string => {
+  try {
+    return format(parseISO(isoDate), 'EEE, MMM d');
+  } catch (error) {
+    console.error('Error formatting date label', error);
+    return isoDate;
+  }
+};
+
+const formatTimeLabel = (value: string): string => {
+  if (value === 'all-day') {
+    return 'All Day';
+  }
+
+  const [hours, minutes] = value.split(':').map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return value;
+  }
+
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return format(date, 'h:mm a');
+};
+
+const toMinutes = (value: string): number => {
+  if (value === 'all-day') {
+    return 0;
+  }
+
+  const [hours, minutes] = value.split(':').map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return 0;
+  }
+  return hours * 60 + minutes;
+};
+
+const sortTimes = (values: string[]): string[] => {
+  return values.slice().sort((a, b) => toMinutes(a) - toMinutes(b));
+};
+
+const shiftTimeValue = (value: string, offsetMinutes: number): string => {
+  const [hours, minutes] = value.split(':').map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return value;
+  }
+
+  const totalMinutes = ((hours * 60 + minutes + offsetMinutes) % (24 * 60) + 24 * 60) % (24 * 60);
+  const shiftedHours = Math.floor(totalMinutes / 60);
+  const shiftedMinutes = totalMinutes % 60;
+  return `${String(shiftedHours).padStart(2, '0')}:${String(shiftedMinutes).padStart(2, '0')}`;
+};
+
+const normalizeTimeValue = (value: string): string | undefined => {
+  if (!value) {
+    return undefined;
+  }
+  if (value === 'all-day') {
+    return 'all-day';
+  }
+
+  const [hours, minutes] = value.split(':').map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return undefined;
+  }
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+};
+
 const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -20,10 +90,10 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
     { label: '', url: '' }
   ]);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [dateTimes, setDateTimes] = useState<Record<string, string[]>>({});
+  const [customTimeInputs, setCustomTimeInputs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
-
-  // Remove the old date generation function since we're using the calendar now
 
   const handleDateToggle = (date: string) => {
     try {
@@ -31,12 +101,28 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
       const [year, month, day] = date.split('-').map(Number);
       const pad = (value: number) => value.toString().padStart(2, '0');
       const localDateString = `${year}-${pad(month)}-${pad(day)}`;
-      
-      setSelectedDates(prev => 
-        prev.includes(localDateString) 
-          ? prev.filter(d => d !== localDateString)
-          : [...prev, localDateString]
-      );
+
+      setSelectedDates(prev => {
+        if (prev.includes(localDateString)) {
+          setDateTimes(current => {
+            const next = { ...current };
+            delete next[localDateString];
+            return next;
+          });
+          setCustomTimeInputs(current => {
+            const next = { ...current };
+            delete next[localDateString];
+            return next;
+          });
+          return prev.filter(d => d !== localDateString);
+        }
+
+        setDateTimes(current => ({
+          ...current,
+          [localDateString]: current[localDateString] ?? ['all-day']
+        }));
+        return [...prev, localDateString];
+      });
     } catch (error) {
       console.error('Error toggling date:', error);
       alert('Error selecting date. Please try again.');
@@ -57,19 +143,102 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
     setLinks((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Time selection removed - focusing on dates only
+  const handleAddTime = (date: string, rawValue: string) => {
+    const normalized = normalizeTimeValue(rawValue);
+    if (!normalized) {
+      return;
+    }
+
+    setDateTimes(current => {
+      const existing = current[date] ?? ['all-day'];
+      if (normalized === 'all-day') {
+        return {
+          ...current,
+          [date]: ['all-day']
+        };
+      }
+
+      const withoutAllDay = existing.filter(time => time !== 'all-day');
+      if (withoutAllDay.includes(normalized)) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [date]: sortTimes([...withoutAllDay, normalized])
+      };
+    });
+  };
+
+  const handleRemoveTime = (date: string, value: string) => {
+    setDateTimes(current => {
+      const times = current[date];
+      if (!times || times.length <= 1) {
+        return current;
+      }
+
+      const remaining = times.filter(time => time !== value);
+      return {
+        ...current,
+        [date]: remaining.length > 0 ? remaining : ['all-day']
+      };
+    });
+  };
+
+  const handleCustomTimeSubmit = (date: string) => {
+    const pending = customTimeInputs[date];
+    if (!pending) {
+      alert('Please pick a time first.');
+      return;
+    }
+    handleAddTime(date, pending);
+    setCustomTimeInputs(prev => ({ ...prev, [date]: '' }));
+  };
+
+  const anchorTime = useMemo(() => {
+    for (const date of selectedDates) {
+      const times = dateTimes[date];
+      if (!times) {
+        continue;
+      }
+      const firstSpecificTime = times.find(time => time !== 'all-day');
+      if (firstSpecificTime) {
+        return firstSpecificTime;
+      }
+    }
+    return undefined;
+  }, [dateTimes, selectedDates]);
+
+  const getSuggestionsForDate = (date: string) => {
+    if (anchorTime) {
+      const earlier = shiftTimeValue(anchorTime, -30);
+      const later = shiftTimeValue(anchorTime, 30);
+      return [
+        { label: `Match ${formatTimeLabel(anchorTime)}`, value: anchorTime },
+        { label: `Earlier (${formatTimeLabel(earlier)})`, value: earlier },
+        { label: `Later (${formatTimeLabel(later)})`, value: later }
+      ];
+    }
+
+    return DEFAULT_TIME_SUGGESTIONS.map(value => ({
+      label: formatTimeLabel(value),
+      value
+    }));
+  };
 
   const generateTimeSlots = (): TimeSlot[] => {
     const slots: TimeSlot[] = [];
     
     selectedDates.forEach(date => {
-      // Create a single time slot for each date (representing the whole day)
-      slots.push({
-        id: uuidv4(),
-        date,
-        time: 'all-day', // Special value to indicate all day
-        available: [],
-        unavailable: []
+      const timesForDate = dateTimes[date] ?? ['all-day'];
+      timesForDate.forEach(timeValue => {
+        slots.push({
+          id: uuidv4(),
+          date,
+          time: timeValue,
+          available: [],
+          unavailable: []
+        });
       });
     });
     
@@ -236,7 +405,82 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
           />
         </div>
 
-        {/* Time selection removed - focusing on dates only */}
+        {selectedDates.length > 0 && (
+          <div className="form-section">
+            <h2>Times &amp; Smart Suggestions</h2>
+            <p className="form-helper">
+              Optionally drop preferred start times for each date. We&apos;ll keep suggestions aligned across dates so planning feels cohesive.
+            </p>
+            <div className="time-planner">
+              {[...selectedDates].sort().map(date => {
+                const timesForDate = dateTimes[date] ?? ['all-day'];
+                const suggestions = getSuggestionsForDate(date);
+                const hasAllDay = timesForDate.includes('all-day');
+
+                return (
+                  <div key={date} className="date-time-card">
+                    <div className="date-time-header">
+                      <div>
+                        <strong>{formatDateLabel(date)}</strong>
+                        <span className="date-time-count">
+                          {timesForDate.length} time{timesForDate.length === 1 ? '' : 's'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="time-chip-row">
+                      {timesForDate.map((time) => (
+                        <div key={time} className="time-chip">
+                          <span>{formatTimeLabel(time)}</span>
+                          {timesForDate.length > 1 && (
+                            <button type="button" onClick={() => handleRemoveTime(date, time)} aria-label={`Remove ${formatTimeLabel(time)}`}>
+                              ×
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="smart-suggestions">
+                      <span className="smart-suggestions-label">Smart picks:</span>
+                      {suggestions.map(suggestion => (
+                        <button
+                          type="button"
+                          key={`${date}-${suggestion.value}`}
+                          className="smart-button"
+                          onClick={() => handleAddTime(date, suggestion.value)}
+                        >
+                          {suggestion.label}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className="smart-button"
+                        onClick={() => handleAddTime(date, 'all-day')}
+                        disabled={hasAllDay && timesForDate.length === 1}
+                      >
+                        All day
+                      </button>
+                    </div>
+
+                    <div className="custom-time-row">
+                      <label htmlFor={`custom-time-${date}`}>Custom time</label>
+                      <input
+                        id={`custom-time-${date}`}
+                        type="time"
+                        value={customTimeInputs[date] ?? ''}
+                        onChange={(e) => setCustomTimeInputs(prev => ({ ...prev, [date]: e.target.value }))}
+                      />
+                      <button type="button" onClick={() => handleCustomTimeSubmit(date)}>
+                        + Add time
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="form-actions">
           <button type="button" onClick={onCancel} className="cancel-button">
