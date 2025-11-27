@@ -331,8 +331,22 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     return { available, unavailable };
   };
 
+  const plannedSlot = event.confirmedTimeSlotId
+    ? event.timeSlots.find(slot => slot.id === event.confirmedTimeSlotId)
+    : undefined;
+  const plannedDateShort = plannedSlot
+    ? format(parseLocalDate(plannedSlot.date), 'EEE, MMM d')
+    : '';
+  const plannedDateLong = plannedSlot
+    ? format(parseLocalDate(plannedSlot.date), 'EEEE, MMM d')
+    : '';
+  const plannedTimeLabel = plannedSlot
+    ? (plannedSlot.time === 'all-day' ? 'All-day hang' : formatSlotTime(plannedSlot.time))
+    : '';
+  const timeSlotsToShow = plannedSlot ? [plannedSlot] : event.timeSlots;
+
   const getBestTimeSlots = () => {
-    return event.timeSlots
+    return timeSlotsToShow
       .map(slot => {
         const { available, unavailable } = getAvailabilityForTimeSlot(slot.id);
         const score = available.length - unavailable.length;
@@ -343,9 +357,6 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   };
 
   const bestSlots = getBestTimeSlots().slice(0, 6);
-  const plannedSlot = event.confirmedTimeSlotId
-    ? event.timeSlots.find(slot => slot.id === event.confirmedTimeSlotId)
-    : undefined;
 
   // Get unique participants from responses
   const uniqueParticipants = Array.from(new Set(responses.map(r => r.participantName)));
@@ -367,9 +378,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
 
   const handleCopyLink = async () => {
     const shareLink = buildShareLink(event.id);
-    const plannedDateText = plannedSlot
-      ? format(parseLocalDate(plannedSlot.date), 'EEE, MMM d')
-      : null;
+    const plannedDateText = plannedSlot ? plannedDateShort : null;
 
     const shareLines = [
       `${theme.icon} ${event.title}`,
@@ -412,7 +421,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
             <span className="event-date">{format(new Date(event.createdAt), 'MMM d, yyyy')}</span>
             {plannedSlot && (
               <span className="planned-badge">
-                Planned: {format(parseLocalDate(plannedSlot.date), 'EEE, MMM d')}
+                Planned: {plannedDateShort}
               </span>
             )}
           </div>
@@ -526,7 +535,40 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
         </div>
       </div>
 
-      {bestSlots.length > 0 && (
+      {plannedSlot && (
+        <div className="planned-celebration">
+          <div className="planned-celebration__content">
+            <div className="planned-celebration__emoji" aria-hidden="true">🎉</div>
+            <div className="planned-celebration__copy-group">
+              <p className="planned-celebration__eyebrow">It's official!</p>
+              <h2>{plannedDateLong}</h2>
+              <p className="planned-celebration__time">{plannedTimeLabel}</p>
+              <p className="planned-celebration__copy">
+                Share the plan with the crew or clear it if anything changes.
+              </p>
+            </div>
+          </div>
+          <div className="planned-celebration__actions">
+            <button
+              type="button"
+              className="planned-celebration__share"
+              onClick={handleCopyLink}
+            >
+              Share the vibe
+            </button>
+            <button
+              type="button"
+              className="planned-celebration__clear"
+              onClick={() => handleConfirmTimeSlot(null)}
+              disabled={planning}
+            >
+              Change date
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!plannedSlot && bestSlots.length > 0 && (
         <div className="best-times">
           <h3>Best Times (based on responses)</h3>
           <div className="best-times-grid">
@@ -618,7 +660,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
       </div>
 
       <AvailabilityHeatmap
-        timeSlots={event.timeSlots}
+        timeSlots={timeSlotsToShow}
         responses={responses}
         participantName={participantName}
         onDateToggle={handleDateToggle}
@@ -631,7 +673,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
         <div className="availability-details">
           <h3>Who's Available When</h3>
           <div className="availability-details-grid">
-            {event.timeSlots.map((slot) => {
+            {timeSlotsToShow.map((slot) => {
               const { available, unavailable } = getAvailabilityForTimeSlot(slot.id);
               const isPlanned = event.confirmedTimeSlotId === slot.id;
               return (
