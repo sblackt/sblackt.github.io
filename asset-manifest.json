@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/planner/static/css/main.10ee616d.css",
+    "main.js": "/planner/static/js/main.dcafb9be.js",
+    "static/js/453.cd0a2c59.chunk.js": "/planner/static/js/453.cd0a2c59.chunk.js",
+    "static/media/meepletower.png": "/planner/static/media/meepletower.7c7c60fa2e60147545f6.png",
+    "index.html": "/planner/index.html",
+    "main.10ee616d.css.map": "/planner/static/css/main.10ee616d.css.map",
+    "main.dcafb9be.js.map": "/planner/static/js/main.dcafb9be.js.map",
+    "453.cd0a2c59.chunk.js.map": "/planner/static/js/453.cd0a2c59.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.10ee616d.css",
+    "static/js/main.dcafb9be.js"
+  ]
+}
