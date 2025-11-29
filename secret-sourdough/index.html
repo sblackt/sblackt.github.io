@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secret Sourdough Exchange</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      font-size: 16px;
+      --page-gradient: radial-gradient(circle at 20% 10%, rgba(248, 187, 109, 0.25), transparent 50%), radial-gradient(circle at 80% 0%, rgba(240, 149, 72, 0.2), transparent 55%), linear-gradient(180deg, #2b0b09 0%, #4b1d12 55%, #5d2515 100%);
+      --card-bg: rgba(255, 248, 239, 0.96);
+      --accent: #f4a259;
+      --accent-secondary: #d87c37;
+      --accent-soft: rgba(244, 162, 89, 0.18);
+      --text: #fff7ee;
+      --text-muted: rgba(255, 235, 217, 0.85);
+      --card-text: #2f140a;
+      --border: rgba(255, 255, 255, 0.18);
+      --menu-bg: rgba(28, 8, 4, 0.9);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--page-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      padding: clamp(1.5rem, 4vw, 3rem);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+      opacity: 0.28;
+      z-index: -2;
+    }
+
+    main {
+      width: min(1100px, 100%);
+      background: transparent;
+      border-radius: 0;
+      padding: clamp(1.5rem, 4vw, 3.5rem);
+      box-shadow: none;
+      position: relative;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    header .intro {
+      display: grid;
+      gap: 0.6rem;
+      flex: 1;
+    }
+
+    header h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      margin: 0;
+      line-height: 1.2;
+      color: #fffaf3;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--accent);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    header .tagline {
+      margin: 0;
+      color: rgba(255, 247, 238, 0.92);
+      font-size: 1.05rem;
+    }
+
+    .page-controls {
+      position: relative;
+      margin-left: auto;
+      align-self: flex-start;
+    }
+
+    .menu-button {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: linear-gradient(135deg, #fff, #fff1d2);
+      color: var(--accent-secondary);
+      font-size: 1.4rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 12px 30px rgba(19, 4, 2, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .menu-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 36px rgba(13, 2, 0, 0.35);
+    }
+
+    .menu-dropdown {
+      position: absolute;
+      top: 48px;
+      right: 0;
+      min-width: 180px;
+      border-radius: 18px;
+      background: var(--menu-bg);
+      padding: 0.35rem;
+      box-shadow: 0 25px 50px rgba(15, 23, 42, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-6px);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      z-index: 10;
+    }
+
+    .menu-dropdown[data-open="true"] {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .menu-dropdown button {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: #f8fafc;
+      padding: 0.65rem 0.75rem;
+      border-radius: 12px;
+      text-align: left;
+      font-weight: 500;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .menu-dropdown button:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .winter-frame {
+      position: relative;
+      padding: 1.35rem;
+      border-radius: 24px;
+      background: rgba(60, 20, 12, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 20px 40px rgba(13, 4, 1, 0.45);
+    }
+
+    section {
+      margin-bottom: 3rem;
+    }
+
+    section:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+
+    .pairings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+
+    .pair-card {
+      --avatar-image: none;
+      padding: 1.4rem;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: linear-gradient(135deg, rgba(255, 252, 244, 0.98), rgba(249, 237, 224, 0.95));
+      box-shadow: 0 18px 35px rgba(38, 9, 3, 0.38);
+      display: grid;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+      color: var(--card-text);
+    }
+
+    .pair-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: var(--avatar-image);
+      background-repeat: no-repeat;
+      background-size: 55%;
+      background-position: 95% 110%;
+      opacity: 0.4;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .pair-card span {
+      display: block;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pair-card .giver {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-secondary);
+    }
+
+    .pair-card .receiver {
+      font-size: 1.6rem;
+      font-weight: 600;
+    }
+
+    .pair-card .receiver[data-hidden="true"] {
+      filter: blur(0.45rem);
+      color: rgba(47, 20, 10, 0.35);
+      letter-spacing: 0.08em;
+    }
+
+    .pair-card .arrow {
+      font-size: 1.2rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .reveal-button {
+      margin-top: 0.65rem;
+      border: 1px solid rgba(45, 13, 4, 0.1);
+      border-radius: 999px;
+      padding: 0.35rem 0.95rem;
+      background: linear-gradient(135deg, #b54c1d, #f4a259);
+      color: #fff8ef;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      width: fit-content;
+      position: relative;
+      z-index: 1;
+    }
+
+    .reveal-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(38, 9, 3, 0.32);
+    }
+
+    .hint,
+    .sync-status {
+      margin: 0.75rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      padding: 5px;
+    }
+
+    .winter-frame .hint,
+    .winter-frame .sync-status {
+      color: rgba(255, 241, 224, 0.9);
+    }
+
+    .winter-frame > .hint:first-child {
+      margin-top: 0;
+    }
+
+    .winter-frame > .sync-status:last-child {
+      margin-bottom: 0;
+    }
+
+    .sync-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .sync-status::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .sync-status[data-state="connected"]::before {
+      background: #22c55e;
+    }
+
+    .sync-status[data-state="offline"]::before {
+      background: #f97316;
+    }
+
+    .sync-status[data-state="error"]::before {
+      background: #ef4444;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 0rem;
+      }
+
+      main {
+        padding: 0.5rem;
+      }
+
+      header {
+        flex-direction: column;
+      }
+
+      .page-controls {
+        align-self: flex-start;
+      }
+
+      .pairings-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+      }
+
+      .pair-card,
+      .winter-frame {
+        padding: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="page-controls">
+        <button class="menu-button" id="menuButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="menuDropdown" aria-label="Open menu">⋯</button>
+        <div class="menu-dropdown" id="menuDropdown" role="menu" aria-hidden="true">
+          <button type="button" role="menuitem" id="shuffleMenuItem">Shuffle starter deliveries</button>
+        </div>
+      </div>
+      <div class="intro">
+        <p class="eyebrow">December · 2025</p>
+        <h1>Secret Sourdough</h1>
+        <p class="tagline">Jess & Steve, Craig & Kayla, Mike & Justine, and Emily & Travis are trading tangy treasures for Christmas.</p>
+      </div>
+    </header>
+
+    <section aria-labelledby="pairings-title">
+      <div class="section-heading">
+        <h2 id="pairings-title">Randomly Sliced</h2>
+      </div>
+      <div class="winter-frame">
+        <p class="hint">Tap to peek at who your dough is destined for.</p>
+        <div class="pairings-grid" id="pairingsGrid" aria-live="polite"></div>
+        <p class="sync-status" id="pairingsStatus" data-state="syncing">Loading crumb routes…</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyD3giFeU-zkVUx36U4D2YGAM-_vtP15aho',
+      authDomain: 'the-meeple-planner.firebaseapp.com',
+      projectId: 'the-meeple-planner',
+      storageBucket: 'the-meeple-planner.firebasestorage.app',
+      messagingSenderId: '435277919251',
+      appId: '1:435277919251:web:4cfb2ec26e5c55a5007be6',
+      measurementId: 'G-9VPCFFFP7T'
+    };
+
+    const people = ['Jess & Steve', 'Craig & Kayla', 'Mike & Justine', 'Emily & Travis'];
+    const displayOrder = people.reduce((acc, name, index) => {
+      acc[name] = index;
+      return acc;
+    }, {});
+    const giverAvatars = {};
+    const disallowedPairs = new Set();
+    const pairingsStorageKey = 'secretSourdoughPairings_v1';
+    const revealStorageKey = 'secretSourdoughReveals_v1';
+    const adminPassword = 'wild-yeast';
+    const adminStorageKey = 'secretSourdoughAdmin';
+
+    const pairingsGrid = document.getElementById('pairingsGrid');
+    const pairingsStatus = document.getElementById('pairingsStatus');
+    const menuButton = document.getElementById('menuButton');
+    const menuDropdown = document.getElementById('menuDropdown');
+    const shuffleMenuItem = document.getElementById('shuffleMenuItem');
+
+    let pairingsDocRef = null;
+    let firestoreUnavailable = false;
+    let latestPairings = readPairingsBackup();
+    let revealedGivers = readRevealStates();
+    let hasAdminAccess = sessionStorage.getItem(adminStorageKey) === 'true';
+
+    function readPairingsBackup() {
+      try {
+        const raw = localStorage.getItem(pairingsStorageKey);
+        return raw ? JSON.parse(raw) : [];
+      } catch (error) {
+        console.warn('Unable to read local pairings backup', error);
+        return [];
+      }
+    }
+
+    function writePairingsBackup(data) {
+      try {
+        localStorage.setItem(pairingsStorageKey, JSON.stringify(data));
+      } catch (error) {
+        console.warn('Unable to write local pairings backup', error);
+      }
+    }
+
+    function readRevealStates() {
+      try {
+        const raw = localStorage.getItem(revealStorageKey);
+        if (!raw) {
+          return new Set();
+        }
+        const parsed = JSON.parse(raw);
+        return new Set(Array.isArray(parsed) ? parsed : []);
+      } catch (error) {
+        console.warn('Unable to read reveal states', error);
+        return new Set();
+      }
+    }
+
+    function writeRevealStates(set) {
+      try {
+        localStorage.setItem(revealStorageKey, JSON.stringify(Array.from(set)));
+      } catch (error) {
+        console.warn('Unable to persist reveal states', error);
+      }
+    }
+
+    function resetRevealStates() {
+      revealedGivers = new Set();
+      writeRevealStates(revealedGivers);
+    }
+
+    function shuffle(list) {
+      const arr = [...list];
+      for (let i = arr.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function isValidPair(giver, receiver) {
+      return giver !== receiver && !disallowedPairs.has(`${giver}|${receiver}`);
+    }
+
+    function createDerangement(items, maxAttempts = 1000) {
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        const givers = shuffle(items);
+        const receivers = shuffle(items);
+
+        if (givers.every((giver, idx) => isValidPair(giver, receivers[idx]))) {
+          return givers.map((giver, idx) => ({
+            giver,
+            receiver: receivers[idx]
+          }));
+        }
+      }
+      throw new Error('Could not build pairings within the rules.');
+    }
+
+    function renderPairingCards(pairings) {
+      pairingsGrid.innerHTML = '';
+      const ordered = [...pairings].sort((a, b) => {
+        return (displayOrder[a.giver] ?? 0) - (displayOrder[b.giver] ?? 0);
+      });
+      ordered.forEach(({ giver, receiver }) => {
+        const card = document.createElement('article');
+        card.className = 'pair-card';
+        if (giverAvatars[giver]) {
+          card.style.setProperty('--avatar-image', `url("${giverAvatars[giver]}")`);
+        } else {
+          card.style.removeProperty('--avatar-image');
+        }
+
+        const giverSpan = document.createElement('span');
+        giverSpan.className = 'giver';
+        giverSpan.textContent = `${giver} bakes for`;
+
+        const arrowSpan = document.createElement('span');
+        arrowSpan.className = 'arrow';
+        arrowSpan.textContent = '→';
+
+        const receiverSpan = document.createElement('span');
+        receiverSpan.className = 'receiver';
+
+        const revealButton = document.createElement('button');
+        revealButton.className = 'reveal-button';
+        revealButton.type = 'button';
+
+        const syncRevealState = () => {
+          const isRevealed = revealedGivers.has(giver);
+          receiverSpan.textContent = isRevealed ? receiver : 'Peek at crumb buddy';
+          receiverSpan.dataset.hidden = isRevealed ? 'false' : 'true';
+          revealButton.textContent = isRevealed ? 'Hide surprise' : 'Reveal crumb buddy';
+          revealButton.setAttribute('aria-pressed', String(isRevealed));
+        };
+
+        const toggleReveal = () => {
+          const isRevealed = revealedGivers.has(giver);
+          if (isRevealed) {
+            revealedGivers.delete(giver);
+          } else {
+            revealedGivers.add(giver);
+          }
+          writeRevealStates(revealedGivers);
+          syncRevealState();
+        };
+
+        revealButton.addEventListener('click', (event) => {
+          event.stopPropagation();
+          toggleReveal();
+        });
+
+        card.addEventListener('click', (event) => {
+          if (event.target === revealButton) return;
+          toggleReveal();
+        });
+
+        syncRevealState();
+
+        card.append(giverSpan, arrowSpan, receiverSpan, revealButton);
+        pairingsGrid.appendChild(card);
+      });
+    }
+
+    function formatTimestamp(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return '';
+      }
+      return date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    function updatePairingsStatus(message, state = 'idle') {
+      if (!pairingsStatus) return;
+      pairingsStatus.textContent = message;
+      pairingsStatus.dataset.state = state;
+    }
+
+    function applyPairings(pairings, source = 'local', metadata = {}) {
+      const pairingsChanged = !pairingsAreEqual(latestPairings, pairings);
+      latestPairings = pairings;
+      if (pairingsChanged) {
+        resetRevealStates();
+      }
+      renderPairingCards(pairings);
+      writePairingsBackup(pairings);
+
+      if (source === 'cloud') {
+        const formatted = metadata.updatedAt ? formatTimestamp(metadata.updatedAt) : '';
+        updatePairingsStatus(formatted ? `Synced · refreshed ${formatted}` : 'Synced from bakery cloud', 'connected');
+      } else if (source === 'local-offline') {
+        updatePairingsStatus('Using pairings saved on this device', 'offline');
+      } else if (source === 'local-new') {
+        updatePairingsStatus('Saving newly proofed pairings…', 'saving');
+      }
+    }
+
+    function pairingsListToMap(pairings) {
+      return pairings.reduce((acc, { giver, receiver }) => {
+        acc[giver] = receiver;
+        return acc;
+      }, {});
+    }
+
+    function pairingsMapToList(map = {}) {
+      return Object.entries(map)
+        .map(([giver, receiver]) => ({ giver, receiver }))
+        .sort((a, b) => (displayOrder[a.giver] ?? 0) - (displayOrder[b.giver] ?? 0));
+    }
+
+    function pairingsAreEqual(a = [], b = []) {
+      if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
+        return false;
+      }
+      for (let i = 0; i < a.length; i += 1) {
+        if (a[i].giver !== b[i].giver || a[i].receiver !== b[i].receiver) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    async function savePairingsToCloud(pairings) {
+      if (!pairingsDocRef) return null;
+      const updatedAt = new Date().toISOString();
+      await setDoc(pairingsDocRef, { pairs: pairingsListToMap(pairings), updatedAt }, { merge: true });
+      return updatedAt;
+    }
+
+    async function loadPairingsFromCloud() {
+      if (!pairingsDocRef) return;
+      try {
+        const snapshot = await getDoc(pairingsDocRef);
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          const pairings = pairingsMapToList(data.pairs || {});
+          if (pairings.length) {
+            applyPairings(pairings, 'cloud', { updatedAt: data.updatedAt });
+            return;
+          }
+        }
+        const freshPairings = createDerangement(people);
+        const updatedAt = await savePairingsToCloud(freshPairings);
+        applyPairings(freshPairings, 'cloud', { updatedAt });
+      } catch (error) {
+        console.error('Unable to load pairings', error);
+        updatePairingsStatus('Could not load saved pairings · showing local copy', 'error');
+      }
+    }
+
+    async function handleShuffleRequest() {
+      if (!ensureAdminAccess()) {
+        return;
+      }
+
+      if (firestoreUnavailable || !pairingsDocRef) {
+        alert('Need the bakery cloud online before reshuffling loaves.');
+        return;
+      }
+
+      let nextPairings;
+      try {
+        nextPairings = createDerangement(people);
+      } catch (error) {
+        alert('Could not bake a valid set of deliveries. Try again.');
+        return;
+      }
+
+      applyPairings(nextPairings, 'local-new');
+      try {
+        const updatedAt = await savePairingsToCloud(nextPairings);
+        applyPairings(nextPairings, 'cloud', { updatedAt });
+      } catch (error) {
+        console.error('Unable to save new pairings', error);
+        updatePairingsStatus('Could not save new pairings · showing local copy', 'error');
+      }
+    }
+
+    function requestAdminAccess() {
+      const attempt = window.prompt('Enter the baker password to reshuffle deliveries:');
+      if (!attempt) {
+        return false;
+      }
+      if (attempt.trim().toLowerCase() === adminPassword) {
+        hasAdminAccess = true;
+        sessionStorage.setItem(adminStorageKey, 'true');
+        return true;
+      }
+      alert('Nope! Ask Steve for the latest crumb code if you forgot it.');
+      return false;
+    }
+
+    function ensureAdminAccess() {
+      return hasAdminAccess || requestAdminAccess();
+    }
+
+    async function bootstrapFirebase() {
+      try {
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        pairingsDocRef = doc(db, 'secretSourdough', 'pairings');
+        updatePairingsStatus('Connected · loading saved pairings…', 'syncing');
+      } catch (error) {
+        console.error('Firebase initialization failed', error);
+        firestoreUnavailable = true;
+        updatePairingsStatus('Offline mode · showing local pairings', 'offline');
+        if (!latestPairings.length) {
+          try {
+            const fallback = createDerangement(people);
+            applyPairings(fallback, 'local-offline');
+          } catch (err) {
+            pairingsGrid.innerHTML = '<p>Unable to build pairings while offline.</p>';
+          }
+        }
+        return;
+      }
+
+      await loadPairingsFromCloud();
+    }
+
+    function bindMenu() {
+      function closeMenu() {
+        menuDropdown.dataset.open = 'false';
+        menuDropdown.setAttribute('aria-hidden', 'true');
+        menuButton.setAttribute('aria-expanded', 'false');
+      }
+
+      function openMenu() {
+        if (!ensureAdminAccess()) {
+          return;
+        }
+        menuDropdown.dataset.open = 'true';
+        menuDropdown.setAttribute('aria-hidden', 'false');
+        menuButton.setAttribute('aria-expanded', 'true');
+      }
+
+      function toggleMenu() {
+        const isOpen = menuDropdown.dataset.open === 'true';
+        if (isOpen) {
+          closeMenu();
+        } else {
+          openMenu();
+        }
+      }
+
+      menuButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggleMenu();
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!menuDropdown.contains(event.target) && event.target !== menuButton) {
+          closeMenu();
+        }
+      });
+
+      shuffleMenuItem.addEventListener('click', () => {
+        closeMenu();
+        handleShuffleRequest();
+      });
+    }
+
+    function init() {
+      if (latestPairings.length) {
+        applyPairings(latestPairings, 'local-offline');
+      } else {
+        pairingsGrid.innerHTML = '<p>Mapping loaf deliveries…</p>';
+      }
+      bindMenu();
+      bootstrapFirebase();
+    }
+
+    init();
+  </script>
+</body>
+</html>
