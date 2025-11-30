@@ -1,0 +1,4839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recipe Library | stevemwhite.com</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --bg: #190c08;
+      --bg-gradient: radial-gradient(circle at 20% 20%, rgba(255, 190, 120, 0.16), transparent 55%), radial-gradient(circle at 80% 0%, rgba(222, 90, 41, 0.12), transparent 45%), linear-gradient(180deg, #120705 0%, #1d0f09 65%, #190c08 100%);
+      --panel: rgba(40, 18, 11, 0.82);
+      --panel-border: rgba(255, 210, 175, 0.18);
+      --panel-highlight: rgba(255, 158, 85, 0.15);
+      --text: #fff5eb;
+      --text-muted: rgba(255, 236, 219, 0.78);
+      --accent: #ffb347;
+      --accent-strong: #ff7b3d;
+      --chip-bg: rgba(255, 255, 255, 0.06);
+      --chip-border: rgba(255, 210, 175, 0.3);
+      --tab-border: rgba(255, 190, 145, 0.35);
+      color: var(--text);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      background-image: var(--bg-gradient);
+      color: var(--text);
+      padding: clamp(1.25rem, 3vw, 2.75rem);
+      display: flex;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    main {
+      width: min(1200px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    header {
+      display: grid;
+      gap: 0.35rem;
+      width: 100%;
+    }
+
+    header .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      font-size: 0.75rem;
+      color: var(--accent);
+      margin: 0;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 6vw, 3.4rem);
+    }
+
+    header p {
+      margin: 0;
+      color: var(--text-muted);
+      max-width: 70ch;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
+    .search-field {
+      flex: 1;
+      min-width: 260px;
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    input[type="search"] {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
+      color: var(--text);
+      padding: 0.85rem 1.2rem;
+      font-size: 1rem;
+      outline: none;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input[type="search"]:focus {
+      border-color: rgba(255, 179, 71, 0.7);
+      box-shadow: 0 0 0 3px rgba(255, 179, 71, 0.25);
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(250px, 320px) 1fr;
+      gap: 1.25rem;
+      width: 100%;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      padding: 1.35rem;
+      position: relative;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 25px 40px rgba(0, 0, 0, 0.25);
+      width: 100%;
+    }
+
+    .panel h2 {
+      margin: 0 0 1rem;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .recipe-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      max-height: calc(100vh - 220px);
+      overflow: auto;
+      padding-right: 0.5rem;
+    }
+
+    .recipe-card {
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 0.9rem;
+      background: rgba(255, 255, 255, 0.02);
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .recipe-card.active {
+      border-color: rgba(255, 179, 71, 0.6);
+      background: var(--panel-highlight);
+    }
+
+    .recipe-card h3 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .recipe-card p {
+      margin: 0.3rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.55rem;
+    }
+
+    .chip {
+      border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.75rem;
+      border: 1px solid var(--chip-border);
+      background: var(--chip-bg);
+      color: var(--text);
+    }
+
+    .component-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .component-chip {
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    }
+
+    .component-chip[data-active="true"] {
+      border-color: rgba(255, 179, 71, 0.6);
+      color: var(--accent);
+      background: rgba(255, 179, 71, 0.15);
+    }
+
+    .detail-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .detail-header h2 {
+      margin: 0;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+    }
+
+    .meta-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--tab-border);
+      margin-bottom: 1rem;
+      overflow-x: auto;
+    }
+
+    .tab-button {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.65rem 1rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .tab-button.active {
+      color: var(--accent);
+    }
+
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 3px;
+      border-radius: 99px 99px 0 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+    }
+
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .component-block {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      background: rgba(255, 255, 255, 0.02);
+      transition: border-color 0.2s ease, opacity 0.2s ease;
+    }
+
+    .component-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .component-kind {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .component-header h3 {
+      margin: 0.15rem 0 0;
+      font-size: 1.1rem;
+    }
+
+    .component-pill {
+      border-radius: 10px;
+      padding: 0.15rem 0.6rem;
+      font-size: 0.75rem;
+      border: 1px solid rgba(255, 179, 71, 0.4);
+      color: var(--accent);
+      background: rgba(255, 179, 71, 0.1);
+      align-self: flex-start;
+    }
+
+    .component-block[data-focused="true"] {
+      border-color: rgba(255, 179, 71, 0.5);
+    }
+
+    [data-component-filtering="true"] .component-block[data-focused="false"] {
+      display: none;
+    }
+
+    .ingredient-section {
+      margin-bottom: 1.4rem;
+    }
+
+    .ingredient-section h4 {
+      margin: 0 0 0.4rem;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .ingredient-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .ingredient-item {
+      padding: 0.65rem 0.8rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .ingredient-item strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    .ingredient-meta {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .ingredient-main {
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    .sub-toggle {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font-size: 0.85rem;
+      padding: 0.35rem 0.65rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+    }
+
+    .sub-toggle .chevron {
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+
+    .ingredient-item.open .sub-toggle .chevron {
+      transform: rotate(180deg);
+    }
+
+    .ingredient-substitutions {
+      border-left: 2px solid rgba(255, 255, 255, 0.12);
+      margin-left: 0.4rem;
+      padding-left: 0.8rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .ingredient-substitutions ul {
+      margin: 0.4rem 0 0;
+      padding-left: 1rem;
+    }
+
+    .ingredient-substitutions li {
+      margin-bottom: 0.25rem;
+    }
+
+    .steps {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .step-card {
+      border-radius: 18px;
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .step-card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .step-card ol {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--text-muted);
+    }
+
+    .substitution-search {
+      display: grid;
+      gap: 0.35rem;
+      margin-bottom: 1rem;
+    }
+
+    .substitution-results {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .substitution-card {
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.9rem;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .substitution-card h4 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+    }
+
+    .substitution-card ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--text-muted);
+    }
+
+    .summary-grid {
+      margin-top: 1.2rem;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .summary-grid .chip {
+      width: fit-content;
+      border-color: rgba(255, 179, 71, 0.4);
+      background: rgba(255, 179, 71, 0.1);
+      color: var(--text);
+    }
+
+    .workflow-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .workflow-phase {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.8rem;
+      align-items: flex-start;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 0.85rem 1rem;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .phase-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: rgba(255, 179, 71, 0.15);
+      border: 1px solid rgba(255, 179, 71, 0.35);
+      display: grid;
+      place-items: center;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .workflow-phase h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .workflow-phase ul {
+      margin: 0.35rem 0 0;
+      padding-left: 1.2rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 960px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .recipe-list {
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      :root {
+        font-size: 15px;
+      }
+
+      body {
+        padding: 0.6rem;
+        display: block;
+      }
+
+      main {
+        gap: 0.9rem;
+        width: 100%;
+      }
+
+      header {
+        width: 100%;
+      }
+
+      header h1 {
+        font-size: 1.85rem;
+      }
+
+      header p {
+        font-size: 0.95rem;
+      }
+
+      .controls {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.6rem;
+      }
+
+      .search-field {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .content-grid {
+        width: 100%;
+      }
+
+      .panel {
+        padding: 0.85rem;
+        border-radius: 18px;
+        width: 100%;
+      }
+
+      .recipe-list {
+        max-height: none;
+      }
+
+      .meta-grid {
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+
+      .component-filters {
+        margin-top: 0.25rem;
+      }
+
+      .component-block {
+        padding: 0.75rem;
+        border-radius: 16px;
+        width: 100%;
+      }
+
+      .workflow-phase {
+        grid-template-columns: 1fr;
+        width: 100%;
+      }
+
+      .phase-badge {
+        width: 32px;
+        height: 32px;
+      }
+
+      .recipe-card,
+      .tabs {
+        width: 100%;
+      }
+
+      .tabs {
+        gap: 0.35rem;
+        padding-bottom: 0.2rem;
+      }
+
+      .tab-button {
+        padding: 0.5rem 0.65rem;
+        font-size: 0.85rem;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Recipe library</p>
+      <h1>Field Notes From the Bonfire Kitchen</h1>
+      <p>
+        Track the recipes that show up in the tin mug rotation, search them quickly,
+        and keep swaps handy for friends with different pantry vibes.
+      </p>
+    </header>
+
+    <section class="controls">
+      <div class="search-field">
+        <label for="recipeSearch">Search recipes</label>
+        <input type="search" id="recipeSearch" placeholder="Try &ldquo;bonfire soup&rdquo; or &ldquo;vegan&rdquo;">
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <aside class="panel">
+        <h2>Recipe index</h2>
+        <div id="recipeList" class="recipe-list"></div>
+      </aside>
+
+      <section class="panel">
+        <div id="recipeDetails"></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const recipes = [
+      {
+        id: 'roasted-musquee-dhiver-bonfire-soup',
+        name: 'Roasted Musquée d’Hiver Bonfire Soup',
+        version: 1,
+        servings: {
+          count: 8,
+          note: 'Easily stretches to 10 smaller mugs.'
+        },
+        metadata: {
+          style: 'smooth mug-friendly squash soup',
+          diet: {
+            vegetarian: true,
+            vegan: true,
+            gluten_free: true,
+            contains_dairy: false,
+            contains_lentils: false
+          },
+          context: 'Made for an outdoor bonfire potluck, served in mugs.'
+        },
+        components: [
+          {
+            id: 'bonfire-soup-core',
+            name: 'Bonfire Soup Base',
+            kind: 'soup',
+            ingredients: [
+              {
+                section: 'Roasted squash',
+                items: [
+                  {
+                    name: 'Musquée d’Hiver de Provence squash',
+                    amount: 1,
+                    unit: 'large',
+                    prep: 'cut into wedges, seeds removed',
+                    notes: 'Basketball-sized; expect ~7–9 cups roasted flesh.',
+                    substitutions: [
+                      {
+                        name: 'Butternut squash',
+                        ratio: '1:1 by weight',
+                        notes: 'Flavour slightly less complex, still great.'
+                      },
+                      {
+                        name: 'Kabocha squash',
+                        ratio: '1:1 by weight',
+                        notes: 'Denser; you may need 1–2 extra cups stock.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Olive oil',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: 'for roasting',
+                    substitutions: [
+                      {
+                        name: 'Neutral oil (canola, sunflower, etc.)',
+                        ratio: '1:1'
+                      },
+                      {
+                        name: 'Melted butter',
+                        ratio: '1:1',
+                        notes: 'Adds richness, not vegan.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: 'for roasting squash',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Black pepper',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: 'for roasting squash',
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Soup base',
+                items: [
+                  {
+                    name: 'Olive oil',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: 'for sautéing',
+                    substitutions: [
+                      {
+                        name: 'Butter',
+                        ratio: '1:1',
+                        notes: 'Richer flavour, not vegan.'
+                      },
+                      {
+                        name: 'Neutral oil',
+                        ratio: '1:1'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Onions',
+                    amount: 2,
+                    unit: 'medium',
+                    prep: 'roughly chopped',
+                    substitutions: [
+                      {
+                        name: 'Leeks',
+                        ratio: '2 medium onions ≈ 3 leeks (white + light green parts)',
+                        notes: 'Sweeter, milder flavour.'
+                      },
+                      {
+                        name: 'Shallots',
+                        ratio: '2 medium onions ≈ 4–5 large shallots'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Garlic cloves',
+                    amount: 4,
+                    unit: 'cloves',
+                    prep: 'sliced or minced',
+                    substitutions: [
+                      {
+                        name: 'Garlic powder',
+                        ratio: '1 clove ≈ 1/4 tsp powder'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Fresh ginger',
+                    amount: 1.5,
+                    unit: 'tbsp',
+                    prep: 'finely grated or minced',
+                    notes: 'Use more (up to 2 tbsp) if you want stronger ginger.',
+                    substitutions: [
+                      {
+                        name: 'Ground ginger',
+                        ratio: '1 tbsp fresh ≈ 1 tsp ground'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Curry powder',
+                    amount: 2,
+                    unit: 'tsp',
+                    prep: 'added to aromatics',
+                    notes: 'Use a mild or medium curry powder.',
+                    substitutions: [
+                      {
+                        name: 'Red or yellow curry paste',
+                        ratio: '2 tsp powder ≈ 1 tbsp paste',
+                        notes: 'Fry paste with the aromatics.'
+                      },
+                      {
+                        name: 'Garam masala',
+                        ratio: '1:1',
+                        notes: 'More warming spice, less turmeric.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Vegetable or chicken stock',
+                    amount: 6,
+                    unit: 'cups',
+                    prep: 'added before simmering',
+                    notes: 'Start with 6 cups; you may add 1–2 cups more after blending to adjust thickness.',
+                    substitutions: [
+                      {
+                        name: 'Water + bouillon',
+                        ratio: 'Use as directed on bouillon packaging.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Coconut milk',
+                    amount: 160,
+                    unit: 'ml',
+                    prep: 'stirred in before blending',
+                    notes: 'Small can; adds gentle richness without dominating.',
+                    substitutions: [
+                      {
+                        name: 'Heavy cream',
+                        ratio: '160 ml ≈ 2/3 cup',
+                        notes: 'Not vegan; richer, more dairy-forward.'
+                      },
+                      {
+                        name: 'Evaporated milk',
+                        ratio: '1:1',
+                        notes: 'Milder flavour; good pantry option.'
+                      },
+                      {
+                        name: 'Additional stock',
+                        ratio: '1:1',
+                        notes: 'If you want to keep it low-fat; soup will be lighter.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Maple syrup',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: 'added after blending',
+                    notes: 'Balances acidity and enhances squash sweetness.',
+                    substitutions: [
+                      {
+                        name: 'Brown sugar',
+                        ratio: '1 tbsp maple ≈ 1 tbsp packed brown sugar'
+                      },
+                      {
+                        name: 'Honey',
+                        ratio: '1:1',
+                        notes: 'Not vegan.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Lime juice',
+                    amount: 1,
+                    unit: 'lime',
+                    prep: 'juiced and added to taste',
+                    notes: 'Start with half the lime, then adjust.',
+                    substitutions: [
+                      {
+                        name: 'Apple cider vinegar',
+                        ratio: '1 lime ≈ 2–3 tsp vinegar'
+                      },
+                      {
+                        name: 'White wine vinegar',
+                        ratio: '1:1 with cider vinegar'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 1.5,
+                    unit: 'tsp',
+                    prep: 'to taste, added in stages',
+                    notes: 'Start with 1 tsp in the pot after blending, then adjust.',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Black pepper',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: 'freshly ground, to taste',
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Optional richness and depth',
+                items: [
+                  {
+                    name: 'Butter',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: 'stirred in at the end, off heat',
+                    optional: true,
+                    notes: 'Softens brightness and adds "bass notes".',
+                    substitutions: [
+                      {
+                        name: 'Olive oil',
+                        ratio: '1:1',
+                        notes: 'Keeps it dairy-free/vegan.'
+                      },
+                      {
+                        name: 'Heavy cream',
+                        ratio: '2 tbsp butter ≈ 1/4 cup cream',
+                        notes: 'Richer, creamier mouthfeel.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Miso paste',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: 'dissolved in a little warm soup, then stirred in',
+                    optional: true,
+                    notes: 'Adds umami and depth if the soup tastes too bright.',
+                    substitutions: [
+                      {
+                        name: 'Soy sauce',
+                        ratio: '1 tbsp miso ≈ 1–2 tsp soy sauce',
+                        notes: 'Add gradually to avoid over-salting.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Optional toppings for serving',
+                items: [
+                  {
+                    name: 'Chili crisp or chili oil',
+                    amount: null,
+                    unit: null,
+                    optional: true,
+                    notes: 'A tiny spoonful on each mug adds heat and texture.',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Toasted pumpkin seeds (pepitas)',
+                    amount: null,
+                    unit: null,
+                    optional: true,
+                    notes: 'Add crunch and nutty flavour.',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Crispy fried onions',
+                    amount: null,
+                    unit: null,
+                    optional: true,
+                    notes: 'Great garnish for bonfire vibes.',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Yogurt or sour cream',
+                    amount: null,
+                    unit: null,
+                    optional: true,
+                    notes: 'Swirl on top if you don’t need it vegan.',
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Roast the squash',
+                instructions: [
+                  'Preheat oven to 400°F (200°C).',
+                  'Cut the Musquée d’Hiver squash into large wedges and scoop out the seeds.',
+                  'Place wedges on a baking tray. Drizzle with 2 tbsp olive oil, and season with about 1/2 tsp salt and 1/4 tsp black pepper.',
+                  'Roast for 45–60 minutes, or until the flesh is very soft and the edges are caramelized and lightly browned.',
+                  'Remove from oven and let cool enough to handle. Scoop all the flesh away from the skin and set aside. You should have roughly 7–9 cups of roasted squash.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Build the aromatic base',
+                instructions: [
+                  'In a large soup pot or Dutch oven, heat 2 tbsp olive oil over medium heat.',
+                  'Add the chopped onions and cook for 5–7 minutes, stirring occasionally, until softened and lightly golden.',
+                  'Add the sliced or minced garlic and grated ginger. Cook for 1–2 minutes, stirring, until fragrant (do not let the garlic burn).',
+                  'Sprinkle in the curry powder and stir, toasting the spices for about 30 seconds.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Add squash and stock, then simmer',
+                instructions: [
+                  'Add all of the roasted squash flesh to the pot with the aromatics.',
+                  'Pour in 6 cups of stock to start (reserve any extra stock for adjusting thickness later).',
+                  'Stir well, bring to a gentle simmer, and cook for 10–15 minutes to let the flavours meld.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Add coconut milk and blend',
+                instructions: [
+                  'Pour in the 160 ml can of coconut milk and stir to combine.',
+                  'Use an immersion blender to blend the soup directly in the pot until completely smooth and velvety. (Alternatively, carefully blend in batches in a countertop blender and return to the pot.)',
+                  'Check the thickness. It should be thick enough to coat a spoon and pour slowly into a mug. If it is too thick, add more stock 1/2 cup at a time, blending or stirring after each addition until you reach your preferred mug-friendly consistency.'
+                ]
+              },
+              {
+                order: 5,
+                title: 'Season, balance brightness, and enrich',
+                instructions: [
+                  'With the soup blended, stir in about 1 tbsp maple syrup.',
+                  'Add the juice of 1/2 lime first, stir, and taste. If you want more brightness, add the remaining lime juice; if it already tastes bright, stop here.',
+                  'Add 1 tsp salt and 1/4–1/2 tsp black pepper, then taste. Gradually add more salt if needed; proper seasoning will also help soften any sharp acidity.',
+                  'If the soup tastes too bright or sharp, stir in 2 tbsp butter (or a splash of cream or olive oil) off the heat to round out the flavour.',
+                  'For deeper "bass notes", optionally dissolve 1 tbsp miso paste in a small ladle of hot soup, then stir that back into the pot. Alternatively, add 1–2 tsp soy sauce instead, tasting as you go.',
+                  'Simmer very gently for another 5 minutes, then taste again and make final adjustments to salt, sweetness (a few more drops of maple), and acidity (a small extra splash of lime or vinegar only if it now feels too flat).'
+                ]
+              },
+              {
+                order: 6,
+                title: 'Adjust for bonfire serving',
+                instructions: [
+                  'Aim for the soup to be slightly thicker than you ultimately want; it will loosen a little as it stays hot outside.',
+                  'If the soup is too thin, simmer it uncovered for 5–10 minutes, stirring occasionally, until slightly reduced and thickened.',
+                  'Bring the soup up to a hot serving temperature before transporting it to the bonfire.',
+                  'Transfer to an insulated pot, thermos, or slow cooker set to "keep warm" for serving in mugs.'
+                ]
+              },
+              {
+                order: 7,
+                title: 'Serve in mugs',
+                instructions: [
+                  'Ladle the hot soup into sturdy mugs.',
+                  'Offer toppings such as chili crisp, toasted pumpkin seeds, crispy onions, or a spoonful of yogurt/sour cream for people to add themselves.',
+                  'Serve immediately and keep the remainder covered so it stays hot and free of ash near the fire.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Roast squash',
+            items: [
+              { component: 'bonfire-soup-core', step: 1 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Build flavour base',
+            items: [
+              { component: 'bonfire-soup-core', step: 2 },
+              { component: 'bonfire-soup-core', step: 3 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'Blend + balance',
+            items: [
+              { component: 'bonfire-soup-core', step: 4 },
+              { component: 'bonfire-soup-core', step: 5 }
+            ]
+          },
+          {
+            order: 4,
+            label: 'Finish + serve',
+            items: [
+              { component: 'bonfire-soup-core', step: 6 },
+              { component: 'bonfire-soup-core', step: 7 }
+            ]
+          }
+        ],
+        substitution_summary: {
+          dairy_free: 'Use olive oil instead of butter and skip cream/yogurt/sour cream.',
+          vegan: 'Use vegetable stock, olive oil instead of butter, and avoid dairy toppings.',
+          extra_rich: 'Increase coconut milk to 400 ml if available, or add up to 1/2 cup heavy cream at the end.',
+          less_bright: 'Use less lime/vinegar, add butter or oil, a bit more maple syrup, and optional miso/soy for depth.',
+          spicier: 'Add extra curry powder or a pinch of chili flakes to the aromatics, and/or serve with chili crisp.'
+        }
+      },
+      {
+        id: 'weeknight-beef-pho-steves-version',
+        name: 'Weeknight Beef Pho (Steve\'s Version)',
+        version: 1,
+        servings: {
+          count: 4,
+          note: 'Generous bowls'
+        },
+        metadata: {
+          style: 'Vietnamese beef pho (quick broth)',
+          diet: {
+            vegetarian: false,
+            vegan: false,
+            gluten_free: true,
+            contains_dairy: false,
+            contains_lentils: false
+          },
+          context: 'Made with Italian basil, spinach, optional shredded carrot, and optional toasted cashews due to lack of cilantro, parsley, or bean sprouts.'
+        },
+        components: [
+          {
+            id: 'weeknight-pho-broth',
+            name: 'Quick Pho Broth',
+            kind: 'broth',
+            ingredients: [
+              {
+                section: 'Broth Base',
+                items: [
+                  {
+                    name: 'Beef bones (marrow/knuckle)',
+                    amount: 2,
+                    unit: 'lbs',
+                    prep: '',
+                    notes: 'Oxtail optional',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Chicken bones',
+                        ratio: '1:1',
+                        notes: 'Turns it into pho ga-style broth'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Water',
+                    amount: 3,
+                    unit: 'L',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Onion',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'halved, charred',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ginger',
+                    amount: 4,
+                    unit: 'inch',
+                    prep: 'halved, charred',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Garlic cloves',
+                    amount: 4,
+                    unit: 'cloves',
+                    prep: 'lightly charred',
+                    notes: '',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Fish sauce',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'More added later for seasoning',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Soy sauce',
+                        ratio: '1:1',
+                        notes: 'Different flavour but adds umami'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Sugar',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Maple syrup also works',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Maple syrup',
+                        ratio: '1:1',
+                        notes: 'Adds a deeper sweetness'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Adjust to taste',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Pho Spice Mix',
+                items: [
+                  {
+                    name: 'Star anise',
+                    amount: 3,
+                    unit: 'pods',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Cinnamon stick',
+                    amount: 1,
+                    unit: 'stick',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Cloves',
+                    amount: 4,
+                    unit: 'whole',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Coriander seed',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Fennel seed',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Char Aromatics',
+                instructions: [
+                  'Place onion and ginger cut-side down in a hot pan until deeply charred.',
+                  'Lightly char garlic near the end.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Make the Broth',
+                instructions: [
+                  'Combine bones, charred aromatics, spices, water, fish sauce, sugar, and salt.',
+                  'Instant Pot: pressure cook 45 minutes, natural release 10 minutes.',
+                  'Stovetop: simmer 90 minutes after briefly parboiling the bones.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Strain & Season',
+                instructions: [
+                  'Strain broth and remove solids.',
+                  'Season with additional fish sauce, salt, and a small amount of sugar or maple syrup until bright and balanced.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'weeknight-pho-assembly',
+            name: 'Assembly & Finish',
+            kind: 'assembly',
+            ingredients: [
+              {
+                section: 'Protein',
+                items: [
+                  {
+                    name: 'Beef (sirloin, flank, or brisket)',
+                    amount: 350,
+                    unit: 'g',
+                    prep: 'thin-sliced',
+                    notes: 'Freeze 20–30 min for easier slicing',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Leftover roast beef',
+                        ratio: '1:1',
+                        notes: 'Slice thin; heat with broth'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Noodles & Toppings',
+                items: [
+                  {
+                    name: 'Rice noodles',
+                    amount: 400,
+                    unit: 'g',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Spinach',
+                    amount: 2,
+                    unit: 'cups',
+                    prep: '',
+                    notes: 'Added raw to bowl to wilt',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Shredded carrot',
+                    amount: 0.5,
+                    unit: 'cup',
+                    prep: 'thin matchsticks',
+                    notes: 'Adds crunch since no bean sprouts',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Italian basil',
+                    amount: 0.5,
+                    unit: 'cup',
+                    prep: 'sliced into thin ribbons',
+                    notes: 'Acts as fresh herb substitute',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Onion',
+                    amount: 0.5,
+                    unit: 'whole',
+                    prep: 'thin-sliced raw',
+                    notes: 'Classic pho topping',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Green onion',
+                    amount: 4,
+                    unit: 'stalks',
+                    prep: 'thin-sliced',
+                    notes: 'Replaces cilantro brightness',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Toasted cashews',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: 'chopped',
+                    notes: 'Optional crunchy garnish',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Lime',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'cut into wedges',
+                    notes: 'Critical brightness',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Hoisin',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'For dipping or drizzling',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Sriracha',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: '',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Prep Noodles & Toppings',
+                instructions: [
+                  'Cook rice noodles separately for 1–2 minutes and rinse briefly.',
+                  'Slice beef thin (partially frozen helps).',
+                  'Prep basil ribbons, spinach, shredded carrot, onion, and green onion.',
+                  'Toast and chop cashews if using.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Assemble Bowls',
+                instructions: [
+                  'Place noodles in each bowl.',
+                  'Add raw beef slices on top.',
+                  'Add spinach, carrot, onion, and green onion.',
+                  'Pour boiling-hot broth over to cook the beef.',
+                  'Garnish with basil and a tiny pinch of cashews.',
+                  'Serve with lime, hoisin, and sriracha.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Char aromatics',
+            items: [
+              { component: 'weeknight-pho-broth', step: 1 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Cook broth',
+            items: [
+              { component: 'weeknight-pho-broth', step: 2 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'Strain & season',
+            items: [
+              { component: 'weeknight-pho-broth', step: 3 }
+            ]
+          },
+          {
+            order: 4,
+            label: 'Prep toppings',
+            items: [
+              { component: 'weeknight-pho-assembly', step: 1 }
+            ]
+          },
+          {
+            order: 5,
+            label: 'Assemble bowls',
+            items: [
+              { component: 'weeknight-pho-assembly', step: 2 }
+            ]
+          }
+        ],
+        substitution_summary: {
+          dairy_free: 'Already dairy-free.',
+          vegan: 'Use vegetable stock, omit beef, replace fish sauce with soy and add tofu.',
+          extra_rich: 'Add a small piece of brisket or a teaspoon of beef tallow to the broth.',
+          less_bright: 'Use less lime and reduce fish sauce slightly.',
+        spicier: 'Add sliced fresh chili, chili oil, or extra sriracha.'
+        }
+      },
+      {
+        id: 'south-indian-dosa-meal-red-lentil-rice',
+        name: 'South Indian Dosa Meal (Red Lentil & Rice, Electric Stove Friendly)',
+        version: 1,
+        servings: {
+          count: 4,
+          note: 'Makes enough dosa batter for ~8–10 medium dosas plus sides for 4 people.'
+        },
+        metadata: {
+          style: 'South Indian dosa platter (dosa + potato masala + sambar + coconut chutney + red chutney)',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: true,
+            contains_dairy: true,
+            contains_lentils: true
+          },
+          context: 'Dosa meal adapted for long-grain + parboiled rice, red lentils instead of urad dal, glass-top electric stove, 14" cast iron pan, dried coconut + cashews chutney, and red lentil sambar.'
+        },
+        components: [
+          {
+            id: 'dosa_batter',
+            name: 'Red Lentil & Rice Dosa Batter',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Rice & lentil base',
+                items: [
+                  {
+                    name: 'Long-grain white rice',
+                    amount: 1.5,
+                    unit: 'cup',
+                    prep: 'rinsed until water runs mostly clear',
+                    notes: 'Part of the 50/50 rice mix',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'medium-grain rice (Calrose)',
+                        ratio: '1:1',
+                        notes: 'Gives slightly softer dosa; keep total rice volume the same.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Parboiled rice',
+                    amount: 1.5,
+                    unit: 'cup',
+                    prep: 'rinsed',
+                    notes: 'Mimics idli rice when combined 50/50 with long-grain rice.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'idli rice',
+                        ratio: '1:1',
+                        notes: 'Use 3 cups idli rice and omit the long-grain/parboiled split.'
+                      },
+                      {
+                        name: 'long-grain white rice',
+                        ratio: '1:1',
+                        notes: 'Use all long-grain white if you cannot find parboiled; dosa will still work well.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Red lentils (masoor dal)',
+                    amount: 1,
+                    unit: 'cup',
+                    prep: 'rinsed',
+                    notes: 'Substitutes for urad dal in this version.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'whole or split urad dal (skinless)',
+                        ratio: '1:1',
+                        notes: 'Traditional dosa; gives slightly better fermentation and texture.'
+                      },
+                      {
+                        name: 'yellow moong dal',
+                        ratio: '1:1',
+                        notes: 'Gives very crisp, lighter dosa with a slightly different flavour.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Fenugreek seeds',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Helps fermentation and adds classic dosa flavour.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'fenugreek powder',
+                        ratio: '1:1 by volume',
+                        notes: 'Add directly while grinding if you don’t have whole seeds.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Optional fermentation & texture boosters',
+                items: [
+                  {
+                    name: 'Poha (flattened rice) or cooked rice',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: 'if using poha, soak with rice in the last 20–30 minutes; if cooked rice, add directly when grinding rice',
+                    notes: 'Improves fermentation and crispness, especially with non-idli rice.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'rice flour',
+                        ratio: '1:1 by volume',
+                        notes: 'Add while adjusting final batter consistency before cooking.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Seasoning & hydration',
+                items: [
+                  {
+                    name: 'Salt',
+                    amount: 2,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adjust to taste; added after grinding and mixing the batter.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Water',
+                    amount: null,
+                    unit: 'ml',
+                    prep: '',
+                    notes: 'Use as needed while grinding and to thin the batter to a heavy-cream consistency before cooking.',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Soak rice and lentils',
+                instructions: [
+                  'Combine the long-grain white rice, parboiled rice, and fenugreek seeds in a bowl and cover with plenty of water (at least 5 cm above the grains).',
+                  'In a separate bowl, add the red lentils and cover with water.',
+                  'If using poha, add it to the rice bowl for the last 20–30 minutes of soaking.',
+                  'Soak both bowls at room temperature for 6–8 hours.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Grind lentils smooth',
+                instructions: [
+                  'Drain the soaked red lentils well so they are damp but not swimming in water.',
+                  'Transfer lentils to a food processor (or blender) with 2–3 tablespoons of fresh water.',
+                  'Pulse in 10–15 second bursts, scraping down the sides and adding 1 tablespoon of water at a time as needed, until you have a very smooth, thick, pourable paste.',
+                  'Target consistency: smooth, slightly fluffy, and falling off a spoon in a thick ribbon without visible graininess.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Grind rice slightly coarse',
+                instructions: [
+                  'Drain the soaked rice (and poha if using) very well so it is just damp.',
+                  'Add rice to the food processor with 2–4 tablespoons of fresh water.',
+                  'Pulse in short bursts, scraping down often, until the texture resembles fine semolina or wet sand: tiny grains but no sharp hard pieces.',
+                  'Avoid over-grinding to a completely smooth paste, which can make the dosa rubbery in texture.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Combine, salt, and adjust batter',
+                instructions: [
+                  'Transfer the lentil paste and ground rice into a large bowl with plenty of room for the batter to rise.',
+                  'Add the salt and gently fold everything together to combine without beating out too much air from the lentils.',
+                  'Adjust with a little water if needed so the batter is thick but pourable—slightly thicker than pancake batter at this stage.'
+                ]
+              },
+              {
+                order: 5,
+                title: 'Ferment the batter',
+                instructions: [
+                  'Cover the bowl loosely and place it in a warm spot (such as an oven with the light on) at around 25–32°C.',
+                  'Ferment for 12–20 hours, or until the batter has increased in volume by about 75–100%, looks airy and bubbly on top, and smells pleasantly tangy.',
+                  'If the ambient temperature is warm and fermentation is very active, monitor earlier (8–12 hours) to avoid over-souring.',
+                  'Once fermented, gently stir to redistribute bubbles, then refrigerate if you are not cooking immediately.'
+                ]
+              },
+              {
+                order: 6,
+                title: 'Prepare batter for cooking',
+                instructions: [
+                  'When ready to cook dosa, remove the batter from the fridge about 30–60 minutes ahead to take off the chill.',
+                  'Stir gently, then thin the batter with a few tablespoons of water at a time until it flows like heavy cream: it should pour easily from a ladle and spread thinly on the pan without clumping.',
+                  'If the batter is too thick, the dosa will not spread well; if it is too thin, it will not hold together, so adjust gradually.'
+                ]
+              },
+              {
+                order: 7,
+                title: 'Cook dosa on cast iron over electric glass-top stove',
+                instructions: [
+                  'Place a 14" cast iron pan over the largest burner of your glass-top electric stove and preheat on medium-high for 10–12 minutes so the heat can spread from the center toward the edges.',
+                  'Test the heat by sprinkling a few drops of water on the pan: they should sizzle and evaporate quickly without instantly burning.',
+                  'Rub the surface lightly with a cut onion dipped in a small amount of oil to create a thin, even film without pooling.',
+                  'Reduce heat slightly to medium, pour a ladle of batter into the center, and quickly spread it in a spiral outward to form a thin dosa, aiming to stay within the most evenly heated 11–12" zone of the pan.',
+                  'Drizzle a little oil or ghee around the edges and a few drops on top. Rotate the pan slightly over the burner during cooking if needed to even out browning on a glass-top stove.',
+                  'Cook until the edges lift and become crisp and the surface is dry and golden; do not flip. Loosen the edges with a spatula, then fold or roll the dosa directly in the pan while it is still hot and pliable, and serve immediately.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'potato_masala',
+            name: 'Potato Masala (Dosa Filling)',
+            kind: 'filling',
+            ingredients: [
+              {
+                section: 'Masala base',
+                items: [
+                  {
+                    name: 'Potatoes',
+                    amount: 4,
+                    unit: 'medium',
+                    prep: 'boiled until tender, peeled, and crumbled',
+                    notes: 'Yellow or white potatoes work best for a soft, cohesive filling.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'waxy potatoes',
+                        ratio: '1:1',
+                        notes: 'Hold shape more; lightly mash to keep the filling from being too chunky.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Onion',
+                    amount: 1,
+                    unit: 'small',
+                    prep: 'thinly sliced',
+                    notes: '',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'shallots',
+                        ratio: '2:1 shallots:onion',
+                        notes: 'Use 2 small shallots for 1 onion.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Green chili',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'finely chopped or slit',
+                    notes: 'Adjust quantity to taste for heat.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'jalapeño or other fresh chili',
+                        ratio: '1:1',
+                        notes: 'Remove seeds for less heat if desired.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Ginger',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: 'finely grated or minced',
+                    notes: 'Optional but adds brightness.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Tempering & seasoning',
+                items: [
+                  {
+                    name: 'Oil or ghee',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Ghee gives classic flavour; neutral oil keeps it dairy-free.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'neutral oil',
+                        ratio: '1:1',
+                        notes: 'Use any neutral vegetable oil if avoiding ghee.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Mustard seeds',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Optional if you have them; adds a classic South Indian aroma.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Cumin seeds',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Turmeric powder',
+                    amount: 0.75,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Gives the filling its classic yellow colour and flavour.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adjust to taste; filling should be slightly on the salty side.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Water',
+                    amount: 3,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Used to loosen the masala to a spoonable consistency.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Lemon juice',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Optional finishing touch to brighten flavour.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'lime juice',
+                        ratio: '1:1',
+                        notes: 'Similar bright acidity.'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Cook and crumble potatoes',
+                instructions: [
+                  'Boil the potatoes in salted water until they are fully tender when pierced with a fork.',
+                  'Drain, allow to cool slightly, peel, and crumble them into rustic chunks using your hands or a fork. Do not mash completely smooth; keep some small pieces for texture.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Temper spices and cook onions',
+                instructions: [
+                  'Heat the oil or ghee in a pan over medium heat.',
+                  'Add mustard seeds (if using) and let them crackle for a few seconds, then add cumin seeds and stir until fragrant.',
+                  'Add the sliced onion, green chili, and ginger (if using). Cook until the onion is soft and translucent but not browned.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Add turmeric, salt, and potatoes',
+                instructions: [
+                  'Add the turmeric and salt to the pan and stir to coat the onions evenly.',
+                  'Add the crumbled potatoes and gently fold everything together until well combined and uniformly yellow.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Loosen the masala and finish',
+                instructions: [
+                  'Add 3–4 tablespoons of water and stir over low heat until the mixture softens and becomes slightly saucy, not dry.',
+                  'Lightly mash about one-third of the potatoes with the back of a spoon to help the filling hold together while keeping some small chunks for texture.',
+                  'Taste and adjust salt. Add lemon juice at the end for brightness if desired.',
+                  'Keep warm for stuffing dosa, or cool and reheat gently with a splash of water before serving.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'sambar',
+            name: 'Simple Red Lentil Sambar',
+            kind: 'side',
+            ingredients: [
+              {
+                section: 'Dal and vegetables',
+                items: [
+                  {
+                    name: 'Red lentils (masoor dal)',
+                    amount: 0.5,
+                    unit: 'cup',
+                    prep: 'rinsed',
+                    notes: 'Cooks quickly and makes a smooth, soupy base for sambar.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'toor dal',
+                        ratio: '1:1',
+                        notes: 'Traditional sambar; increase cooking time until completely soft.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Water',
+                    amount: 2.5,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Adjust as needed for a pourable, soupy consistency.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Onion',
+                    amount: 1,
+                    unit: 'small',
+                    prep: 'chopped',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Tomatoes',
+                    amount: 2,
+                    unit: 'medium',
+                    prep: 'chopped',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Carrot or other mild vegetable',
+                    amount: 1,
+                    unit: 'medium',
+                    prep: 'chopped',
+                    notes: 'Optional but adds body and sweetness.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'potato, zucchini, or squash',
+                        ratio: '1:1 by volume',
+                        notes: ''
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Spices and seasoning',
+                items: [
+                  {
+                    name: 'Turmeric powder',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ground cumin',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ground coriander',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Paprika or mild chili powder',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Use hotter chili powder if you prefer more heat.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Fenugreek seeds or a pinch of ground fenugreek',
+                    amount: 0.13,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Use only a tiny amount; too much can turn the sambar bitter.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adjust to taste.',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Tempering and finishing',
+                items: [
+                  {
+                    name: 'Oil',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Use neutral oil or ghee for extra richness.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Mustard seeds',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Optional but adds classic sambar aroma.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Cumin seeds',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Dried red chili or chili flakes',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'left whole or broken',
+                    notes: 'Use flakes if you don\'t have whole dried chilies.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Garlic clove',
+                    amount: 1,
+                    unit: 'clove',
+                    prep: 'thinly sliced',
+                    notes: '',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Lemon juice or vinegar',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Adds a bright sour note; adjust to taste.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'tamarind paste',
+                        ratio: '1:1 by taste',
+                        notes: 'Use a small amount diluted in water and add to the sambar at the end.'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Cook the lentils',
+                instructions: [
+                  'Combine the red lentils, water, turmeric, and salt in a pot.',
+                  'Bring to a boil, then reduce to a simmer and cook for about 10–12 minutes, stirring occasionally, until the lentils are completely soft and beginning to break down.',
+                  'Gently mash or whisk the lentils to create a smooth, soupy base.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Add vegetables',
+                instructions: [
+                  'Add the chopped onion, tomatoes, and carrot or other vegetables to the pot.',
+                  'Simmer for another 10–15 minutes, until the vegetables are fully cooked and the mixture has thickened slightly.',
+                  'Add more water as needed to maintain a pourable, soup-like consistency.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Season the sambar',
+                instructions: [
+                  'Stir in the ground cumin, ground coriander, paprika or chili powder, and a pinch of fenugreek if using.',
+                  'Simmer for 5 more minutes to let the spices bloom and the flavours meld.',
+                  'Taste and adjust salt as needed.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Make the tempering',
+                instructions: [
+                  'In a small pan, heat the oil over medium heat.',
+                  'Add mustard seeds (if using) and allow them to crackle, then add cumin seeds, dried chili or chili flakes, and sliced garlic.',
+                  'Fry for 10–20 seconds, just until fragrant and the garlic lightly colours, then immediately pour the hot tempering into the sambar.'
+                ]
+              },
+              {
+                order: 5,
+                title: 'Finish and adjust consistency',
+                instructions: [
+                  'Stir the sambar well after adding the tempering.',
+                  'Turn off the heat and add lemon juice or vinegar to taste for brightness.',
+                  'Thin with a bit more water if needed for an easy-pouring consistency suitable for serving alongside dosa.',
+                  'Keep warm until serving.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'coconut_chutney',
+            name: 'Coconut Chutney (Dried Coconut & Cashew Version)',
+            kind: 'condiment',
+            ingredients: [
+              {
+                section: 'Chutney base',
+                items: [
+                  {
+                    name: 'Unsweetened medium dried coconut',
+                    amount: 0.5,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Rehydrated to mimic fresh grated coconut.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'frozen grated coconut',
+                        ratio: '1:1',
+                        notes: 'Best and most authentic option; reduce or skip the hot water soak step.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Hot water',
+                    amount: 0.75,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Used to rehydrate the dried coconut; adjust as needed when blending.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Cashews',
+                    amount: 6,
+                    unit: 'whole',
+                    prep: '',
+                    notes: 'Adds creaminess and body to make up for the dryness of desiccated coconut.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'roasted chana dal',
+                        ratio: '1:1 by volume',
+                        notes: 'Traditional thickener if available.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Green chili',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'chopped',
+                    notes: 'Adjust to taste for heat.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'jalapeño or similar fresh chili',
+                        ratio: '1:1',
+                        notes: ''
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Ginger',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: 'chopped',
+                    notes: '',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adjust to taste.',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Tempering (optional but recommended)',
+                items: [
+                  {
+                    name: 'Oil',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Any neutral oil or a little ghee.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Mustard seeds',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Optional but adds a classic top note.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Chili flakes',
+                    amount: 0.13,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Use sparingly; the chutney already has fresh chili.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Rehydrate the dried coconut',
+                instructions: [
+                  'Add the dried coconut to a bowl and pour the hot water over it.',
+                  'Let it soak for 10–15 minutes to fully rehydrate and soften.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Blend the chutney',
+                instructions: [
+                  'Transfer the soaked coconut and any remaining soaking water to a blender.',
+                  'Add cashews, green chili, ginger, and salt.',
+                  'Blend until smooth and creamy, adding a splash more water if needed to reach a thick, spoonable consistency.',
+                  'Taste and adjust salt or chili as desired.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Optional tempering',
+                instructions: [
+                  'Just before serving, heat the oil in a small pan.',
+                  'Add mustard seeds (if using) and allow them to crackle, then add a pinch of chili flakes.',
+                  'Fry briefly until fragrant, then pour the hot tempering over the chutney.',
+                  'Stir lightly or leave the tempered oil pooled on top for visual contrast.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'red_chutney',
+            name: 'Tomato Red Chutney',
+            kind: 'condiment',
+            ingredients: [
+              {
+                section: 'Chutney base',
+                items: [
+                  {
+                    name: 'Onion',
+                    amount: 1,
+                    unit: 'small',
+                    prep: 'chopped',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Tomatoes',
+                    amount: 2,
+                    unit: 'medium',
+                    prep: 'chopped',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Dried red chilies or chili flakes',
+                    amount: 2,
+                    unit: 'whole',
+                    prep: 'stems removed (if whole)',
+                    notes: 'Adjust quantity to taste for heat.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'red chili flakes',
+                        ratio: '0.5–1 tsp for 2 chilies',
+                        notes: ''
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Garlic cloves',
+                    amount: 2,
+                    unit: 'clove',
+                    prep: 'peeled',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Oil',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adjust to taste.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Sugar',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Balances acidity; optional.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Lemon juice or vinegar',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Adds brightness at the end.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Paprika (optional for colour)',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Boosts red colour without adding too much heat.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Cook the aromatics and tomatoes',
+                instructions: [
+                  'Heat the oil in a pan over medium heat.',
+                  'Add the chopped onion, dried red chilies or chili flakes, and garlic.',
+                  'Cook until the onion softens and begins to turn lightly golden.',
+                  'Add the chopped tomatoes and salt, and cook until the tomatoes break down and the mixture becomes saucy, about 5–8 minutes.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Blend and adjust',
+                instructions: [
+                  'Transfer the cooked mixture to a blender.',
+                  'Add sugar, lemon juice or vinegar, and paprika if using.',
+                  'Blend until completely smooth.',
+                  'Taste and adjust salt, acidity, and heat as desired.',
+                  'Serve slightly warm or at room temperature with dosa.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Day-before prep: soak rice and lentils for dosa',
+            items: [
+              { component: 'dosa_batter', step: 1 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Grind dosa batter and start fermentation',
+            items: [
+              { component: 'dosa_batter', step: 2 },
+              { component: 'dosa_batter', step: 3 },
+              { component: 'dosa_batter', step: 4 },
+              { component: 'dosa_batter', step: 5 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'On the day: cook and prepare potato masala and sambar base',
+            items: [
+              { component: 'potato_masala', step: 1 },
+              { component: 'sambar', step: 1 },
+              { component: 'sambar', step: 2 }
+            ]
+          },
+          {
+            order: 4,
+            label: 'Finish sambar and keep warm',
+            items: [
+              { component: 'sambar', step: 3 },
+              { component: 'sambar', step: 4 },
+              { component: 'sambar', step: 5 }
+            ]
+          },
+          {
+            order: 5,
+            label: 'Make chutneys while dosa batter finishes fermenting or warms up',
+            items: [
+              { component: 'coconut_chutney', step: 1 },
+              { component: 'coconut_chutney', step: 2 },
+              { component: 'red_chutney', step: 1 },
+              { component: 'red_chutney', step: 2 }
+            ]
+          },
+          {
+            order: 6,
+            label: 'Temper coconut chutney just before serving and finish potato masala',
+            items: [
+              { component: 'coconut_chutney', step: 3 },
+              { component: 'potato_masala', step: 2 },
+              { component: 'potato_masala', step: 3 },
+              { component: 'potato_masala', step: 4 }
+            ]
+          },
+          {
+            order: 7,
+            label: 'Adjust and prepare dosa batter for cooking',
+            items: [
+              { component: 'dosa_batter', step: 6 }
+            ]
+          },
+          {
+            order: 8,
+            label: 'Cook dosa and serve with masala, chutneys, and sambar',
+            items: [
+              { component: 'dosa_batter', step: 7 }
+            ]
+          }
+        ],
+        substitution_summary: {
+          dairy_free: 'Use neutral oil instead of ghee or butter in dosa cooking, potato masala, chutneys, and sambar; the rest of the recipe is naturally dairy-free.',
+          vegan: 'Follow dairy-free substitutions, and avoid ghee entirely. No eggs or animal products are used otherwise, so the meal becomes fully vegan.',
+          extra_rich: 'Use ghee instead of oil for cooking dosa, tempering sambar, and finishing the potato masala. Add a small knob of butter to the potato masala at the end.',
+          less_bright: 'Reduce or omit the lemon juice/vinegar in the sambar, potato masala, and chutneys. Use slightly less chili and ginger for a softer flavour profile.',
+          spicier: 'Increase green chili in the potato masala and coconut chutney, add extra dried red chilies or chili powder to the red chutney and sambar, and use a hotter chili variety if desired.'
+        }
+      },
+      {
+        id: 'beef-black-bean-chili',
+        name: 'Beef & Black Bean Chili with Dried Chiles (Stovetop + Pressure Cooker)',
+        version: 1,
+        servings: {
+          count: 6,
+          note: 'Hearty bowls; can stretch to 8 with extra beans or rice.'
+        },
+        metadata: {
+          style: 'Smoky dried-chile beef chili with black beans, corn, coffee, and dark chocolate.',
+          diet: {
+            vegetarian: false,
+            vegan: false,
+            gluten_free: true,
+            contains_dairy: false,
+            contains_lentils: false
+          },
+          context: 'Designed for Steve’s pantry: beef shoulder roast, ground beef, dried ancho & guajillo chiles, jalapeño, Fresno, coffee, baker’s chocolate, black beans, corn. Includes both stovetop and pressure cooker methods.'
+        },
+        components: [
+          {
+            id: 'chili_stovetop',
+            name: 'Dried-Chile Beef & Black Bean Chili (Stovetop Method)',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Meat & Main Base',
+                items: [
+                  {
+                    name: 'Beef shoulder roast, cut into 1–2 cm cubes',
+                    amount: 450,
+                    unit: 'g',
+                    prep: 'trimmed and cubed',
+                    notes: 'Roughly 1 lb; provides tender chunks.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Beef chuck roast',
+                        ratio: '1:1',
+                        notes: 'Any well-marbled stewing beef works similarly.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Ground beef',
+                    amount: 450,
+                    unit: 'g',
+                    prep: '',
+                    notes: 'Roughly 1 lb; adds body and richness.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Ground pork or pork/beef blend',
+                        ratio: '1:1',
+                        notes: 'Adds extra richness and softer texture.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Neutral oil or beef tallow',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'For searing meat and sautéing vegetables.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Canola oil, sunflower oil, or lard',
+                        ratio: '1:1',
+                        notes: 'Any high-heat fat works.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Onion',
+                    amount: 1,
+                    unit: 'medium',
+                    prep: 'finely diced',
+                    notes: 'Builds sweetness and base flavour.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Leeks or shallots',
+                        ratio: '1:1 by volume',
+                        notes: 'Milder but still good aromatic base.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Carrots',
+                    amount: 2,
+                    unit: 'medium',
+                    prep: 'finely diced',
+                    notes: 'Adds sweetness and body, helps balance heat and bitterness.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Celery',
+                        ratio: '1:1',
+                        notes: 'Less sweet; can combine 1 carrot + 1 celery for balance.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Garlic cloves',
+                    amount: 4,
+                    unit: 'cloves',
+                    prep: 'minced',
+                    notes: 'Adjust to taste.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Garlic powder',
+                        ratio: '1 clove : 1/4 tsp',
+                        notes: 'Add with the dry spices instead of sautéing.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Chiles, Beans & Vegetables',
+                items: [
+                  {
+                    name: 'Dried ancho chiles',
+                    amount: 2,
+                    unit: 'whole',
+                    prep: 'stems and most seeds removed',
+                    notes: 'Provides deep, fruity, mild heat.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Dried guajillo chiles',
+                    amount: 2,
+                    unit: 'whole',
+                    prep: 'stems and most seeds removed',
+                    notes: 'Adds bright red colour and gentle heat.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Additional ancho chiles',
+                        ratio: '1 guajillo : 1 ancho',
+                        notes: 'Slightly less bright but still rich.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Additional hot dried chile (e.g., árbol or similar)',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'stems removed',
+                    notes: 'Optional, for extra kick.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'Crushed red pepper flakes',
+                        ratio: '1 chile : 1/4 tsp flakes',
+                        notes: 'Add with dry spices.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Jalapeño',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'seeded for mild, finely diced',
+                    notes: 'Add seeds for more heat.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Serrano pepper',
+                        ratio: '1:1',
+                        notes: 'Hotter; adjust quantity to taste.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Fresno chile',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'seeded for mild, finely diced',
+                    notes: 'Adds bright sweetness and gentle heat.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Red jalapeño',
+                        ratio: '1:1',
+                        notes: 'Similar flavour and heat.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Cooked black beans (or 1 standard can, drained and rinsed)',
+                    amount: 400,
+                    unit: 'g',
+                    prep: 'drained and rinsed if canned',
+                    notes: 'Add near the end so they don’t break down.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Kidney beans or pinto beans',
+                        ratio: '1:1',
+                        notes: 'Any sturdy bean works well in chili.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Corn kernels (fresh, frozen, or canned)',
+                    amount: 1,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Add late for sweet pops of texture.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Diced red bell pepper',
+                        ratio: '1:1',
+                        notes: 'Adds sweetness and colour but less pop than corn.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Liquids & Base Seasoning',
+                items: [
+                  {
+                    name: 'Strong brewed coffee',
+                    amount: 0.5,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Adds depth and slight bitterness to balance sweetness.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Beef stock or water',
+                        ratio: '1:1',
+                        notes: 'Skip coffee if you want a cleaner, less roasty flavour.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Beef stock or water',
+                    amount: 1.5,
+                    unit: 'cups',
+                    prep: '',
+                    notes: 'Adjust during cooking to reach desired thickness.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Chicken stock',
+                        ratio: '1:1',
+                        notes: 'Slightly lighter but still good.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Canned crushed or diced tomatoes',
+                    amount: 796,
+                    unit: 'ml',
+                    prep: '',
+                    notes: 'Standard 28 oz / 796 ml can; provides body and acidity.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Water or stock plus extra dried chile paste',
+                        ratio: '796 ml tomatoes : 1 cup liquid + 1–2 extra dried chiles',
+                        notes: 'For a more Texas-style, low-tomato chili.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Worcestershire sauce',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Adds umami depth.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Baker’s chocolate or dark chocolate (70%+)',
+                    amount: 15,
+                    unit: 'g',
+                    prep: 'chopped',
+                    notes: 'About 1 square or 1 heaping tbsp; deepens colour and flavour without tasting like dessert.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Unsweetened cocoa powder',
+                        ratio: '15 g chocolate : 1 tbsp cocoa',
+                        notes: 'Add with the spices.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Apple cider vinegar (or other mild vinegar)',
+                    amount: 1.5,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Added at the end to brighten flavours.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Lime juice',
+                        ratio: '1:1',
+                        notes: 'Gives a slightly fresher citrus brightness.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Salt',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'To taste, added in layers during cooking.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Freshly ground black pepper',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'To taste.',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Spice Mix',
+                items: [
+                  {
+                    name: 'Ground cumin',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Core chili flavour.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Smoked paprika',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adds smokiness; adjust to taste.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Regular paprika',
+                        ratio: '1:1',
+                        notes: 'Lacks smoke but still good for colour and mild flavour.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Ground coriander',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adds subtle citrusy note.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Dried oregano',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Mexican oregano if you have it.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ground cinnamon',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Tiny amount for warmth; should not be identifiable.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Cayenne pepper or hot chili powder',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adjust to desired heat; remember dried chiles also contribute heat.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Prepare dried chile paste',
+                instructions: [
+                  'Remove stems and most seeds from the dried ancho and guajillo chiles (and any additional hot dried chile if using).',
+                  'Lightly toast the dried chiles in a dry skillet over medium heat, 20–30 seconds per side, until fragrant but not burnt.',
+                  'Transfer the toasted chiles to a bowl and cover with very hot water. Soak for about 20 minutes until very pliable.',
+                  'Reserve about 1 cup of the soaking liquid, then drain the rest.',
+                  'Blend the softened chiles with 1/2 cup of the soaking liquid, 1 clove of the garlic (taken from the total), a pinch of salt, and a splash of the brewed coffee until you have a smooth, thick red paste. Add more soaking liquid as needed to blend.',
+                  'Set the chile paste aside; this will be the flavour backbone of the chili.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Brown the beef and build fond',
+                instructions: [
+                  'Pat the beef shoulder cubes dry with paper towels and season them lightly with salt.',
+                  'Heat a large heavy pot or Dutch oven over medium-high heat and add the neutral oil or tallow.',
+                  'Working in batches to avoid overcrowding, sear the beef cubes until deeply browned on at least 2 sides. Transfer browned cubes to a bowl.',
+                  'Add the ground beef to the pot and cook, breaking it up with a spoon, until well browned and most of the moisture has evaporated. Season lightly with salt and pepper.',
+                  'Transfer the browned ground beef to the bowl with the beef cubes. Leave the rendered fat and browned bits (fond) in the pot.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Cook aromatics and fresh chiles',
+                instructions: [
+                  'Reduce heat to medium. If the pot looks dry, add a little more oil.',
+                  'Add the diced onion and carrots. Cook, stirring occasionally, until softened and lightly golden, about 5–7 minutes.',
+                  'Stir in the diced jalapeño and Fresno chiles and cook for another 1–2 minutes until slightly softened.',
+                  'Add the remaining minced garlic and cook for 30–60 seconds until fragrant, taking care not to burn it.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Bloom chile paste and spices',
+                instructions: [
+                  'Add the prepared dried chile paste to the pot with the vegetables.',
+                  'Cook the paste, stirring, for 1–2 minutes until it darkens slightly and smells deeply aromatic.',
+                  'Sprinkle in the ground cumin, smoked paprika, ground coriander, dried oregano, ground cinnamon, cayenne (if using), and a pinch of salt.',
+                  'Stir and cook for another 1–2 minutes to bloom the spices in the fat, which intensifies their flavour.'
+                ]
+              },
+              {
+                order: 5,
+                title: 'Deglaze and add liquids',
+                instructions: [
+                  'Pour in the brewed coffee to deglaze the pot, scraping up any browned bits from the bottom with a wooden spoon.',
+                  'Add the beef stock or water and stir to combine.',
+                  'Add the canned crushed or diced tomatoes and Worcestershire sauce (if using), stirring well.',
+                  'Return the browned beef cubes and ground beef (and any accumulated juices) to the pot. Stir to incorporate everything evenly.'
+                ]
+              },
+              {
+                order: 6,
+                title: 'Add chocolate and simmer low and slow',
+                instructions: [
+                  'Bring the mixture just up to a simmer over medium heat.',
+                  'Stir in the chopped baker’s chocolate until fully melted and incorporated.',
+                  'Reduce the heat to low so the chili is at a very gentle simmer. Partially cover the pot with a lid.',
+                  'Simmer for 2.5 to 3 hours, stirring every 20–30 minutes, until the beef shoulder cubes are very tender and the chili has thickened. Add small splashes of water or stock if it gets too thick or starts to catch on the bottom.',
+                  'Taste and adjust seasoning with salt and pepper as it cooks.'
+                ]
+              },
+              {
+                order: 7,
+                title: 'Finish with beans, corn, and vinegar',
+                instructions: [
+                  'When the beef is tender and the chili has thickened to your liking, stir in the drained black beans and corn.',
+                  'Simmer for another 10–15 minutes to warm the beans and corn through and let them absorb some flavour.',
+                  'Stir in the apple cider vinegar. Taste and adjust salt, pepper, and acidity (add more vinegar or a squeeze of lime if you want more brightness).',
+                  'Turn off the heat, cover the pot, and let the chili rest for 15–20 minutes before serving to allow the flavours to fully meld.',
+                  'Serve hot with your preferred toppings such as cheese, sour cream, green onions, and lime wedges (toppings not included in nutrition/diet flags).'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'chili_pressure_cooker',
+            name: 'Dried-Chile Beef & Black Bean Chili (Pressure Cooker Method)',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'All ingredients',
+                items: [
+                  {
+                    name: 'Beef shoulder roast, cut into 1–2 cm cubes',
+                    amount: 450,
+                    unit: 'g',
+                    prep: 'trimmed and cubed',
+                    notes: 'Same quantity as stovetop method.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Beef chuck roast',
+                        ratio: '1:1',
+                        notes: 'Any well-marbled stewing beef works similarly.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Ground beef',
+                    amount: 450,
+                    unit: 'g',
+                    prep: '',
+                    notes: 'Same quantity as stovetop method.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Ground pork or pork/beef blend',
+                        ratio: '1:1',
+                        notes: 'Adds extra richness and softer texture.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Neutral oil or beef tallow',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Onion',
+                    amount: 1,
+                    unit: 'medium',
+                    prep: 'finely diced',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Carrots',
+                    amount: 2,
+                    unit: 'medium',
+                    prep: 'finely diced',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Garlic cloves',
+                    amount: 4,
+                    unit: 'cloves',
+                    prep: 'minced',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Dried ancho chiles',
+                    amount: 2,
+                    unit: 'whole',
+                    prep: 'stems and most seeds removed',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Dried guajillo chiles',
+                    amount: 2,
+                    unit: 'whole',
+                    prep: 'stems and most seeds removed',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Additional hot dried chile (e.g., árbol or similar)',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'stems removed',
+                    notes: 'Optional, for extra heat.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Jalapeño',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'seeded for mild, finely diced',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Fresno chile',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'seeded for mild, finely diced',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Cooked black beans (or 1 standard can, drained and rinsed)',
+                    amount: 400,
+                    unit: 'g',
+                    prep: 'drained and rinsed if canned',
+                    notes: 'Will be stirred in after pressure cooking.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Corn kernels (fresh, frozen, or canned)',
+                    amount: 1,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Will be stirred in after pressure cooking.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Strong brewed coffee',
+                    amount: 0.5,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Used partly in chile paste and partly as deglazing liquid.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Beef stock or water',
+                    amount: 1,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Pressure cookers need less liquid; add more later if reducing.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Canned crushed or diced tomatoes',
+                    amount: 796,
+                    unit: 'ml',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Worcestershire sauce',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: '',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Baker’s chocolate or dark chocolate (70%+)',
+                    amount: 15,
+                    unit: 'g',
+                    prep: 'chopped',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Apple cider vinegar (or other mild vinegar)',
+                    amount: 1.5,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Added after pressure cooking.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ground cumin',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Smoked paprika',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ground coriander',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Dried oregano',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ground cinnamon',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Cayenne pepper or hot chili powder',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Optional, for more heat.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'To taste, added in layers.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Freshly ground black pepper',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'To taste.',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Prepare dried chile paste',
+                instructions: [
+                  'Prepare the dried chile paste exactly as described in the stovetop method: toast the ancho and guajillo chiles, soak in hot water, and blend with some soaking liquid, a clove of garlic, a pinch of salt, and a splash of coffee until smooth.',
+                  'Set the chile paste aside for use after sautéing the aromatics.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Brown the meats on sauté mode',
+                instructions: [
+                  'Set the pressure cooker to Sauté (High). Add the neutral oil or tallow.',
+                  'Season the beef shoulder cubes lightly with salt, then brown them in batches until well seared. Transfer to a bowl.',
+                  'Add the ground beef and cook, breaking it up with a spoon, until well browned and most moisture has evaporated. Season lightly with salt and pepper.',
+                  'Transfer the browned ground beef to the bowl with the beef cubes, leaving the rendered fat in the pot.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Sauté aromatics and bloom chile paste',
+                instructions: [
+                  'With the cooker still on Sauté, add the diced onion and carrots. Cook for 5–7 minutes, stirring occasionally, until softened and lightly golden.',
+                  'Add the diced jalapeño and Fresno chiles; cook for 1–2 minutes.',
+                  'Stir in the remaining minced garlic and cook briefly until fragrant.',
+                  'Add the prepared dried chile paste and cook, stirring constantly, for 1–2 minutes to deepen its flavour.',
+                  'Sprinkle in the ground cumin, smoked paprika, ground coriander, dried oregano, ground cinnamon, and cayenne (if using). Stir and cook for 1–2 more minutes to bloom the spices.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Deglaze and load the pot for pressure cooking',
+                instructions: [
+                  'Pour in the brewed coffee and scrape the bottom of the pot thoroughly to release any browned bits and avoid a burn warning.',
+                  'Add 1 cup of beef stock or water and stir well.',
+                  'Stir in the canned crushed or diced tomatoes and Worcestershire sauce (if using).',
+                  'Return the browned beef cubes and ground beef (and any juices) to the pot, stirring to distribute evenly.',
+                  'Stir in the chopped baker’s chocolate until it begins to melt.',
+                  'Check that the total liquid level is sufficient for your pressure cooker’s minimum requirements (there should be at least about 1.5–2 cups of liquid; add a bit more water or stock if needed).'
+                ]
+              },
+              {
+                order: 5,
+                title: 'Pressure cook the chili',
+                instructions: [
+                  'Cancel the Sauté function.',
+                  'Secure the lid and set the pressure cooker to High Pressure for 35–40 minutes.',
+                  'Allow the cooker to come up to pressure and cook. When the time is up, let the pressure release naturally for 10–15 minutes, then manually release any remaining pressure.',
+                  'Open the lid carefully. The beef shoulder should be very tender and the chili will look somewhat loose at this stage.'
+                ]
+              },
+              {
+                order: 6,
+                title: 'Reduce, finish, and add beans and corn',
+                instructions: [
+                  'Set the cooker back to Sauté (Medium or Low) with the lid off.',
+                  'Stir in the drained black beans and corn.',
+                  'Simmer, stirring occasionally, for 10–20 minutes to reduce and thicken the chili to your desired consistency. If it becomes too thick, add small splashes of water or stock.',
+                  'Stir in the apple cider vinegar. Taste and adjust salt, pepper, and acidity (add more vinegar or a squeeze of lime if desired).'
+                ]
+              },
+              {
+                order: 7,
+                title: 'Rest and serve',
+                instructions: [
+                  'Turn off the cooker and let the chili rest, covered but off heat, for about 10–15 minutes to allow the flavours to meld.',
+                  'Serve hot with your preferred toppings such as cheese, sour cream, green onions, and lime wedges (toppings not included in diet flags).'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Stovetop workflow',
+            items: [
+              {
+                component: 'chili_stovetop',
+                step: 1
+              },
+              {
+                component: 'chili_stovetop',
+                step: 2
+              },
+              {
+                component: 'chili_stovetop',
+                step: 3
+              },
+              {
+                component: 'chili_stovetop',
+                step: 4
+              },
+              {
+                component: 'chili_stovetop',
+                step: 5
+              },
+              {
+                component: 'chili_stovetop',
+                step: 6
+              },
+              {
+                component: 'chili_stovetop',
+                step: 7
+              }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Pressure cooker workflow',
+            items: [
+              {
+                component: 'chili_pressure_cooker',
+                step: 1
+              },
+              {
+                component: 'chili_pressure_cooker',
+                step: 2
+              },
+              {
+                component: 'chili_pressure_cooker',
+                step: 3
+              },
+              {
+                component: 'chili_pressure_cooker',
+                step: 4
+              },
+              {
+                component: 'chili_pressure_cooker',
+                step: 5
+              },
+              {
+                component: 'chili_pressure_cooker',
+                step: 6
+              },
+              {
+                component: 'chili_pressure_cooker',
+                step: 7
+              }
+            ]
+          }
+        ],
+        substitution_summary: {
+          dairy_free: 'Base chili is naturally dairy-free. Serve with dairy-free toppings such as avocado, sliced green onions, and lime instead of cheese or sour cream.',
+          vegan: 'Replace beef shoulder and ground beef with extra beans (black, kidney, pinto) and/or a plant protein like crumbled tofu, tempeh, or TVP; use vegetable stock instead of beef stock; omit Worcestershire or use a vegan version. Cook times are shorter since there is no meat to tenderize.',
+          extra_rich: 'Use a higher ratio of beef shoulder to ground beef (or add some fatty pork), sear the meat very deeply, add an extra 5–10 g of dark chocolate, and use beef stock instead of water. You can also finish with a small knob of butter or a spoonful of sour cream when serving.',
+          less_bright: 'Reduce or omit the vinegar at the end and use a milder tomato product (or slightly less tomato overall). Skip lime or other acidic garnishes and emphasize richness with cheese or sour cream instead.',
+          spicier: 'Keep more seeds in the dried chiles, add an extra hot dried chile (like árbol), do not seed the jalapeño and Fresno, and increase cayenne in the spice mix by 1/4–1/2 tsp. You can also serve with fresh sliced chiles on top for an extra kick.'
+        }
+      },
+      {
+        id: 'sortilege-chicken-liver-pate',
+        name: 'Sortilège Chicken Liver Pâté',
+        version: 1,
+        servings: {
+          count: 8,
+          note: 'Approx. 8 appetizer portions'
+        },
+        metadata: {
+          style: 'Québec-style maple whisky chicken liver pâté',
+          diet: {
+            vegetarian: false,
+            vegan: false,
+            gluten_free: true,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: 'Rich, silky chicken liver pâté made in a pan, using Sortilège maple whisky instead of brandy. Livers are cooked just to pink, then blended with butter for a smooth mousse-like texture.'
+        },
+        components: [
+          {
+            id: 'pate_main',
+            name: 'Sortilège Chicken Liver Pâté',
+            kind: 'core',
+            ingredients: [
+              {
+                section: 'Livers & aromatics',
+                items: [
+                  {
+                    name: 'chicken livers',
+                    amount: 1,
+                    unit: 'lb',
+                    prep: 'trimmed of any green or tough connective tissue, patted very dry',
+                    notes: 'Aim for dry surfaces so they sear instead of steaming.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'chicken livers (by weight in grams)',
+                        ratio: '450 g for 1 lb',
+                        notes: 'Use 400–500 g; texture is forgiving.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'shallot',
+                    amount: 1,
+                    unit: 'small',
+                    prep: 'finely minced',
+                    notes: 'About 2–3 tbsp minced. Can use onion instead.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'yellow onion',
+                        ratio: '1/2 small onion = 1 shallot',
+                        notes: 'Finely chop for even cooking.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'garlic cloves',
+                    amount: 2,
+                    unit: 'cloves',
+                    prep: 'smashed or finely minced',
+                    notes: 'Adjust to taste; garlic will mellow after cooking.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'fresh thyme',
+                    amount: 2,
+                    unit: 'sprigs',
+                    prep: '',
+                    notes: 'Cooked whole with the livers, stems removed before blending.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'dried thyme',
+                        ratio: '1/2 tsp dried = 2 sprigs fresh',
+                        notes: 'Add with aromatics at the start.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'bay leaf',
+                    amount: 1,
+                    unit: 'leaf',
+                    prep: '',
+                    notes: 'Optional aromatic; remove before blending.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'unsalted butter (for sautéing)',
+                    amount: 4,
+                    unit: 'tbsp',
+                    prep: 'cut into chunks if desired',
+                    notes: 'Used to cook aromatics and livers.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'ghee',
+                        ratio: '1:1',
+                        notes: 'Gives a slightly nuttier flavour and higher heat tolerance.'
+                      },
+                      {
+                        name: 'neutral oil',
+                        ratio: '1:1',
+                        notes: 'For dairy-reduced version; flavour will be a bit less rich.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Sortilège maple whisky',
+                    amount: 0.25,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Deglazing liquid; reduces in pan to drive off alcohol and concentrate maple-whisky flavour.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'brandy or cognac',
+                        ratio: '1:1',
+                        notes: 'Classic non-maple version.'
+                      },
+                      {
+                        name: 'bourbon + maple syrup',
+                        ratio: '1/4 cup bourbon + 1–2 tsp maple syrup',
+                        notes: 'Add maple syrup to taste while blending.'
+                      },
+                      {
+                        name: 'apple cider vinegar + water',
+                        ratio: '2 tbsp vinegar + 2 tbsp water',
+                        notes: 'Alcohol-free; gives brightness but no whisky note.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'fine salt',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Start with this; adjust to taste at blending.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'freshly ground black pepper',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adjust to taste; can add more at blending.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'ground allspice or cinnamon',
+                    amount: 0.0625,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Very small pinch to gently support the maple and whisky notes.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'ground nutmeg',
+                        ratio: 'pinch for pinch',
+                        notes: 'Use sparingly to avoid overpowering the pâté.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Finishing and blending',
+                items: [
+                  {
+                    name: 'unsalted butter (for blending)',
+                    amount: 0.5,
+                    unit: 'cup',
+                    prep: 'cold, cut into small cubes',
+                    notes: 'Emulsified into the warm liver mixture for a smooth, mousse-like texture.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'salted butter',
+                        ratio: '1:1',
+                        notes: 'Reduce added salt slightly and adjust to taste.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'heavy cream or whipping cream',
+                    amount: 1.5,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Optional; adds extra silkiness and lightness.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'milk',
+                        ratio: '1:1',
+                        notes: 'Slightly lighter texture; not quite as rich.'
+                      },
+                      {
+                        name: 'crème fraîche',
+                        ratio: '1:1',
+                        notes: 'Adds a subtle tang and extra richness.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'apple cider vinegar or lemon juice',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Optional; brightens and balances the maple sweetness if desired.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'white wine vinegar',
+                        ratio: '1:1',
+                        notes: 'Mild acid; similar effect.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Butter seal (optional)',
+                items: [
+                  {
+                    name: 'unsalted butter (for sealing)',
+                    amount: 3,
+                    unit: 'tbsp',
+                    prep: 'gently melted',
+                    notes: 'Poured over the top to seal and extend fridge life.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'olive oil',
+                        ratio: '1:1',
+                        notes: 'Works as a seal; adds a distinct olive flavour.'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Prep and dry the livers',
+                instructions: [
+                  'Trim the chicken livers, removing any greenish spots or tough connective tissue.',
+                  'Lay the livers out in a single layer on paper towel or a clean kitchen towel.',
+                  'Pat them very dry on all sides, changing towels if they become soaked. Aim for dry surfaces so the livers sear instead of steaming.',
+                  'Let the livers air-dry on the towel or a plate for 5–10 minutes while you prep the aromatics.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Cook aromatics',
+                instructions: [
+                  'Finely mince the shallot and smash or mince the garlic cloves.',
+                  'In a large skillet over medium heat, add the sautéing butter (4 tbsp) and let it melt and just begin to foam.',
+                  'Add the shallot, garlic, thyme sprigs, bay leaf (if using), and the tiny pinch of allspice or cinnamon.',
+                  'Cook, stirring occasionally, for 2–3 minutes until the shallot is softened and fragrant but not browned.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Sear and cook the livers to pink',
+                instructions: [
+                  'Increase the heat to medium-high.',
+                  'Add the dried chicken livers to the pan in a single layer, avoiding crowding. If your pan is small, cook them in two batches.',
+                  'Season evenly with salt and black pepper.',
+                  'Let the livers cook without moving them for about 2 minutes to develop colour, then flip and cook for another 2–3 minutes on the other side.',
+                  'Check one liver by cutting it open: the centre should be uniformly pink and moist but not dark red and bloody. If still bloody, return to the pan and cook for another 30–45 seconds per side and check again.',
+                  'Once the livers are just pink inside (not raw), turn off the heat briefly.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Deglaze with Sortilège',
+                instructions: [
+                  'With the pan still hot, turn the heat back to medium and carefully pour in the Sortilège maple whisky.',
+                  'Stir and scrape the bottom of the pan to dissolve any browned bits into the liquid.',
+                  'Simmer the Sortilège for 30–60 seconds until the sharp alcohol smell has mostly cooked off and the liquid has slightly thickened.',
+                  'Remove the thyme sprigs and bay leaf from the pan and discard.',
+                  'Take the pan off the heat and let the mixture sit for 1–2 minutes so it is hot but not violently boiling when it hits the blender.'
+                ]
+              },
+              {
+                order: 5,
+                title: 'Blend with cold butter and cream',
+                instructions: [
+                  'Transfer the hot livers, aromatics, and all pan juices into a blender or food processor.',
+                  'Blend on high until the mixture is smooth.',
+                  'While blending, add the cold cubed butter (1/2 cup) a few pieces at a time, allowing each addition to fully incorporate before adding more. This forms a smooth emulsion and gives the pâté its silky texture.',
+                  'Add the cream (if using) and blend again until completely smooth and airy.',
+                  'Taste and adjust the seasoning with additional salt and black pepper. If the Sortilège sweetness feels a bit strong, add the apple cider vinegar or lemon juice and blend again to brighten it.',
+                  'For the smoothest possible texture, you can pass the blended mixture through a fine mesh sieve into a bowl or jug, pressing with a spatula.'
+                ]
+              },
+              {
+                order: 6,
+                title: 'Portion, seal, and chill',
+                instructions: [
+                  'Pour or spoon the blended pâté into clean ramekins, jars, or a small terrine dish.',
+                  'Tap each container gently on the counter to release trapped air bubbles, then smooth the surface with a spoon or spatula.',
+                  'If using a butter seal, gently melt the sealing butter and let it cool slightly so it is warm and fluid but not scorching hot. Pour a thin, even layer over the top of each container to fully cover the surface.',
+                  'Cover the containers (with lids or plastic wrap) and refrigerate for at least 2 hours, preferably overnight, until fully chilled and set.',
+                  'Serve straight from the fridge or slightly closer to room temperature with toasted bread, crackers, pickles, or fruit preserves. Store in the fridge for 5–7 days (longer if fully sealed with butter), or freeze portions for longer storage.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Prep livers and aromatics',
+            items: [
+              { component: 'pate_main', step: 1 },
+              { component: 'pate_main', step: 2 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Cook livers and build flavour',
+            items: [
+              { component: 'pate_main', step: 3 },
+              { component: 'pate_main', step: 4 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'Blend, portion, and chill',
+            items: [
+              { component: 'pate_main', step: 5 },
+              { component: 'pate_main', step: 6 }
+            ]
+          }
+        ],
+        substitution_summary: {
+          dairy_free: 'Use neutral oil or ghee (if tolerated) instead of butter for sautéing, and replace the blending butter with a mild-tasting oil (such as light olive oil or neutral vegetable oil). Skip the cream, and rely on thorough blending plus a bit of extra oil for richness. The flavour will be less buttery but still smooth and spreadable.',
+          vegan: 'This specific recipe cannot be made vegan without replacing both the chicken livers and the dairy. For a vegan spread with similar richness, use sautéed mushrooms, onions, and walnuts as the base, deglaze with a splash of alcohol or vinegar, and blend with olive oil or vegan butter.',
+          extra_rich: 'Increase the blending butter from 1/2 cup to 2/3 cup and use the full amount of cream (or even 2 tbsp). You can also add 1–2 tbsp crème fraîche while blending for a richer, lightly tangy profile.',
+          less_bright: 'Reduce or omit the vinegar/lemon juice and use a tiny pinch (not more) of warm spice like allspice, nutmeg, or cinnamon. This leans the pâté toward a deeper, rounder, maple-forward flavour with less acidity.',
+          spicier: 'Add a pinch of cayenne, Aleppo pepper, or freshly ground black pepper while cooking the aromatics, and adjust to taste at blending. You can also fold in a small amount of Dijon or grainy mustard at the end for gentle heat and complexity.'
+        }
+      },
+      {
+        id: 'khao-soi-maple-egg-noodles',
+        name: 'Khao Soi with Homemade Egg Noodles, Kale, and Maple Balance',
+        version: 1,
+        servings: {
+          count: 3,
+          note: 'Generous bowls'
+        },
+        metadata: {
+          style: 'Northern Thai khao soi with homemade egg noodles',
+          diet: {
+            vegetarian: false,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: false,
+            contains_lentils: false
+          },
+          context: 'From-scratch khao soi built with homemade alkaline egg noodles, maple-balanced coconut curry broth, kale, and crispy noodle nests.'
+        },
+        components: [
+          {
+            id: 'curry_paste',
+            name: 'From-scratch khao soi curry paste',
+            kind: 'paste',
+            ingredients: [
+              {
+                section: 'Curry paste aromatics and spices',
+                items: [
+                  {
+                    name: 'Garlic cloves',
+                    amount: 4,
+                    unit: 'clove',
+                    prep: 'peeled',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Shallot',
+                    amount: 1,
+                    unit: 'small',
+                    prep: 'peeled and roughly chopped',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Fresh ginger',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: 'peeled and chopped',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ground turmeric',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Or 1 inch fresh turmeric root, finely chopped',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Fresh turmeric root',
+                        ratio: '1 tsp ground ≈ 1 tbsp fresh',
+                        notes: 'Use finely minced fresh turmeric instead of ground.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Dried red chilies',
+                    amount: 2,
+                    unit: '',
+                    prep: 'stems removed',
+                    notes: 'For medium heat; adjust to taste.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Chili flakes',
+                        ratio: '1–2 tsp per 2 dried chilies',
+                        notes: 'Adjust to your heat preference.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Curry powder',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ground coriander',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ground cinnamon',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ground cardamom',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adds classic khao soi perfume.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Shrimp paste',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adds funk; swap with fish sauce if preferred.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'Fish sauce',
+                        ratio: '1:1',
+                        notes: 'Use if shrimp paste is unavailable.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Seasons the paste.',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Prep the curry paste ingredients',
+                instructions: [
+                  'Peel the garlic and shallot and roughly chop the shallot.',
+                  'Peel and chop the ginger (and fresh turmeric if using).',
+                  'Remove stems from dried chilies. Shake out seeds for milder heat if desired.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Blend the curry paste',
+                instructions: [
+                  'Add all paste ingredients to a small food processor or mortar.',
+                  'Add a splash of neutral oil or water to help blend.',
+                  'Process or pound into a thick, fairly smooth paste.',
+                  'Set aside; you will use 1–2 tablespoons in the broth and can refrigerate the rest for a few days.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'soup_base_and_chicken',
+            name: 'Khao soi coconut curry broth with chicken and kale',
+            kind: 'soup',
+            ingredients: [
+              {
+                section: 'Chicken and broth',
+                items: [
+                  {
+                    name: 'Chicken thighs, bone-in skin-on',
+                    amount: 1,
+                    unit: 'lb',
+                    prep: 'patted dry',
+                    notes: 'About 4 medium thighs.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Boneless, skinless thighs',
+                        ratio: '1:1 by weight',
+                        notes: 'Simmer directly; bones/skin just add richness.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Neutral oil',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'For frying curry paste.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Prepared curry paste',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Use the paste above; adjust 1–3 tbsp to taste.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Store-bought red curry paste',
+                        ratio: '1:1',
+                        notes: 'Add extra turmeric and curry powder to mimic khao soi.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Coconut milk',
+                    amount: 400,
+                    unit: 'ml',
+                    prep: '',
+                    notes: 'One full-fat can.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Chicken broth',
+                    amount: 240,
+                    unit: 'ml',
+                    prep: '',
+                    notes: 'About 1 cup; adjust for thickness.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Water + bouillon',
+                        ratio: '240 ml water + 1 tsp bouillon',
+                        notes: 'Use if stock is unavailable.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Soy sauce',
+                    amount: 1.5,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Adds salt and colour.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Fish sauce',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Key savoury depth.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Soy sauce',
+                        ratio: '1:1',
+                        notes: 'Use if fish-free; flavour will be less complex.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Maple syrup',
+                    amount: 2,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Start with 1 tsp; add up to 2 tsp to balance salt and spice.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Brown or palm sugar',
+                        ratio: '1:1',
+                        notes: 'For a more neutral sweetness.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Finish and greens',
+                items: [
+                  {
+                    name: 'Fresh lime juice',
+                    amount: 1.5,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Adjust 1–2 tbsp to taste.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Kale',
+                    amount: 2,
+                    unit: 'cup',
+                    prep: 'stems removed, leaves thinly sliced',
+                    notes: 'Used as the main green.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Baby spinach',
+                        ratio: '1:1',
+                        notes: 'Stir in off heat.'
+                      },
+                      {
+                        name: 'Pickled mustard greens',
+                        ratio: '1:1 by loose volume',
+                        notes: 'Traditional garnish; serve on the side.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Salt',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'Adjust to taste after soy and fish sauce.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Fry curry paste and coat the chicken',
+                instructions: [
+                  'Heat the neutral oil in a medium pot over medium heat.',
+                  'Add 1–2 tbsp of curry paste and fry for 1–2 minutes until fragrant.',
+                  'Add the chicken thighs and turn to coat in the paste.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Simmer the coconut curry broth uncovered',
+                instructions: [
+                  'Pour in the coconut milk and chicken broth, scraping up any paste stuck to the pot.',
+                  'Add soy sauce, fish sauce, and 1 tsp maple syrup to start.',
+                  'Bring to a gentle simmer, then lower heat to maintain a lazy simmer.',
+                  'Simmer uncovered for 20–25 minutes, turning the chicken occasionally, until tender.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Pull the chicken and finish the broth',
+                instructions: [
+                  'Lift chicken thighs from the pot and cool slightly.',
+                  'Shred the meat, discarding bones and skin.',
+                  'Return the shredded chicken to the pot.',
+                  'Taste and adjust with fish sauce for salt, more maple syrup for balance, or extra broth for consistency.',
+                  'Stir in fresh lime juice and keep the broth on low heat.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Wilt the kale in the finished broth',
+                instructions: [
+                  'Add the sliced kale just before serving.',
+                  'Simmer 1–2 minutes until tender but bright, then keep warm on low heat.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'fresh_egg_noodles',
+            name: 'Homemade alkaline egg noodles (pasta machine #4)',
+            kind: 'noodles',
+            ingredients: [
+              {
+                section: 'Noodle dough',
+                items: [
+                  {
+                    name: 'All-purpose flour',
+                    amount: 200,
+                    unit: 'g',
+                    prep: '',
+                    notes: 'About 1 heaping cup; weigh if possible.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Large eggs',
+                    amount: 2,
+                    unit: 'egg',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Baking soda',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adds alkalinity for chew and colour.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Baked baking soda',
+                        ratio: '1:0.5',
+                        notes: 'Use half as much if already baked to sodium carbonate.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Turmeric',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Optional, for a deeper yellow noodle.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Water',
+                    amount: null,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Add in tiny splashes only if dough is too dry to come together.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'For rolling and dusting',
+                items: [
+                  {
+                    name: 'Flour or cornstarch',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'Dust the dough and cut noodles generously so they never stick.',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Make and knead the noodle dough',
+                instructions: [
+                  'Combine the flour and salt in a mixing bowl.',
+                  'Dissolve the baking soda in about 1 tsp of water, then beat it with the eggs (and turmeric, if using).',
+                  'Pour the egg mixture into the flour and mix until a shaggy dough forms.',
+                  'Knead on the counter for 8–10 minutes. The dough should be firm and tight like ramen dough; add water only a few drops at a time if absolutely necessary.',
+                  'Wrap or cover and let rest for about 30 minutes at room temperature.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Roll the dough to pasta machine setting #4',
+                instructions: [
+                  'Divide the rested dough into 2–3 pieces.',
+                  'Flatten one piece and run it through the widest pasta machine setting a few times, folding to smooth the sheet.',
+                  'Gradually reduce the thickness until you reach #4, aiming for a sheet that is thin but still sturdy.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Cut and dust the noodles',
+                instructions: [
+                  'Run each sheet through the noodle cutter (about 3 mm width).',
+                  'Dust the cut noodles generously with flour or cornstarch and gently separate with your fingers.',
+                  'Hang briefly on a pasta rack or lay on a floured tray while you prep the broth and frying oil.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'crispy_noodle_nests',
+            name: 'Crispy egg noodle nests',
+            kind: 'topping',
+            ingredients: [
+              {
+                section: 'For frying',
+                items: [
+                  {
+                    name: 'Portion of fresh egg noodles',
+                    amount: 40,
+                    unit: 'g',
+                    prep: 'loosely separated',
+                    notes: 'Enough for three small nests (8–12 g per bowl).',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Neutral oil',
+                    amount: 500,
+                    unit: 'ml',
+                    prep: '',
+                    notes: 'Need about 3/4–1 inch depth for frying.',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Dry the noodles for frying',
+                instructions: [
+                  'Spread or hang a portion of the fresh noodles so air can circulate.',
+                  'Let them dry for 20–30 minutes until leathery but not brittle so they puff nicely.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Form small nests',
+                instructions: [
+                  'Gather a small loose handful of dried noodles (about 8–12 g).',
+                  'Lightly coil into a loose nest without compressing.',
+                  'Place the portion into a metal ladle or small wire strainer so it keeps its shape while frying.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Fry the noodle nests',
+                instructions: [
+                  'Heat the neutral oil to about 175°C / 350°F. A single noodle should bubble vigorously.',
+                  'Lower a ladle with one portion into the hot oil and fry for 10–15 seconds, gently agitating so strands separate and puff.',
+                  'When lightly golden and crisp, lift out and drain on paper towel.',
+                  'Repeat with remaining portions, letting the oil return to temperature between batches.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'noodles_and_assembly',
+            name: 'Boiled noodles, garnishes, and final assembly',
+            kind: 'assembly',
+            ingredients: [
+              {
+                section: 'Boiling the noodles',
+                items: [
+                  {
+                    name: 'Remaining fresh egg noodles',
+                    amount: null,
+                    unit: '',
+                    prep: 'loosely floured and separated',
+                    notes: 'All noodles not used for the crispy nests.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Dried egg noodles',
+                        ratio: '1:1 by cooked volume',
+                        notes: 'Cook according to package directions until just tender.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Water',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'For boiling the noodles.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'To season the noodle cooking water lightly.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Garnishes and extras',
+                items: [
+                  {
+                    name: 'Red onion or shallot',
+                    amount: 0.5,
+                    unit: 'small',
+                    prep: 'thinly sliced',
+                    notes: 'Use as a fresh crunchy garnish.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Fresh basil leaves',
+                    amount: null,
+                    unit: '',
+                    prep: 'small leaves left whole or larger leaves torn',
+                    notes: 'Use Thai basil if possible; Italian basil also works in a pinch.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Fresh cilantro',
+                    amount: null,
+                    unit: '',
+                    prep: 'roughly chopped',
+                    notes: 'Scatter over each bowl.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Lime wedges',
+                    amount: 3,
+                    unit: 'wedge',
+                    prep: '',
+                    notes: 'Serve 1 wedge per bowl for brightness.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Chili oil or chili crisp',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'Serve on the side for extra heat.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Swiss chard chutney',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'Optional; serve a tiny spoonful on the side as a condiment.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Boil the noodles',
+                instructions: [
+                  'Bring a large pot of salted water to a boil.',
+                  'Add the fresh egg noodles and cook for 45–60 seconds, just until cooked through but still chewy.',
+                  'Drain well and give a quick splash of hot water to rinse off excess starch if needed.',
+                  'Portion the drained noodles directly into warmed serving bowls.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Assemble the bowls',
+                instructions: [
+                  'Bring the finished broth with chicken and kale back to a gentle simmer so it is hot.',
+                  'Taste and adjust with lime juice, fish sauce, or maple syrup until the balance feels right.',
+                  'Ladle the hot curry broth, chicken, and kale over the noodles.',
+                  'Top with a crispy noodle nest, sliced onion or shallot, basil, cilantro, and a lime wedge.',
+                  'Serve immediately with chili oil and Swiss chard chutney on the side so everyone can customize heat and intensity.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Make curry paste and noodle dough',
+            items: [
+              { component: 'curry_paste', step: 1 },
+              { component: 'curry_paste', step: 2 },
+              { component: 'fresh_egg_noodles', step: 1 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Roll noodles and start broth',
+            items: [
+              { component: 'fresh_egg_noodles', step: 2 },
+              { component: 'fresh_egg_noodles', step: 3 },
+              { component: 'soup_base_and_chicken', step: 1 },
+              { component: 'soup_base_and_chicken', step: 2 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'Finish broth and prepare crispy nests',
+            items: [
+              { component: 'soup_base_and_chicken', step: 3 },
+              { component: 'crispy_noodle_nests', step: 1 },
+              { component: 'crispy_noodle_nests', step: 2 },
+              { component: 'crispy_noodle_nests', step: 3 }
+            ]
+          },
+          {
+            order: 4,
+            label: 'Boil noodles, wilt kale, and assemble',
+            items: [
+              { component: 'soup_base_and_chicken', step: 4 },
+              { component: 'noodles_and_assembly', step: 1 },
+              { component: 'noodles_and_assembly', step: 2 }
+            ]
+          }
+        ],
+        substitution_summary: {
+          dairy_free: 'Recipe is naturally dairy-free as written; avoid butter-based garnishes.',
+          vegan: 'Swap chicken for tofu or seared mushrooms, use vegetable stock, and replace fish sauce/shrimp paste with soy sauce plus a splash of mushroom or vegan fish sauce.',
+          extra_rich: 'Use the full coconut milk, simmer uncovered a bit longer to concentrate, leave bones/skin in while simmering, and finish bowls with a spoon of coconut cream.',
+          less_bright: 'Reduce lime juice in the broth to 1 tbsp and let diners adjust individually with lime wedges.',
+          spicier: 'Increase dried chilies or chili flakes in the paste, add more paste to the broth, and serve with a bold chili oil or crisp for extra heat.'
+        }
+      }
+    ];
+
+    let filteredRecipes = [...recipes];
+    let activeRecipe = recipes[0] || null;
+    let activeTab = 'ingredients';
+    let activeComponentId = null;
+    let pendingScrollComponentId = null;
+
+    const recipeListEl = document.getElementById('recipeList');
+    const recipeDetailsEl = document.getElementById('recipeDetails');
+    const recipeSearchEl = document.getElementById('recipeSearch');
+
+    const formatComponentKind = (kind = '') =>
+      kind
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+
+    const formatAmount = (item) => {
+      if (item.amount == null) {
+        return 'As desired';
+      }
+
+      const rounded = Number.isInteger(item.amount) ? item.amount : item.amount.toString();
+      return [rounded, item.unit].filter(Boolean).join(' ');
+    };
+
+    const renderRecipeList = () => {
+      if (!filteredRecipes.length) {
+        recipeListEl.innerHTML = '<div class="empty-state">No recipes match that search yet.</div>';
+        return;
+      }
+
+      recipeListEl.innerHTML = filteredRecipes.map((recipe) => {
+        const chips = [];
+        if (recipe.metadata?.diet?.vegan) chips.push('Vegan');
+        if (recipe.metadata?.diet?.gluten_free) chips.push('Gluten-free');
+        if (!recipe.metadata?.diet?.contains_dairy) chips.push('Dairy-free');
+        return `
+          <article class="recipe-card ${recipe.id === activeRecipe?.id ? 'active' : ''}" data-recipe-id="${recipe.id}">
+            <h3>${recipe.name}</h3>
+            <p>${recipe.metadata?.context || ''}</p>
+            <div class="chip-row">
+              ${chips.map((chip) => `<span class="chip">${chip}</span>`).join('')}
+            </div>
+          </article>
+        `;
+      }).join('');
+    };
+
+    const renderIngredients = (recipe) => {
+      if (!recipe.components?.length) {
+        return '<div class="empty-state">No components added yet.</div>';
+      }
+
+      return recipe.components.map((component, componentIndex) => {
+        const isFocused = !activeComponentId || activeComponentId === component.id;
+        const isActive = activeComponentId === component.id;
+
+        return `
+        <section class="component-block" data-component-block="${component.id}" data-focused="${isFocused}">
+          <div class="component-header">
+            <div>
+              ${component.kind ? `<p class="component-kind">${formatComponentKind(component.kind)}</p>` : ''}
+              <h3>${component.name || `Component ${componentIndex + 1}`}</h3>
+            </div>
+            ${isActive ? '<span class="component-pill">Active</span>' : ''}
+          </div>
+          ${(component.ingredients || []).map((section) => `
+            <div class="ingredient-section">
+              <h4>${section.section}</h4>
+              <ul class="ingredient-list">
+                ${(section.items || []).map((item, itemIndex) => {
+                  const hasSubs = item.substitutions && item.substitutions.length;
+                  const substitutionsList = hasSubs ? `
+                    <button class="sub-toggle" type="button" aria-expanded="false" data-sub-toggle>
+                      Substitutions
+                      <span class="chevron">⌄</span>
+                    </button>
+                    <div class="ingredient-substitutions" data-sub-panel hidden>
+                      <ul>
+                        ${item.substitutions.map((sub) => `
+                          <li><strong>${sub.name}</strong>${sub.ratio ? ` · ${sub.ratio}` : ''}${sub.notes ? ` — ${sub.notes}` : ''}</li>
+                        `).join('')}
+                      </ul>
+                    </div>
+                  ` : '';
+
+                  return `
+                    <li class="ingredient-item ${hasSubs ? 'has-subs' : ''}" data-ingredient-index="${component.id}-${section.section}-${itemIndex}">
+                      <div class="ingredient-main">
+                        <strong>${item.name}${item.optional ? ' (optional)' : ''}</strong>
+                        <div class="ingredient-meta">
+                          ${formatAmount(item)}${item.prep ? ` · ${item.prep}` : ''}
+                          ${item.notes ? `<br>${item.notes}` : ''}
+                        </div>
+                      </div>
+                      ${substitutionsList}
+                    </li>
+                  `;
+                }).join('')}
+              </ul>
+            </div>
+          `).join('')}
+        </section>
+      `;
+      }).join('');
+    };
+
+    const renderSteps = (recipe) => {
+      if (!recipe.components?.length) {
+        return '<div class="empty-state">No steps documented yet.</div>';
+      }
+
+      return recipe.components.map((component, componentIndex) => {
+        const isFocused = !activeComponentId || activeComponentId === component.id;
+        const isActive = activeComponentId === component.id;
+
+        return `
+        <section class="component-block" data-component-block="${component.id}" data-focused="${isFocused}">
+          <div class="component-header">
+            <div>
+              ${component.kind ? `<p class="component-kind">${formatComponentKind(component.kind)}</p>` : ''}
+              <h3>${component.name || `Component ${componentIndex + 1}`}</h3>
+            </div>
+            ${isActive ? '<span class="component-pill">Active</span>' : ''}
+          </div>
+          <div class="steps">
+            ${(component.steps || []).map((step) => `
+              <article class="step-card">
+                <h3>${step.order.toString().padStart(2, '0')} · ${step.title}</h3>
+                <ol>
+                  ${step.instructions.map((line) => `<li>${line}</li>`).join('')}
+                </ol>
+              </article>
+            `).join('')}
+          </div>
+        </section>
+      `;
+      }).join('');
+    };
+
+    const buildSubstitutionResults = (recipe, filter = '') => {
+      const normalized = filter.trim().toLowerCase();
+      const items = (recipe.components || []).flatMap((component) =>
+        (component.ingredients || []).flatMap((section) =>
+          (section.items || []).map((item) => ({
+            componentName: component.name,
+            componentId: component.id,
+            name: item.name,
+            substitutions: item.substitutions || []
+          }))
+        )
+      ).filter((item) => item.substitutions.length);
+
+      const scopedItems = activeComponentId
+        ? items.filter((item) => item.componentId === activeComponentId)
+        : items;
+
+      const filteredItems = normalized
+        ? scopedItems.filter((item) => {
+            const haystack = `${item.name} ${item.substitutions.map((s) => `${s.name} ${s.notes || ''}`).join(' ')}`.toLowerCase();
+            return haystack.includes(normalized);
+          })
+        : scopedItems;
+
+      if (!filteredItems.length) {
+        return '<div class="empty-state">No substitutions match that search.</div>';
+      }
+
+      return filteredItems.map((item) => `
+        <article class="substitution-card">
+          <h4>${item.name}${item.componentName ? ` · <span class="ingredient-meta">${item.componentName}</span>` : ''}</h4>
+          <ul>
+            ${item.substitutions.map((sub) => `
+              <li>
+                <strong>${sub.name}</strong>${sub.ratio ? ` · ${sub.ratio}` : ''}${sub.notes ? ` — ${sub.notes}` : ''}
+              </li>
+            `).join('')}
+          </ul>
+        </article>
+      `).join('');
+    };
+    const renderSubstitutions = (recipe) => {
+      const summaryEntries = Object.entries(recipe.substitution_summary || {});
+      return `
+        <div class="substitution-search">
+          <label for="substitutionSearch">Look up ingredient swaps</label>
+          <input type="search" id="substitutionSearch" placeholder="Try &ldquo;squash&rdquo;, &ldquo;coconut milk&rdquo;, ...">
+        </div>
+        <div id="substitutionResults" class="substitution-results">
+          ${buildSubstitutionResults(recipe)}
+        </div>
+        ${summaryEntries.length ? `
+          <div class="summary-grid">
+            ${summaryEntries.map(([key, value]) => `
+              <div>
+                <span class="chip">${key.replace(/_/g, ' ')}</span>
+                <p class="ingredient-meta">${value}</p>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      `;
+    };
+
+    const renderWorkflow = (recipe) => {
+      if (!recipe.workflow?.length) {
+        return '<div class="empty-state">No workflow defined for this recipe.</div>';
+      }
+
+      const stepLookup = new Map();
+      recipe.components?.forEach((component) => {
+        component.steps?.forEach((step) => {
+          stepLookup.set(`${component.id}-${step.order}`, { component, step });
+        });
+      });
+
+      return `
+        <ol class="workflow-list">
+          ${recipe.workflow.map((phase) => `
+            <li class="workflow-phase">
+              <div class="phase-badge">${phase.order.toString().padStart(2, '0')}</div>
+              <div>
+                <h3>${phase.label}</h3>
+                <ul>
+                  ${(phase.items || []).map((item) => {
+                    const reference = stepLookup.get(`${item.component}-${item.step}`);
+                    const componentName = reference?.component?.name || item.component;
+                    const stepTitle = reference?.step?.title ? ` · Step ${reference.step.order}: ${reference.step.title}` : '';
+                    return `<li><strong>${componentName}</strong>${stepTitle}</li>`;
+                  }).join('')}
+                </ul>
+              </div>
+            </li>
+          `).join('')}
+        </ol>
+      `;
+    };
+
+    const renderRecipeDetails = () => {
+      if (!activeRecipe) {
+        recipeDetailsEl.innerHTML = '<div class="empty-state">Pick a recipe to see the details.</div>';
+        recipeDetailsEl.dataset.componentFiltering = 'false';
+        pendingScrollComponentId = null;
+        return;
+      }
+
+      const componentChips = activeRecipe.components?.length
+        ? [
+            { id: 'all', label: 'All' },
+            ...(activeRecipe.components || []).map((component, index) => ({
+              id: component.id,
+              label: component.name || `Component ${index + 1}`
+            }))
+          ]
+        : [];
+
+      recipeDetailsEl.innerHTML = `
+        <div class="detail-header">
+          <h2>${activeRecipe.name}</h2>
+          <div class="meta-grid">
+            <span>Serves ${activeRecipe.servings?.count || '—'}${activeRecipe.servings?.note ? ` (${activeRecipe.servings.note})` : ''}</span>
+            ${activeRecipe.metadata?.style ? `<span>${activeRecipe.metadata.style}</span>` : ''}
+            ${activeRecipe.metadata?.context ? `<span>${activeRecipe.metadata.context}</span>` : ''}
+          </div>
+          ${componentChips.length ? `
+            <div class="component-filters" aria-label="Focus on a dish">
+              ${componentChips.map((chip) => {
+                const isActiveSelection = activeComponentId === chip.id || (!activeComponentId && chip.id === 'all');
+                return `
+                <button
+                  class="component-chip"
+                  type="button"
+                  data-component-chip="${chip.id}"
+                  data-active="${isActiveSelection}"
+                  aria-pressed="${isActiveSelection}"
+                >
+                  ${chip.label}
+                </button>
+              `;
+              }).join('')}
+            </div>
+          ` : ''}
+        </div>
+        <div class="tabs">
+          <button class="tab-button ${activeTab === 'ingredients' ? 'active' : ''}" data-tab="ingredients">Ingredients</button>
+          <button class="tab-button ${activeTab === 'instructions' ? 'active' : ''}" data-tab="instructions">Instructions</button>
+          <button class="tab-button ${activeTab === 'substitutions' ? 'active' : ''}" data-tab="substitutions">Substitutions</button>
+          <button class="tab-button ${activeTab === 'workflow' ? 'active' : ''}" data-tab="workflow">Workflow</button>
+        </div>
+        <div class="tab-panel ${activeTab === 'ingredients' ? 'active' : ''}" data-panel="ingredients">
+          ${renderIngredients(activeRecipe)}
+        </div>
+        <div class="tab-panel ${activeTab === 'instructions' ? 'active' : ''}" data-panel="instructions">
+          ${renderSteps(activeRecipe)}
+        </div>
+        <div class="tab-panel ${activeTab === 'substitutions' ? 'active' : ''}" data-panel="substitutions">
+          ${renderSubstitutions(activeRecipe)}
+        </div>
+        <div class="tab-panel ${activeTab === 'workflow' ? 'active' : ''}" data-panel="workflow">
+          ${renderWorkflow(activeRecipe)}
+        </div>
+      `;
+
+      recipeDetailsEl.dataset.componentFiltering = activeComponentId ? 'true' : 'false';
+
+      recipeDetailsEl.querySelectorAll('.tab-button').forEach((button) => {
+        button.addEventListener('click', () => {
+          activeTab = button.dataset.tab;
+          renderRecipeDetails();
+        });
+      });
+
+      recipeDetailsEl.querySelectorAll('[data-component-chip]').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          const componentId = chip.dataset.componentChip;
+          activeComponentId = componentId === 'all' ? null : componentId;
+          pendingScrollComponentId = activeComponentId || null;
+          renderRecipeDetails();
+        });
+      });
+
+      recipeDetailsEl.querySelectorAll('[data-sub-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const panel = button.nextElementSibling;
+          if (!panel) return;
+          const expanded = button.getAttribute('aria-expanded') === 'true';
+          button.setAttribute('aria-expanded', String(!expanded));
+          panel.hidden = expanded;
+          button.closest('.ingredient-item')?.classList.toggle('open', !expanded);
+        });
+      });
+
+      const substitutionInput = recipeDetailsEl.querySelector('#substitutionSearch');
+      if (substitutionInput) {
+        substitutionInput.addEventListener('input', (event) => {
+          const container = recipeDetailsEl.querySelector('#substitutionResults');
+          container.innerHTML = buildSubstitutionResults(activeRecipe, event.target.value);
+        });
+      }
+
+      if (pendingScrollComponentId) {
+        requestAnimationFrame(() => {
+          const activePanel = recipeDetailsEl.querySelector('.tab-panel.active');
+          const target = activePanel?.querySelector(`[data-component-block="${pendingScrollComponentId}"]`);
+          target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        pendingScrollComponentId = null;
+      }
+    };
+
+    recipeListEl.addEventListener('click', (event) => {
+      const card = event.target.closest('[data-recipe-id]');
+      if (!card) return;
+      const recipe = recipes.find((entry) => entry.id === card.dataset.recipeId);
+      if (!recipe) return;
+      activeRecipe = recipe;
+      activeTab = 'ingredients';
+      activeComponentId = null;
+      renderRecipeList();
+      renderRecipeDetails();
+      card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+
+    recipeSearchEl.addEventListener('input', (event) => {
+      const query = event.target.value.toLowerCase();
+      filteredRecipes = recipes.filter((recipe) => {
+        const haystack = [
+          recipe.name,
+          recipe.metadata?.style,
+          recipe.metadata?.context
+        ].join(' ').toLowerCase();
+        return haystack.includes(query);
+      });
+      const nextActive = filteredRecipes.includes(activeRecipe) ? activeRecipe : filteredRecipes[0] || null;
+      if (activeRecipe !== nextActive) {
+        activeRecipe = nextActive;
+        activeComponentId = null;
+      } else {
+        activeRecipe = nextActive;
+      }
+      renderRecipeList();
+      renderRecipeDetails();
+    });
+
+    renderRecipeList();
+    renderRecipeDetails();
+  </script>
+</body>
+</html>
