@@ -86,6 +86,20 @@
       width: 100%;
     }
 
+    .mobile-nav-button {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      border-radius: 999px;
+      border: 1px solid var(--panel-border);
+      background: var(--panel-highlight);
+      color: var(--text);
+      font-size: 0.95rem;
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+    }
+
     .search-field {
       flex: 1;
       min-width: 260px;
@@ -141,6 +155,68 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--text-muted);
+    }
+
+    .recipe-add-toggle {
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+
+    .recipe-add-toggle button {
+      border-radius: 999px;
+      border: 1px solid var(--panel-border);
+      background: var(--panel-highlight);
+      color: var(--text);
+      padding: 0.4rem 1rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .recipe-add-panel h2 {
+      letter-spacing: 0.18em;
+      font-size: 0.95rem;
+    }
+
+    .recipe-add-form {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .recipe-add-form textarea {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      padding: 0.75rem;
+      font-family: 'Inter', monospace;
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .recipe-add-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .recipe-add-actions button {
+      border-radius: 999px;
+      border: 1px solid var(--panel-border);
+      background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+      color: #1b0c04;
+      font-weight: 600;
+      padding: 0.55rem 1.4rem;
+      cursor: pointer;
+    }
+
+    #recipeAddStatus {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      min-height: 1.2em;
     }
 
     .recipe-list {
@@ -526,6 +602,58 @@
       color: var(--text-muted);
     }
 
+    .mobile-drawer {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: flex;
+      justify-content: flex-end;
+      transition: opacity 0.2s ease;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    .mobile-drawer[data-open="true"] {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-drawer__panel {
+      width: min(420px, 100%);
+      background: var(--panel);
+      border-left: 1px solid var(--panel-border);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .mobile-drawer__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .mobile-drawer__close {
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .mobile-drawer__panel .recipe-list {
+      max-height: none;
+      padding-right: 0;
+    }
+
     .empty-state {
       text-align: center;
       padding: 1.5rem 1rem;
@@ -550,6 +678,15 @@
       body {
         padding: 0.6rem;
         display: block;
+      }
+
+      .mobile-nav-button {
+        display: inline-flex;
+        width: 100%;
+      }
+
+      .recipe-index-panel {
+        display: none;
       }
 
       main {
@@ -659,8 +796,29 @@
       </div>
     </section>
 
+    <div class="recipe-add-toggle">
+      <button type="button" id="addRecipeToggle" aria-expanded="false">Add recipe JSON</button>
+    </div>
+
+    <section class="panel recipe-add-panel" id="recipeAddPanel" hidden>
+      <h2>Paste recipe JSON</h2>
+      <form id="recipeJsonForm" class="recipe-add-form">
+        <label for="recipeJsonInput">Recipe object</label>
+        <textarea id="recipeJsonInput" placeholder="Paste a recipe JSON blob here..." rows="6"></textarea>
+        <div class="recipe-add-actions">
+          <button type="submit">Add recipe to list</button>
+          <span id="recipeAddStatus" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+    </section>
+
+    <button class="mobile-nav-button" id="mobileRecipeToggle" type="button" aria-expanded="false">
+      Browse recipes
+      <span aria-hidden="true">☰</span>
+    </button>
+
     <section class="content-grid">
-      <aside class="panel">
+      <aside class="panel recipe-index-panel" aria-label="Recipe index">
         <h2>Recipe index</h2>
         <div id="recipeList" class="recipe-list"></div>
       </aside>
@@ -669,6 +827,16 @@
         <div id="recipeDetails"></div>
       </section>
     </section>
+
+    <div id="mobileRecipeDrawer" class="mobile-drawer" aria-hidden="true">
+      <div class="mobile-drawer__panel">
+        <div class="mobile-drawer__header">
+          <h2>Recipes</h2>
+          <button type="button" class="mobile-drawer__close" id="mobileRecipeClose" aria-label="Close recipe list">✕</button>
+        </div>
+        <div id="mobileRecipeList" class="recipe-list"></div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -4465,10 +4633,20 @@
     let activeTab = 'ingredients';
     let activeComponentId = null;
     let pendingScrollComponentId = null;
+    let isMobileDrawerOpen = false;
 
     const recipeListEl = document.getElementById('recipeList');
     const recipeDetailsEl = document.getElementById('recipeDetails');
     const recipeSearchEl = document.getElementById('recipeSearch');
+    const mobileDrawerEl = document.getElementById('mobileRecipeDrawer');
+    const mobileDrawerListEl = document.getElementById('mobileRecipeList');
+    const mobileToggleButton = document.getElementById('mobileRecipeToggle');
+    const mobileCloseButton = document.getElementById('mobileRecipeClose');
+    const recipeAddPanel = document.getElementById('recipeAddPanel');
+    const addRecipeToggle = document.getElementById('addRecipeToggle');
+    const recipeJsonForm = document.getElementById('recipeJsonForm');
+    const recipeJsonInput = document.getElementById('recipeJsonInput');
+    const recipeAddStatus = document.getElementById('recipeAddStatus');
 
     const formatComponentKind = (kind = '') =>
       kind
@@ -4484,18 +4662,85 @@
       return [rounded, item.unit].filter(Boolean).join(' ');
     };
 
-    const renderRecipeList = () => {
-      if (!filteredRecipes.length) {
-        recipeListEl.innerHTML = '<div class="empty-state">No recipes match that search yet.</div>';
-        return;
-      }
+    const slugify = (text) =>
+      (text || '')
+        .toString()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || `recipe-${Date.now()}`;
 
-      recipeListEl.innerHTML = filteredRecipes.map((recipe) => {
-        const chips = [];
-        if (recipe.metadata?.diet?.vegan) chips.push('Vegan');
-        if (recipe.metadata?.diet?.gluten_free) chips.push('Gluten-free');
-        if (!recipe.metadata?.diet?.contains_dairy) chips.push('Dairy-free');
-        return `
+    const normalizeRecipe = (raw = {}) => {
+      const baseName = raw.name || `Untitled Recipe ${recipes.length + 1}`;
+      const slugBase = slugify(baseName);
+      const uniqueId = raw.id || `${slugBase}-${Date.now()}`;
+      const makeComponentId = (component, index) =>
+        component.id || `${uniqueId}-component-${index + 1}`;
+
+      const normalizedComponents = Array.isArray(raw.components)
+        ? raw.components.map((component, index) => ({
+            ...component,
+            id: makeComponentId(component || {}, index),
+            ingredients: component?.ingredients || [],
+            steps: component?.steps || []
+          }))
+        : [];
+
+      return {
+        id: uniqueId,
+        name: baseName,
+        version: raw.version ?? 1,
+        servings: raw.servings || { count: '—', note: '' },
+        metadata: {
+          style: raw.metadata?.style || '',
+          diet: {
+            vegetarian: Boolean(raw.metadata?.diet?.vegetarian),
+            vegan: Boolean(raw.metadata?.diet?.vegan),
+            gluten_free: Boolean(raw.metadata?.diet?.gluten_free),
+            contains_dairy: Boolean(raw.metadata?.diet?.contains_dairy),
+            contains_lentils: Boolean(raw.metadata?.diet?.contains_lentils)
+          },
+          context: raw.metadata?.context || ''
+        },
+        components: normalizedComponents,
+        workflow: Array.isArray(raw.workflow) ? raw.workflow : [],
+        substitution_summary: raw.substitution_summary || {}
+      };
+    };
+
+    const setMobileDrawerState = (isOpen) => {
+      if (!mobileDrawerEl) return;
+      isMobileDrawerOpen = isOpen;
+      mobileDrawerEl.dataset.open = String(isOpen);
+      mobileDrawerEl.setAttribute('aria-hidden', String(!isOpen));
+      mobileToggleButton?.setAttribute('aria-expanded', String(isOpen));
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    };
+
+    const selectRecipe = (recipeId, { scrollToCard = true, closeDrawer = false } = {}) => {
+      const recipe = recipes.find((entry) => entry.id === recipeId);
+      if (!recipe) return;
+      activeRecipe = recipe;
+      activeTab = 'ingredients';
+      activeComponentId = null;
+      renderRecipeList();
+      renderRecipeDetails();
+      if (scrollToCard) {
+        const targetCard = recipeListEl?.querySelector(`[data-recipe-id="${recipeId}"]`);
+        targetCard?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+      if (closeDrawer) {
+        setMobileDrawerState(false);
+      }
+    };
+
+    const renderRecipeList = () => {
+      const markup = filteredRecipes.length
+        ? filteredRecipes.map((recipe) => {
+            const chips = [];
+            if (recipe.metadata?.diet?.vegan) chips.push('Vegan');
+            if (recipe.metadata?.diet?.gluten_free) chips.push('Gluten-free');
+            if (!recipe.metadata?.diet?.contains_dairy) chips.push('Dairy-free');
+            return `
           <article class="recipe-card ${recipe.id === activeRecipe?.id ? 'active' : ''}" data-recipe-id="${recipe.id}">
             <h3>${recipe.name}</h3>
             <p>${recipe.metadata?.context || ''}</p>
@@ -4504,7 +4749,15 @@
             </div>
           </article>
         `;
-      }).join('');
+          }).join('')
+        : '<div class="empty-state">No recipes match that search yet.</div>';
+
+      if (recipeListEl) {
+        recipeListEl.innerHTML = markup;
+      }
+      if (mobileDrawerListEl) {
+        mobileDrawerListEl.innerHTML = markup;
+      }
     };
 
     const renderIngredients = (recipe) => {
@@ -4812,14 +5065,13 @@
     recipeListEl.addEventListener('click', (event) => {
       const card = event.target.closest('[data-recipe-id]');
       if (!card) return;
-      const recipe = recipes.find((entry) => entry.id === card.dataset.recipeId);
-      if (!recipe) return;
-      activeRecipe = recipe;
-      activeTab = 'ingredients';
-      activeComponentId = null;
-      renderRecipeList();
-      renderRecipeDetails();
-      card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      selectRecipe(card.dataset.recipeId);
+    });
+
+    mobileDrawerListEl?.addEventListener('click', (event) => {
+      const card = event.target.closest('[data-recipe-id]');
+      if (!card) return;
+      selectRecipe(card.dataset.recipeId, { scrollToCard: false, closeDrawer: true });
     });
 
     recipeSearchEl.addEventListener('input', (event) => {
@@ -4843,8 +5095,71 @@
       renderRecipeDetails();
     });
 
+    mobileToggleButton?.addEventListener('click', () => {
+      setMobileDrawerState(!isMobileDrawerOpen);
+    });
+
+    mobileCloseButton?.addEventListener('click', () => {
+      setMobileDrawerState(false);
+    });
+
+    mobileDrawerEl?.addEventListener('click', (event) => {
+      if (event.target === mobileDrawerEl) {
+        setMobileDrawerState(false);
+      }
+    });
+
+    addRecipeToggle?.addEventListener('click', () => {
+      if (!recipeAddPanel) return;
+      const isHidden = recipeAddPanel.hasAttribute('hidden');
+      if (isHidden) {
+        recipeAddPanel.removeAttribute('hidden');
+      } else {
+        recipeAddPanel.setAttribute('hidden', '');
+      }
+      addRecipeToggle.setAttribute('aria-expanded', String(isHidden));
+      if (isHidden) {
+        recipeJsonInput?.focus();
+      }
+    });
+
+    recipeJsonForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const payload = recipeJsonInput.value.trim();
+      if (!payload) {
+        recipeAddStatus.textContent = 'Please paste a JSON object first.';
+        return;
+      }
+      try {
+        const parsed = JSON.parse(payload);
+        const recipeInput = Array.isArray(parsed) ? parsed[0] : parsed;
+        if (!recipeInput || typeof recipeInput !== 'object') {
+          throw new Error('JSON must describe an object.');
+        }
+        const newRecipe = normalizeRecipe(recipeInput);
+        recipes.push(newRecipe);
+        const activeQuery = (recipeSearchEl?.value || '').toLowerCase();
+        filteredRecipes = activeQuery
+          ? recipes.filter((recipe) => {
+              const haystack = [
+                recipe.name,
+                recipe.metadata?.style,
+                recipe.metadata?.context
+              ].join(' ').toLowerCase();
+              return haystack.includes(activeQuery);
+            })
+          : [...recipes];
+        recipeJsonInput.value = '';
+        recipeAddStatus.textContent = 'Recipe added.';
+        selectRecipe(newRecipe.id, { scrollToCard: false, closeDrawer: true });
+      } catch (error) {
+        recipeAddStatus.textContent = `Could not parse recipe: ${error.message}`;
+      }
+    });
+
     renderRecipeList();
     renderRecipeDetails();
+    setMobileDrawerState(false);
   </script>
 </body>
 </html>
