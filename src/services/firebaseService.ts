@@ -8,7 +8,6 @@ import {
   onSnapshot, 
   query, 
   where,
-  orderBy,
   increment
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -53,12 +52,14 @@ export const firebaseService = {
     try {
       const q = query(
         collection(db, EVENTS_COLLECTION),
-        where('isActive', '==', true),
-        orderBy('createdAt', 'desc')
+        where('isActive', '==', true)
       );
       
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Event);
+      return querySnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }) as Event)
+        .filter(event => !event.isTrashed)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     } catch (error) {
       console.error('Firebase error getting events:', error);
       // Return empty array so the app doesn't crash
@@ -83,6 +84,11 @@ export const firebaseService = {
   // Archive event (mark as inactive)
   async archiveEvent(eventId: string): Promise<void> {
     await this.updateEvent(eventId, { isActive: false });
+  },
+
+  // Move event to trash
+  async trashEvent(eventId: string): Promise<void> {
+    await this.updateEvent(eventId, { isActive: false, isTrashed: true });
   },
 
   // Add an emoji reaction to an event
@@ -145,12 +151,14 @@ export const firebaseService = {
     try {
       const q = query(
         collection(db, EVENTS_COLLECTION),
-        where('isActive', '==', true),
-        orderBy('createdAt', 'desc')
+        where('isActive', '==', true)
       );
       
       return onSnapshot(q, (querySnapshot) => {
-        const events = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Event);
+        const events = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }) as Event)
+          .filter(event => !event.isTrashed)
+          .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
         callback(events);
       }, (error) => {
         console.error('Firebase listener error:', error);
@@ -169,12 +177,14 @@ export const firebaseService = {
     try {
       const q = query(
         collection(db, EVENTS_COLLECTION),
-        where('isActive', '==', false),
-        orderBy('updatedAt', 'desc')
+        where('isActive', '==', false)
       );
 
       return onSnapshot(q, (querySnapshot) => {
-        const events = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Event);
+        const events = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }) as Event)
+          .filter(event => !event.isTrashed)
+          .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
         callback(events);
       }, (error) => {
         console.error('Firebase listener error (archived):', error);

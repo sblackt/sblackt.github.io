@@ -15,9 +15,15 @@ interface TimeSlot {
   time: string;
 }
 
+interface EventLocation {
+  name: string;
+  mapUrl?: string;
+}
+
 interface PlannerEvent {
   title: string;
   description?: string;
+  imageUrl?: string;
   eventType?: EventCategory;
   confirmedTimeSlotId?: string | null;
   timeSlots: TimeSlot[];
@@ -26,6 +32,7 @@ interface PlannerEvent {
     daysBefore?: number[];
   };
   remindersSent?: Record<string, string>;
+  location?: EventLocation | null;
 }
 
 const EVENT_TYPE_MAP: Record<EventCategory, {
@@ -71,6 +78,21 @@ const DEFAULT_REMINDER_DAYS = [3, 1, 0];
 const parseLocalDate = (dateString: string): Date => {
   const [year, month, day] = dateString.split('-').map(Number);
   return new Date(year, month - 1, day);
+};
+
+const formatSlotTime = (value: string): string => {
+  if (value === 'all-day') {
+    return 'All Day';
+  }
+
+  const [hours, minutes] = value.split(':').map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return value;
+  }
+
+  const displayDate = new Date();
+  displayDate.setHours(hours, minutes, 0, 0);
+  return format(displayDate, 'h:mm a');
 };
 
 const getAppBaseUrl = (): string => {
@@ -246,6 +268,8 @@ const sendDiscordReminder = async (params: {
   const eventLink = buildAppEventLink(eventId);
   const shareLink = buildShareLink(eventId);
   const plannedDateText = format(plannedDate, 'EEE, MMM d');
+  const plannedSlot = getPlannedSlot(event);
+  const plannedTimeText = plannedSlot ? formatSlotTime(plannedSlot.time) : undefined;
   const participantCount = event.participants?.length ?? 0;
   const friendlyTiming = daysUntil === 0
     ? 'is happening today'
@@ -253,21 +277,44 @@ const sendDiscordReminder = async (params: {
       ? 'is happening tomorrow'
       : `is happening in ${daysUntil} days`;
   const friendlyLink = `[Open event details](${shareLink})`;
+  const locationName = event.location?.name?.trim();
+  const locationLink = event.location?.mapUrl?.trim();
+  const locationMarkdown = locationName
+    ? (locationLink ? `[${locationName}](${locationLink})` : locationName)
+    : undefined;
+  const embedImageUrl = event.imageUrl?.trim() || getShareImageUrl(event.eventType);
+  const descriptionLines = [
+    `${theme.label} planned for **${plannedDateText}**${plannedTimeText ? ` • ${plannedTimeText}` : ''}`,
+    `Participants: ${participantCount}`
+  ];
+
+  if (locationMarkdown) {
+    descriptionLines.push(`Location: ${locationMarkdown}`);
+  }
 
   const payload = {
     username: 'Meeple Planner',
     embeds: [
       {
         title: `${theme.icon} ${event.title}`,
-        description: `${theme.label} planned for **${plannedDateText}**\nParticipants: ${participantCount}`,
+        description: descriptionLines.join('\n'),
         url: eventLink,
         color: theme.embedColor,
+        ...(embedImageUrl ? { image: { url: embedImageUrl } } : {}),
         footer: {
           text: 'Shared via Meeple Planner'
         }
       }
     ],
-    content: `Heads up! **${event.title}** ${friendlyTiming}.\n${shareLink}\n${friendlyLink}`
+    content: [
+      `Heads up! **${event.title}** ${friendlyTiming}.`,
+      shareLink,
+      friendlyLink,
+      plannedTimeText ? `Time: ${plannedTimeText}` : null,
+      locationName ? `Location: ${locationName}${locationLink ? ` (${locationLink})` : ''}` : null
+    ]
+      .filter(Boolean)
+      .join('\n')
   };
 
   const response = await fetch(webhookUrl, {
@@ -308,16 +355,34 @@ export const eventPreview = functions.https.onRequest(async (req, res) => {
     const plannedDateText = plannedSlot
       ? format(parseLocalDate(plannedSlot.date), 'EEE, MMM d')
       : 'Date TBD';
-    const description = event.description?.trim().slice(0, 240)
-      ?? (plannedSlot
-        ? `${theme.label} planned for ${plannedDateText}`
-        : `${theme.label} date to be determined`);
+    const plannedTimeText = plannedSlot ? formatSlotTime(plannedSlot.time) : undefined;
+    const locationName = event.location?.name?.trim();
+    const locationLink = event.location?.mapUrl?.trim();
+    const descriptionParts: string[] = [];
+
+    if (plannedSlot) {
+      descriptionParts.push(`${theme.label} planned for ${plannedDateText}${plannedTimeText ? ` • ${plannedTimeText}` : ''}`);
+    } else {
+      descriptionParts.push(`${theme.label} date to be determined`);
+    }
+
+    if (locationName) {
+      descriptionParts.push(`Location: ${locationName}${locationLink ? ` (${locationLink})` : ''}`);
+    }
+
+    if (event.description?.trim()) {
+      descriptionParts.push(event.description.trim());
+    }
+
+    const description = descriptionParts.join(' • ').slice(0, 240);
+
+    const previewImage = event.imageUrl?.trim() || getShareImageUrl(event.eventType);
 
     const html = renderPreviewHtml({
       title: `${theme.icon} ${event.title}`,
       description,
       url: buildAppEventLink(eventId),
-      imageUrl: getShareImageUrl(event.eventType)
+      imageUrl: previewImage
     });
 
     res.set('Cache-Control', 'public, max-age=300, s-maxage=1800');

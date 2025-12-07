@@ -35,6 +35,10 @@ const buildShareLink = (eventId: string): string => {
   return url.toString();
 };
 
+const buildMapSearchLink = (location: string): string => {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+};
+
 interface EventDetailProps {
   event: Event;
   onEventUpdated: () => void;
@@ -53,6 +57,10 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const [reactionPickerOpen, setReactionPickerOpen] = useState(false);
   const [planning, setPlanning] = useState(false);
   const [updatingType, setUpdatingType] = useState(false);
+  const [editingLocation, setEditingLocation] = useState(false);
+  const [locationName, setLocationName] = useState(event.location?.name ?? '');
+  const [locationLink, setLocationLink] = useState(event.location?.mapUrl ?? '');
+  const [savingLocation, setSavingLocation] = useState(false);
   const actionsMenuRef = useRef<HTMLDivElement | null>(null);
   const reactionPickerRef = useRef<HTMLDivElement | null>(null);
   const theme = getEventTypeConfig(event.eventType);
@@ -103,6 +111,11 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
 
     return () => unsubscribe();
   }, [event.id, savedName]);
+
+  useEffect(() => {
+    setLocationName(event.location?.name ?? '');
+    setLocationLink(event.location?.mapUrl ?? '');
+  }, [event.id, event.location?.name, event.location?.mapUrl]);
 
   useEffect(() => {
     if (!actionsMenuOpen && !reactionPickerOpen) {
@@ -292,6 +305,89 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     }
   };
 
+  const handleTrashEvent = async () => {
+    if (!window.confirm('Move this event to the trash? This will hide it from all lists.')) {
+      return;
+    }
+    try {
+      await firebaseService.trashEvent(event.id);
+      onEventUpdated();
+    } catch (error) {
+      console.error('Error trashing event:', error);
+      alert('Failed to move event to trash. Please try again.');
+    }
+  };
+
+  const handleGenerateMapLink = () => {
+    const trimmedName = locationName.trim();
+    if (!trimmedName) {
+      alert('Add the location name first.');
+      return;
+    }
+    setLocationLink(buildMapSearchLink(trimmedName));
+  };
+
+  const handleCancelLocationEdit = () => {
+    setEditingLocation(false);
+    setLocationName(event.location?.name ?? '');
+    setLocationLink(event.location?.mapUrl ?? '');
+  };
+
+  const handleSaveLocation = async () => {
+    const trimmedName = locationName.trim();
+    const trimmedLink = locationLink.trim();
+
+    if (!trimmedName) {
+      alert('Please enter the venue or address.');
+      return;
+    }
+
+    setSavingLocation(true);
+    try {
+      await firebaseService.updateEvent(event.id, {
+        location: {
+          name: trimmedName,
+          mapUrl: trimmedLink || buildMapSearchLink(trimmedName)
+        }
+      });
+      setEditingLocation(false);
+      onEventUpdated();
+    } catch (error) {
+      console.error('Error saving location:', error);
+      alert('Failed to save the location. Please try again.');
+    } finally {
+      setSavingLocation(false);
+    }
+  };
+
+  const handleClearLocation = async () => {
+    if (!event.location) {
+      setEditingLocation(false);
+      setLocationName('');
+      setLocationLink('');
+      return;
+    }
+
+    const shouldRemove = window.confirm('Remove the saved location for this event?');
+    if (!shouldRemove) {
+      return;
+    }
+
+    setSavingLocation(true);
+    try {
+      await firebaseService.updateEvent(event.id, { location: null });
+      setLocationName('');
+      setLocationLink('');
+      setEditingLocation(false);
+      onEventUpdated();
+    } catch (error) {
+      console.error('Error clearing location:', error);
+      alert('Failed to remove the location. Please try again.');
+    } finally {
+      setSavingLocation(false);
+    }
+  };
+
   const handleConfirmTimeSlot = async (timeSlotId: string | null) => {
     setPlanning(true);
     try {
@@ -334,6 +430,9 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const plannedSlot = event.confirmedTimeSlotId
     ? event.timeSlots.find(slot => slot.id === event.confirmedTimeSlotId)
     : undefined;
+  const locationDisplayLink = event.location?.name
+    ? (event.location.mapUrl || buildMapSearchLink(event.location.name))
+    : '';
   const plannedDateShort = plannedSlot
     ? format(parseLocalDate(plannedSlot.date), 'EEE, MMM d')
     : '';
@@ -427,6 +526,133 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
           </div>
           {event.description && <p className="event-description">{event.description}</p>}
 
+          {event.imageUrl && (
+            <div className="event-hero">
+              <img src={event.imageUrl} alt={`${event.title} cover art`} />
+            </div>
+          )}
+
+          <div className="event-location-card">
+            <div className="event-location-header">
+              <div>
+                <p className="event-location-eyebrow">Where are we meeting?</p>
+                <h3>Drop a pin for the crew</h3>
+                <p className="event-location-subcopy">
+                  Add the meetup spot once it's confirmed — we can auto-build a Maps link.
+                </p>
+              </div>
+              {!editingLocation && (
+                <button 
+                  type="button" 
+                  className="event-location-button"
+                  onClick={() => setEditingLocation(true)}
+                >
+                  {event.location ? 'Edit location' : 'Add location'}
+                </button>
+              )}
+            </div>
+
+            {event.location ? (
+              <div className="event-location-details">
+                <div className="event-location-name">
+                  <span className="event-location-pin" aria-hidden="true">📍</span>
+                  <span>{event.location.name}</span>
+                </div>
+                <div className="event-location-actions">
+                  {locationDisplayLink && (
+                    <a
+                      className="event-location-button ghost"
+                      href={locationDisplayLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Open map
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    className="event-location-button secondary"
+                    onClick={() => setEditingLocation(true)}
+                  >
+                    Update
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="event-location-empty">
+                <p>Haven't picked a venue yet? Drop a pin whenever you're ready.</p>
+                <button
+                  type="button"
+                  className="event-location-button secondary"
+                  onClick={() => setEditingLocation(true)}
+                >
+                  Add location
+                </button>
+              </div>
+            )}
+
+            {editingLocation && (
+              <div className="event-location-form">
+                <label htmlFor="location-name">Location name or address</label>
+                <input
+                  id="location-name"
+                  type="text"
+                  value={locationName}
+                  onChange={(e) => setLocationName(e.target.value)}
+                  placeholder="Meeple Tower HQ, 123 Boardwalk Ave"
+                />
+                <label htmlFor="location-link">Map / directions link (optional)</label>
+                <div className="location-link-row">
+                  <input
+                    id="location-link"
+                    type="url"
+                    value={locationLink}
+                    onChange={(e) => setLocationLink(e.target.value)}
+                    placeholder="https://maps.app.goo.gl/..."
+                  />
+                  <button
+                    type="button"
+                    className="generate-map-button"
+                    onClick={handleGenerateMapLink}
+                  >
+                    Drop a pin
+                  </button>
+                </div>
+                <p className="location-helper">
+                  Leave the link empty and we&apos;ll build a Google Maps search automatically.
+                </p>
+                <div className="location-form-actions">
+                  {event.location && (
+                    <button
+                      type="button"
+                      className="event-location-button ghost"
+                      onClick={() => void handleClearLocation()}
+                      disabled={savingLocation}
+                    >
+                      Remove
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="event-location-button secondary"
+                    onClick={handleCancelLocationEdit}
+                    disabled={savingLocation}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="event-location-button"
+                    onClick={() => void handleSaveLocation()}
+                    disabled={savingLocation}
+                  >
+                    {savingLocation ? 'Saving...' : 'Save location'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="reaction-inline">
             <div className="reaction-summary">
               {hasReactions ? (
@@ -514,6 +740,19 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
               >
                 Archive Event
               </button>
+              {!event.isTrashed && (
+                <button
+                  type="button"
+                  className="actions-menu-item destructive"
+                  role="menuitem"
+                  onClick={() => {
+                    closeActionsMenu();
+                    void handleTrashEvent();
+                  }}
+                >
+                  Move to Trash
+                </button>
+              )}
               <div className="actions-menu-divider" role="separator"></div>
               <div className="actions-menu-subtitle">Change Event Type</div>
               <div className="actions-type-grid">

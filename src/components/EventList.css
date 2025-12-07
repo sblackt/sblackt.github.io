@@ -205,11 +205,45 @@
   color: #721c24;
 }
 
+.event-card-image {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.event-card-image img {
+  display: block;
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
 .event-description {
   color: #6c757d;
   font-size: 14px;
   line-height: 1.5;
   margin-bottom: 16px;
+}
+
+.event-location-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--accent-color, #d1d5ff);
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--accent-text, #2d2f55);
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.event-location-pin {
+  font-size: 16px;
+  line-height: 1;
 }
 
 .event-meta {

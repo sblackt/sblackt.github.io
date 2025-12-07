@@ -423,6 +423,58 @@
             font-size: 1rem;
         }
 
+        .heat-history {
+            background: rgba(15, 23, 42, 0.68);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1.5rem;
+            margin-top: 1.25rem;
+            box-shadow: 0 16px 30px -25px rgba(15, 23, 42, 0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .heat-history__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1.25rem;
+            color: rgba(248, 250, 252, 0.9);
+        }
+
+        .heat-history__header h3 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-family: 'Hepta Slab', 'Inter', serif;
+        }
+
+        .heat-history__header p {
+            margin: 0.35rem 0 0;
+            color: rgba(248, 250, 252, 0.7);
+        }
+
+        .heat-history__range {
+            align-self: flex-start;
+            padding: 0.35rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 250, 252, 0.25);
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(248, 250, 252, 0.7);
+        }
+
+        .heat-history__chart {
+            width: 100%;
+            height: clamp(220px, 32vh, 360px);
+        }
+
+        .heat-history__chart canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
         .insights-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -552,6 +604,23 @@
                 flex-direction: column;
                 gap: 0.75rem;
             }
+
+            .heat-history {
+                padding: 1.2rem;
+            }
+
+            .heat-history__header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .heat-history__range {
+                align-self: stretch;
+            }
+
+            .heat-history__chart {
+                height: clamp(200px, 40vh, 300px);
+            }
         }
 
         @media (max-width: 640px) {
@@ -667,6 +736,18 @@
                     <p id="insights-summary">Waiting for enough readings to build insights.</p>
                 </div>
             </div>
+            <section class="heat-history" aria-labelledby="heat-history-title">
+                <div class="heat-history__header">
+                    <div>
+                        <h3 id="heat-history-title">Heat history</h3>
+                        <p id="heat-history-summary">Loading historical readings…</p>
+                    </div>
+                    <span class="heat-history__range">Loading range…</span>
+                </div>
+                <div class="heat-history__chart">
+                    <canvas id="heat-history-chart" aria-label="Indoor temperature trend over time"></canvas>
+                </div>
+            </section>
             <section id="insights-grid" class="insights-grid" aria-live="polite"></section>
         </section>
 
@@ -677,6 +758,11 @@
         const REFRESH_INTERVAL = 60000;
         const USERNAME = 'sblackt';
         const DATA_LIMIT = 288;
+        const HISTORY_DAYS = 7;
+        const TEMPERATURE_HISTORY_LIMIT = DATA_LIMIT * HISTORY_DAYS;
+        const TEMPERATURE_HISTORY_START = new Date('2023-11-06T00:00:00Z');
+        const TEMPERATURE_HISTORY_MAX_POINTS = 60000;
+        const TEMPERATURE_HISTORY_CHUNK = 1000;
         const HUMOR_LINES = {
             'home.temperature': {
                 warm: [
@@ -821,6 +907,25 @@
             }
         ];
 
+        const FURNACE_PROFILE = {
+            name: 'Newmac solid fuel/oil forced-air furnace',
+            leadTimeMinutes: 25,
+            defaultCoolingRate: 0.35,
+            sizeBands: [
+                { id: 'coast', title: 'Coast on embers', minRise: -Infinity, maxRise: 0.4, detail: 'Let the blower sip stored plenum heat and skip a reload.' },
+                { id: 'top-up', title: 'Small top-up', minRise: 0.4, maxRise: 1.6, detail: 'Two or three splits keep the ducts warm without overheating bedrooms.' },
+                { id: 'medium', title: 'Medium reload', minRise: 1.6, maxRise: 3.2, detail: 'Half load the box so the forced air can cruise through the day.' },
+                { id: 'large', title: 'Large burn', minRise: 3.2, maxRise: Infinity, detail: 'Full firebox to saturate the plenum for a long hold.' }
+            ]
+        };
+
+        const FIRE_DAYPARTS = [
+            { id: 'morning', label: 'Morning charge', startHour: 4, endHour: 11, goalHours: 6, anchor: true, anchorHour: 6, defaultSize: 'large' },
+            { id: 'day', label: 'Day cruise', startHour: 11, endHour: 17, goalHours: 5, anchor: false, anchorHour: 14, defaultSize: 'medium' },
+            { id: 'evening', label: 'Evening charge', startHour: 17, endHour: 22, goalHours: 9, anchor: true, anchorHour: 20, defaultSize: 'large' },
+            { id: 'overnight', label: 'Overnight stretch', startHour: 22, endHour: 4, goalHours: 5, anchor: false, anchorHour: 1, defaultSize: 'top-up' }
+        ];
+
         const CARD_STATE_CLASSES = {
             cold: 'metric-card--cold',
             warm: 'metric-card--warm',
@@ -848,13 +953,17 @@
             dashboardView: document.getElementById('dashboard-view'),
             insightsView: document.getElementById('insights-view'),
             insightsGrid: document.getElementById('insights-grid'),
-            insightsSummary: document.getElementById('insights-summary')
+            insightsSummary: document.getElementById('insights-summary'),
+            heatHistorySummary: document.getElementById('heat-history-summary'),
+            heatHistoryCanvas: document.getElementById('heat-history-chart'),
+            heatHistoryRange: document.querySelector('.heat-history__range')
         };
 
         const charts = new Map();
         let refreshTimer = null;
         let activeView = 'dashboard';
         let latestWeather = null;
+        let heatHistoryChart = null;
 
         init();
 
@@ -930,12 +1039,14 @@
             dom.refresh.disabled = true;
 
             try {
-                const [feeds, weather] = await Promise.all([
+                const [feeds, weather, temperatureHistory] = await Promise.all([
                     Promise.all(FEEDS.map(feed => fetchFeedData(feed))),
-                    fetchWeatherData()
+                    fetchWeatherData(),
+                    fetchTemperatureHistory(TEMPERATURE_HISTORY_LIMIT)
                 ]);
                 latestWeather = weather;
                 updateDashboard(feeds, weather);
+                updateHeatHistory(feeds.find(feed => feed.id === 'home.temperature'), temperatureHistory);
                 dom.status.textContent = `Updated ${formatDateTime(new Date())} · ${USERNAME} · Last ${DATA_LIMIT} points`;
             } catch (error) {
                 console.error(error);
@@ -1020,6 +1131,101 @@
             }
         }
 
+        async function fetchTemperatureHistory(limit = TEMPERATURE_HISTORY_LIMIT) {
+            const feed = FEEDS.find(item => item.id === 'home.temperature');
+            if (!feed) {
+                return [];
+            }
+            const startDate = TEMPERATURE_HISTORY_START instanceof Date && !Number.isNaN(TEMPERATURE_HISTORY_START.getTime())
+                ? TEMPERATURE_HISTORY_START
+                : null;
+            const adjustValue = typeof feed.adjust === 'function'
+                ? feed.adjust
+                : (value => value + (typeof feed.offset === 'number' ? feed.offset : 0));
+            const baseLimit = Number.isFinite(limit) ? Math.max(DATA_LIMIT, Math.floor(limit)) : TEMPERATURE_HISTORY_LIMIT;
+            const now = Date.now();
+            const samplesPerDay = DATA_LIMIT;
+            const spanMs = startDate ? Math.max(0, now - startDate.getTime()) : 0;
+            const spanDays = startDate ? Math.max(1, Math.ceil(spanMs / (24 * 60 * 60 * 1000))) : 0;
+            const targetSamples = startDate
+                ? Math.max(baseLimit, Math.min(TEMPERATURE_HISTORY_MAX_POINTS, spanDays * samplesPerDay))
+                : Math.min(baseLimit, TEMPERATURE_HISTORY_MAX_POINTS);
+            const entries = [];
+            let nextEndTime = Date.now();
+            let guard = 0;
+
+            while (entries.length < targetSamples && guard < 500) {
+                const remaining = targetSamples - entries.length;
+                if (remaining <= 0) {
+                    break;
+                }
+                const chunkLimit = Math.min(TEMPERATURE_HISTORY_CHUNK, remaining);
+                const params = new URLSearchParams({ limit: chunkLimit });
+                if (nextEndTime) {
+                    params.set('end_time', new Date(nextEndTime).toISOString());
+                }
+                const url = `https://io.adafruit.com/api/v2/${encodeURIComponent(USERNAME)}/feeds/${encodeURIComponent(feed.id)}/data?${params.toString()}`;
+                let response;
+                try {
+                    response = await fetch(url, { cache: 'no-store' });
+                } catch (networkError) {
+                    console.warn('Temperature history request failed', networkError);
+                    break;
+                }
+                if (response.status === 404) {
+                    console.warn('Temperature feed not found for history fetch');
+                    break;
+                }
+                if (!response.ok) {
+                    console.warn(`Temperature history chunk failed (${response.status})`);
+                    break;
+                }
+                const raw = await response.json();
+                if (!Array.isArray(raw) || !raw.length) {
+                    break;
+                }
+                const chunk = raw
+                    .map(entry => {
+                        const rawValue = Number.parseFloat(entry.value);
+                        const timestamp = Date.parse(entry.created_at ?? entry.createdAt);
+                        if (!Number.isFinite(rawValue) || Number.isNaN(timestamp)) {
+                            return null;
+                        }
+                        const adjusted = adjustValue(rawValue);
+                        return Number.isFinite(adjusted)
+                            ? { value: adjusted, timestamp }
+                            : null;
+                    })
+                    .filter(Boolean);
+                if (!chunk.length) {
+                    break;
+                }
+                entries.push(...chunk);
+                const oldestTs = chunk.reduce((acc, entry) => Math.min(acc, entry.timestamp), Number.POSITIVE_INFINITY);
+                if (!Number.isFinite(oldestTs)) {
+                    break;
+                }
+                nextEndTime = oldestTs - 1000;
+                if (startDate && oldestTs <= startDate.getTime()) {
+                    break;
+                }
+                guard += 1;
+            }
+
+            if (!entries.length) {
+                return [];
+            }
+
+            const filtered = entries
+                .filter(entry => !startDate || entry.timestamp >= startDate.getTime())
+                .sort((a, b) => a.timestamp - b.timestamp);
+            const maxReturn = Math.min(targetSamples, TEMPERATURE_HISTORY_MAX_POINTS);
+            if (filtered.length > maxReturn) {
+                return filtered.slice(filtered.length - maxReturn);
+            }
+            return filtered;
+        }
+
         function updateDashboard(feeds, weather) {
             const latestPayload = buildLatestPayload(feeds);
             if (latestPayload) {
@@ -1043,6 +1249,101 @@
             removeStaleCards(dom.metricGrid, seen, 'card');
             removeStaleCards(dom.detailGrid, seen, 'detail');
             updateInsights(feeds, weather);
+        }
+
+        function updateHeatHistory(feed, history) {
+            if (!dom.heatHistoryCanvas || !dom.heatHistorySummary) {
+                return;
+            }
+            if (!feed || !Array.isArray(history) || !history.length) {
+                dom.heatHistorySummary.textContent = 'Need more readings to render heat history.';
+                if (dom.heatHistoryRange) {
+                    dom.heatHistoryRange.textContent = 'Range unavailable';
+                }
+                resetHeatHistoryChart();
+                return;
+            }
+            const points = history
+                .filter(entry => Number.isFinite(entry.value) && Number.isFinite(entry.timestamp))
+                .map(entry => ({ x: new Date(entry.timestamp), y: entry.value }));
+            if (!points.length) {
+                dom.heatHistorySummary.textContent = 'Waiting for valid readings.';
+                resetHeatHistoryChart();
+                return;
+            }
+            points.sort((a, b) => a.x - b.x);
+            const values = points.map(point => point.y);
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            const unitLabel = feed.unit || '°C';
+            const startDate = points[0].x;
+            const endDate = points[points.length - 1].x;
+            const startLabel = formatDateTime(startDate);
+            const endLabel = formatDateTime(endDate);
+            dom.heatHistorySummary.textContent = `High ${formatNumber(max)}${unitLabel} / Low ${formatNumber(min)}${unitLabel} · ${startLabel} → ${endLabel}`;
+            if (dom.heatHistoryRange) {
+                dom.heatHistoryRange.textContent = formatHistoryRangeLabel(startDate, endDate);
+            }
+
+            if (!heatHistoryChart) {
+                heatHistoryChart = new Chart(dom.heatHistoryCanvas, {
+                    type: 'line',
+                    data: {
+                        datasets: [{
+                            label: 'Indoor temperature',
+                            data: points,
+                            borderColor: '#fb923c',
+                            backgroundColor: 'rgba(251, 146, 60, 0.15)',
+                            pointRadius: 0,
+                            tension: 0.25,
+                            fill: true,
+                            parsing: false,
+                            spanGaps: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    tooltipFormat: 'MMM d, h a'
+                                },
+                                ticks: {
+                                    color: 'rgba(248, 250, 252, 0.65)' ,
+                                    maxRotation: 0
+                                },
+                                grid: {
+                                    color: 'rgba(148, 163, 184, 0.25)'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: 'rgba(248, 250, 252, 0.75)'
+                                },
+                                grid: {
+                                    color: 'rgba(148, 163, 184, 0.25)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label(context) {
+                                        return `${formatNumber(context.parsed.y)}${unitLabel}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                heatHistoryChart.data.datasets[0].data = points;
+                heatHistoryChart.update('none');
+            }
         }
 
         function updateInsights(feeds, weather) {
@@ -1094,6 +1395,11 @@
             const fireTiming = buildFireTimingInsight(fireAnalysis, temperatureFeed);
             if (fireTiming) {
                 cards.push(fireTiming);
+            }
+
+            const firePlaybook = buildFirePlaybookInsight(fireAnalysis, temperatureFeed);
+            if (firePlaybook) {
+                cards.push(firePlaybook);
             }
 
             const humidityComfort = buildComfortInsight(humidityFeed, { min: 40, max: 60, label: 'Humidity sweet spot' });
@@ -1411,6 +1717,13 @@
             const chart = charts.get(feedId);
             chart.data.datasets[0].data = [];
             chart.update('none');
+        }
+
+        function resetHeatHistoryChart() {
+            if (heatHistoryChart) {
+                heatHistoryChart.destroy();
+                heatHistoryChart = null;
+            }
         }
 
         function removeStaleCards(container, seenSet, type) {
@@ -1913,6 +2226,12 @@ function exposeLatestJson(payload) {
                                 durationHours
                             });
                         }
+                        event.holdHours = durationHours;
+                        event.dropTime = dropTs;
+                        const eventCoolingRate = durationHours > 0 ? dropAmount / durationHours : null;
+                        if (Number.isFinite(eventCoolingRate)) {
+                            event.coolingRate = eventCoolingRate;
+                        }
                     }
                 }
             });
@@ -1961,6 +2280,8 @@ function exposeLatestJson(payload) {
                 ? events.length / (coverageHours / 24)
                 : null;
 
+            const daypartProfiles = summarizeFireDayparts(events);
+
             return {
                 events,
                 coverageHours,
@@ -1974,7 +2295,8 @@ function exposeLatestJson(payload) {
                 nextFireTime,
                 lastFireTime: events.length ? events[events.length - 1].peakTime : null,
                 targetTemp: TARGET_TEMP,
-                currentTemp: currentPoint.value
+                currentTemp: currentPoint.value,
+                daypartProfiles
             };
         }
 
@@ -2073,6 +2395,61 @@ function exposeLatestJson(payload) {
                 icon: '🪵',
                 progress,
                 progressLabel
+            };
+        }
+
+        function buildFirePlaybookInsight(analysis, feed) {
+            if (!analysis || !feed || !Array.isArray(analysis.events) || !analysis.events.length) {
+                return null;
+            }
+            const now = new Date();
+            const daypart = inferFireDaypart(now) || FIRE_DAYPARTS[0];
+            const daypartProfile = Array.isArray(analysis.daypartProfiles)
+                ? analysis.daypartProfiles.find(part => part.id === daypart.id && part.count)
+                : null;
+            const coolingRate = analysis.recentCoolingRate || analysis.avgCoolingRate || FURNACE_PROFILE.defaultCoolingRate;
+            const predictedHold = analysis.predictedHoursToTarget ?? analysis.avgHoldHours ?? 0;
+            const nextAnchor = findNextFireAnchor(now);
+            const targetHold = Math.max(daypart.goalHours || 3, nextAnchor?.hoursUntil || 0);
+            let neededRise = 0;
+            if (coolingRate && predictedHold < targetHold) {
+                neededRise = (targetHold - predictedHold) * coolingRate;
+            }
+            const firePlan = classifyFireSizePlan(neededRise, daypart.defaultSize);
+            const startTime = estimateFireStartTime(analysis, nextAnchor);
+            const unitLabel = feed.unit || '°C';
+            const anchorLabel = nextAnchor
+                ? `${nextAnchor.label.toLowerCase()} (${formatTime(nextAnchor.timestamp)})`
+                : 'the next anchor';
+            const actionSentence = firePlan.id === 'coast'
+                ? 'Let the plenum cruise and watch for the next call for heat.'
+                : `Aim to reload around ${startTime ? formatTime(startTime) : 'the next hour'} so the forced-air blower has time to pull heat.`;
+            const needSentence = neededRise > 0.2 && Number.isFinite(neededRise)
+                ? `Need ~${formatNumber(neededRise)}${unitLabel} boost to stay above ${analysis.targetTemp ?? 18}° until ${anchorLabel}.`
+                : `Buffer looks good heading into ${anchorLabel}.`;
+            const summaryParts = [actionSentence, needSentence];
+            if (daypartProfile && daypartProfile.avgRise) {
+                const holdPhrase = Number.isFinite(daypartProfile.avgHoldHours)
+                    ? `holds ${formatDuration(daypartProfile.avgHoldHours * 3600000)}`
+                    : 'is the typical lift';
+                summaryParts.push(`Your ${daypart.label.toLowerCase()} burns average ${formatNumber(daypartProfile.avgRise)}${unitLabel} and ${holdPhrase}.`);
+            }
+            const metaParts = [FURNACE_PROFILE.name, daypart.label];
+            if (analysis.lastFireTime) {
+                metaParts.push(`Last fire ${formatTime(new Date(analysis.lastFireTime))}`);
+            }
+            if (firePlan.id !== 'coast' && startTime && nextAnchor?.timestamp && startTime > nextAnchor.timestamp) {
+                summaryParts.push('Start a little before that anchor so ducts stay ahead of demand.');
+            }
+            return {
+                id: `${feed.id}-fire-playbook`,
+                label: 'Fire playbook',
+                value: firePlan.title,
+                summary: summaryParts.join(' '),
+                meta: metaParts.join(' · '),
+                priority: 1.5,
+                variant: 'fire',
+                icon: '🏷️'
             };
         }
 
@@ -2417,6 +2794,116 @@ function exposeLatestJson(payload) {
             return Math.abs(slopePerHour);
         }
 
+        function summarizeFireDayparts(events) {
+            if (!Array.isArray(events) || !events.length) {
+                return FIRE_DAYPARTS.map(part => ({ ...part, count: 0 }));
+            }
+            const buckets = FIRE_DAYPARTS.map(part => ({ id: part.id, count: 0, totalRise: 0, totalHold: 0, totalDuration: 0 }));
+            const lookup = new Map(buckets.map(bucket => [bucket.id, bucket]));
+            events.forEach(event => {
+                const bucket = lookup.get((inferFireDaypart(event.startTime) || {}).id);
+                if (!bucket) {
+                    return;
+                }
+                bucket.count += 1;
+                if (Number.isFinite(event.rise)) {
+                    bucket.totalRise += event.rise;
+                }
+                if (Number.isFinite(event.holdHours)) {
+                    bucket.totalHold += event.holdHours;
+                }
+                if (Number.isFinite(event.durationMs)) {
+                    bucket.totalDuration += event.durationMs / 3600000;
+                }
+            });
+            return FIRE_DAYPARTS.map(part => {
+                const stats = lookup.get(part.id);
+                if (!stats || !stats.count) {
+                    return { ...part, count: stats?.count || 0 };
+                }
+                return {
+                    ...part,
+                    count: stats.count,
+                    avgRise: stats.totalRise / stats.count,
+                    avgHoldHours: stats.totalHold > 0 ? stats.totalHold / stats.count : null,
+                    avgBurnHours: stats.totalDuration > 0 ? stats.totalDuration / stats.count : null
+                };
+            });
+        }
+
+        function inferFireDaypart(input) {
+            const date = input instanceof Date ? input : new Date(input);
+            if (Number.isNaN(date.getTime())) {
+                return FIRE_DAYPARTS[0] || null;
+            }
+            const hour = date.getHours() + (date.getMinutes() / 60);
+            return FIRE_DAYPARTS.find(part => isHourWithinRange(hour, part.startHour, part.endHour)) || FIRE_DAYPARTS[0];
+        }
+
+        function isHourWithinRange(hour, start, end) {
+            if (!Number.isFinite(hour) || !Number.isFinite(start) || !Number.isFinite(end)) {
+                return false;
+            }
+            if (start <= end) {
+                return hour >= start && hour < end;
+            }
+            return hour >= start || hour < end;
+        }
+
+        function findNextFireAnchor(now) {
+            const date = now instanceof Date ? now : new Date(now);
+            if (Number.isNaN(date.getTime())) {
+                return null;
+            }
+            let candidate = null;
+            FIRE_DAYPARTS.filter(part => part.anchor).forEach(part => {
+                const anchorHour = Number.isFinite(part.anchorHour) ? part.anchorHour : part.startHour;
+                if (!Number.isFinite(anchorHour)) {
+                    return;
+                }
+                const target = new Date(date);
+                target.setHours(anchorHour, 0, 0, 0);
+                if (target <= date) {
+                    target.setDate(target.getDate() + 1);
+                }
+                if (!candidate || target < candidate.timestamp) {
+                    candidate = {
+                        ...part,
+                        timestamp: target,
+                        hoursUntil: (target - date) / 3600000
+                    };
+                }
+            });
+            return candidate;
+        }
+
+        function classifyFireSizePlan(neededRise, fallbackId) {
+            const rise = Number.isFinite(neededRise) ? neededRise : 0;
+            const band = FURNACE_PROFILE.sizeBands.find(entry => rise >= entry.minRise && rise < entry.maxRise);
+            if (band) {
+                return band;
+            }
+            return FURNACE_PROFILE.sizeBands.find(entry => entry.id === fallbackId) || FURNACE_PROFILE.sizeBands[FURNACE_PROFILE.sizeBands.length - 1];
+        }
+
+        function estimateFireStartTime(analysis, nextAnchor) {
+            if (!analysis) {
+                return null;
+            }
+            const leadMs = Math.max((FURNACE_PROFILE.leadTimeMinutes || 20) * 60000, 5 * 60 * 1000);
+            if (analysis.currentTemp <= (analysis.targetTemp ?? 18)) {
+                return new Date();
+            }
+            if (analysis.nextFireTime) {
+                const ts = Math.max(Date.now(), analysis.nextFireTime - leadMs);
+                return new Date(ts);
+            }
+            if (nextAnchor?.timestamp) {
+                return new Date(Math.max(Date.now(), nextAnchor.timestamp - leadMs));
+            }
+            return null;
+        }
+
         function computeDewPoint(tempC, humidity) {
             if (!Number.isFinite(tempC) || !Number.isFinite(humidity) || humidity <= 0 || humidity > 100) {
                 return null;
@@ -2434,6 +2921,30 @@ function exposeLatestJson(payload) {
             }
             const transferFactor = 0.3; // heuristic for double-pane performance
             return outdoorTemp + (indoorTemp - outdoorTemp) * transferFactor;
+        }
+
+        function formatHistoryRangeLabel(startDate, endDate) {
+            if (!(startDate instanceof Date) || !(endDate instanceof Date) || Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+                return 'Range unavailable';
+            }
+            const spanMs = endDate - startDate;
+            if (!Number.isFinite(spanMs) || spanMs <= 0) {
+                return 'Range unavailable';
+            }
+            const spanDays = spanMs / (24 * 60 * 60 * 1000);
+            if (spanDays <= 1) {
+                return 'Last 24 hours';
+            }
+            if (spanDays <= 7) {
+                return `Last ${Math.round(spanDays)} days`;
+            }
+            const opts = { month: 'short', day: 'numeric' };
+            const startLabel = startDate.toLocaleDateString([], startDate.getFullYear() !== endDate.getFullYear() ? { ...opts, year: 'numeric' } : opts);
+            const endLabel = endDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+            if (spanDays >= 60) {
+                return `Since ${startLabel}`;
+            }
+            return `${startLabel} → ${endLabel}`;
         }
 
         function formatDuration(ms) {

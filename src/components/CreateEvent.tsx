@@ -85,6 +85,7 @@ const normalizeTimeValue = (value: string): string | undefined => {
 const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [eventType, setEventType] = useState(DEFAULT_EVENT_TYPE);
   const [links, setLinks] = useState<Array<{ label: string; url: string }>>([
     { label: '', url: '' }
@@ -264,16 +265,19 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
           url: url.trim()
         }))
         .filter(({ label, url }) => label || url);
+      const trimmedImageUrl = imageUrl.trim();
 
       const eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'> = {
         title: title.trim(),
         description: description.trim() || '',
+        ...(trimmedImageUrl ? { imageUrl: trimmedImageUrl } : {}),
         eventType,
         createdBy: 'Anonymous', // You could add user management later
         timeSlots,
         participants: [], // Start with empty participants list
         isActive: true,
         isCompleted: false,
+        isTrashed: false,
         reactions: {},
         ...(sanitizedLinks.length ? { links: sanitizedLinks } : {})
       };
@@ -312,6 +316,21 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
               placeholder="e.g., Friday Night Hangout"
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="image-url">Cover Image URL (optional)</label>
+            <input
+              type="url"
+              id="image-url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://example.com/photo.jpg"
+              inputMode="url"
+            />
+            <p className="form-helper">
+              Add a hosted image link to dress up the event card. We&apos;ll use it anywhere the event appears.
+            </p>
           </div>
           
           <div className="form-group">

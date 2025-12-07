@@ -8,10 +8,16 @@ export interface TimeSlot {
 
 export type EventCategory = 'board-game' | 'hangout' | 'worker-bee' | 'dnd' | 'other';
 
+export interface EventLocation {
+  name: string;
+  mapUrl?: string;
+}
+
 export interface Event {
   id: string;
   title: string;
   description?: string;
+  imageUrl?: string;
   eventType?: EventCategory;
   confirmedTimeSlotId?: string | null;
   links?: Array<{ label: string; url: string }>;
@@ -22,11 +28,13 @@ export interface Event {
   participants: string[];
   isActive: boolean;
   isCompleted: boolean;
+  isTrashed?: boolean;
   reactions?: Record<string, number>;
   reminderSettings?: {
     daysBefore?: number[];
   };
   remindersSent?: Record<string, string>;
+  location?: EventLocation | null;
 }
 
 export interface AvailabilityResponse {

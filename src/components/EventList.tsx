@@ -115,9 +115,22 @@ const EventList: React.FC<EventListProps> = ({
                     Planned: {format(parseLocalDate(plannedSlot.date), 'MMM d, yyyy')}
                   </div>
                 )}
+
+                {event.imageUrl && (
+                  <div className="event-card-image">
+                    <img src={event.imageUrl} alt={`${event.title} cover art`} loading="lazy" />
+                  </div>
+                )}
                 
                 {event.description && (
                   <p className="event-description">{event.description}</p>
+                )}
+
+                {event.location?.name && (
+                  <div className="event-location-chip">
+                    <span className="event-location-pin" aria-hidden="true">📍</span>
+                    <span>{event.location.name}</span>
+                  </div>
                 )}
                 
                 <div className="event-meta">
