@@ -541,19 +541,6 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     : '';
   const timeSlotsToShow = plannedSlot ? [plannedSlot] : event.timeSlots;
 
-  const getBestTimeSlots = () => {
-    return timeSlotsToShow
-      .map(slot => {
-        const { available, unavailable } = getAvailabilityForTimeSlot(slot.id);
-        const score = available.length - unavailable.length;
-        return { ...slot, score, available, unavailable };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3);
-  };
-
-  const bestSlots = getBestTimeSlots().slice(0, 6);
-
   // Get unique participants from responses
   const uniqueParticipants = Array.from(new Set(responses.map(r => r.participantName)));
   const reactionCounts: Record<string, number> = event.reactions ?? {};
@@ -1046,48 +1033,6 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
             >
               Change date
             </button>
-          </div>
-        </div>
-      )}
-
-      {!plannedSlot && bestSlots.length > 0 && (
-        <div className="best-times">
-          <h3>Best Times (based on responses)</h3>
-          <div className="best-times-grid">
-            {bestSlots.map((slot) => (
-              <div key={slot.id} className="best-time-slot">
-                <div className="time-info">
-                  <strong>{format(parseLocalDate(slot.date), 'EEE, MMM d')}</strong>
-                  <span>{formatSlotTime(slot.time)}</span>
-                </div>
-                <div className="availability-summary">
-                  <span className="available-count">✓ {slot.available.length}</span>
-                  <span className="unavailable-count">✗ {slot.unavailable.length}</span>
-                </div>
-                <div className="planned-actions">
-                  {event.confirmedTimeSlotId === slot.id ? (
-                    <button
-                      type="button"
-                      className="planned-chip planned-chip--active"
-                      onClick={() => handleConfirmTimeSlot(null)}
-                      disabled={planning}
-                    >
-                      Planned
-                      <span className="planned-chip__action">Clear</span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="planned-chip"
-                      onClick={() => handleConfirmTimeSlot(slot.id)}
-                      disabled={planning}
-                    >
-                      Set as planned
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       )}

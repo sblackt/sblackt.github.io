@@ -1060,67 +1060,6 @@
   font-size: 14px;
 }
 
-.best-times {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  margin-bottom: 24px;
-}
-
-.best-times h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 20px 0;
-}
-
-.best-times-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
-}
-
-.best-time-slot {
-  background: #f8f9fa;
-  border: 2px solid var(--accent-bg, #e9ecef);
-  border-radius: 8px;
-  padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.time-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.time-info strong {
-  font-size: 16px;
-  color: #333;
-}
-
-.time-info span {
-  font-size: 14px;
-  color: #6c757d;
-}
-
-.availability-summary {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.planned-actions {
-  margin-left: auto;
-}
-
 .planned-chip {
   border: 1px dashed var(--accent-color, #667eea);
   background: var(--accent-bg, #eef2ff);
@@ -1146,6 +1085,12 @@
 .planned-chip:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.planned-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
 }
 
 .available-count {
@@ -1251,10 +1196,6 @@
   
   .event-actions {
     justify-content: flex-start;
-  }
-  
-  .best-times-grid {
-    grid-template-columns: 1fr;
   }
   
   .event-title-row {
