@@ -251,37 +251,81 @@
 
 .event-links-list {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 10px;
   margin-bottom: 24px;
 }
 
 .event-link-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  text-decoration: none;
-  color: var(--accent-text, #2d2f55);
-  font-weight: 600;
-  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   background: rgba(0, 0, 0, 0.02);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  flex-wrap: wrap;
 }
 
-.event-link-chip:hover,
-.event-link-chip:focus-visible {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+.event-link-chip-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-link-chip-label {
+  display: block;
+  font-weight: 600;
+  color: #2d2f55;
+}
+
+.event-link-chip-url {
+  font-size: 13px;
+  color: #6b7280;
+  word-break: break-all;
+}
+
+.event-link-chip-actions {
+  display: inline-flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.event-link-chip-open,
+.event-link-chip-copy {
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: white;
+  color: #2d2f55;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.event-link-chip-open:hover,
+.event-link-chip-copy:hover,
+.event-link-chip-open:focus-visible,
+.event-link-chip-copy:focus-visible {
+  background: rgba(0, 0, 0, 0.04);
   outline: none;
 }
 
+.event-link-chip-open {
+  background: var(--accent-color, #667eea);
+  color: white;
+  border-color: transparent;
+}
+
+.event-link-chip-open:hover,
+.event-link-chip-open:focus-visible {
+  box-shadow: 0 8px 18px rgba(102, 126, 234, 0.3);
+}
+
 .event-location-card {
-  border: 1px dashed var(--accent-color, #b4c6ff);
+  border: 1px dashed rgba(102, 126, 234, 0.5);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.65);
   padding: 20px;
   margin-bottom: 20px;
 }

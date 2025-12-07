@@ -35,6 +35,34 @@ const buildShareLink = (eventId: string): string => {
   return url.toString();
 };
 
+const copyTextToClipboard = async (value: string): Promise<boolean> => {
+  if (navigator?.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch (error) {
+      console.warn('navigator.clipboard failed, falling back to execCommand', error);
+    }
+  }
+
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = value;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return successful;
+  } catch (error) {
+    console.error('Fallback copy failed:', error);
+    return false;
+  }
+};
+
 const buildMapSearchLink = (location: string): string => {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
 };
@@ -555,12 +583,28 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     ];
 
     try {
-      await navigator.clipboard.writeText(shareLines.join('\n'));
+      const copied = await copyTextToClipboard(shareLines.join('\n'));
+      if (!copied) {
+        throw new Error('Copy failed');
+      }
       setActionsMenuOpen(false);
       alert('Event link copied to clipboard');
     } catch (error) {
       console.error('Error copying event link:', error);
       alert('Could not copy the event link. Please try again.');
+    }
+  };
+
+  const handleCopyLinkUrl = async (url: string) => {
+    try {
+      const copied = await copyTextToClipboard(url);
+      if (!copied) {
+        throw new Error('Copy failed');
+      }
+      alert('Link copied!');
+    } catch (error) {
+      console.error('Error copying link:', error);
+      alert('Could not copy that link. Tap and hold to copy manually.');
     }
   };
 
@@ -713,16 +757,32 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
             event.links && event.links.length > 0 && (
               <div className="event-links-list">
                 {event.links.map((link, index) => (
-                  <a
+                  <div
                     key={`${link.label}-${index}`}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="event-link-chip"
                   >
-                    <span>{link.label || link.url}</span>
-                    <span aria-hidden="true">↗</span>
-                  </a>
+                    <div className="event-link-chip-text">
+                      <span className="event-link-chip-label">{link.label || 'Link'}</span>
+                      <span className="event-link-chip-url">{link.url}</span>
+                    </div>
+                    <div className="event-link-chip-actions">
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="event-link-chip-open"
+                      >
+                        Open
+                      </a>
+                      <button
+                        type="button"
+                        className="event-link-chip-copy"
+                        onClick={() => void handleCopyLinkUrl(link.url)}
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
                 ))}
               </div>
             )
@@ -730,13 +790,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
 
           <div className="event-location-card">
             <div className="event-location-header">
-              <div>
-                <p className="event-location-eyebrow">Where are we meeting?</p>
-                <h3>Drop a pin for the crew</h3>
-                <p className="event-location-subcopy">
-                  Add the meetup spot once it's confirmed — we can auto-build a Maps link.
-                </p>
-              </div>
+              <p className="event-location-eyebrow">Meetup spot</p>
               {!editingLocation && (
                 <button 
                   type="button" 
@@ -776,14 +830,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
               </div>
             ) : (
               <div className="event-location-empty">
-                <p>Haven't picked a venue yet? Drop a pin whenever you're ready.</p>
-                <button
-                  type="button"
-                  className="event-location-button secondary"
-                  onClick={() => setEditingLocation(true)}
-                >
-                  Add location
-                </button>
+                <p>Haven&apos;t picked a venue yet? Once you decide, hit “Add location” to share it.</p>
               </div>
             )}
 
