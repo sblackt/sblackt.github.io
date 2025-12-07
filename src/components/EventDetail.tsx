@@ -61,6 +61,13 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const [locationName, setLocationName] = useState(event.location?.name ?? '');
   const [locationLink, setLocationLink] = useState(event.location?.mapUrl ?? '');
   const [savingLocation, setSavingLocation] = useState(false);
+  const normalizeDetailLinks = (links?: Array<{ label: string; url: string }>) =>
+    links && links.length > 0 ? links : [{ label: '', url: '' }];
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [detailsDescription, setDetailsDescription] = useState(event.description ?? '');
+  const [detailsImageUrl, setDetailsImageUrl] = useState(event.imageUrl ?? '');
+  const [detailsLinks, setDetailsLinks] = useState<Array<{ label: string; url: string }>>(normalizeDetailLinks(event.links));
+  const [savingDetails, setSavingDetails] = useState(false);
   const actionsMenuRef = useRef<HTMLDivElement | null>(null);
   const reactionPickerRef = useRef<HTMLDivElement | null>(null);
   const theme = getEventTypeConfig(event.eventType);
@@ -116,6 +123,14 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     setLocationName(event.location?.name ?? '');
     setLocationLink(event.location?.mapUrl ?? '');
   }, [event.id, event.location?.name, event.location?.mapUrl]);
+
+  useEffect(() => {
+    if (!editingDetails) {
+      setDetailsDescription(event.description ?? '');
+      setDetailsImageUrl(event.imageUrl ?? '');
+      setDetailsLinks(normalizeDetailLinks(event.links));
+    }
+  }, [editingDetails, event.description, event.imageUrl, event.links]);
 
   useEffect(() => {
     if (!actionsMenuOpen && !reactionPickerOpen) {
@@ -315,6 +330,60 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     } catch (error) {
       console.error('Error trashing event:', error);
       alert('Failed to move event to trash. Please try again.');
+    }
+  };
+
+  const handleDetailsLinkChange = (index: number, field: 'label' | 'url', value: string) => {
+    setDetailsLinks(prev => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const handleAddDetailsLink = () => {
+    setDetailsLinks(prev => [...prev, { label: '', url: '' }]);
+  };
+
+  const handleRemoveDetailsLink = (index: number) => {
+    setDetailsLinks(prev => {
+      if (prev.length === 1) {
+        return [{ label: '', url: '' }];
+      }
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const handleCancelDetailsEdit = () => {
+    setEditingDetails(false);
+    setDetailsDescription(event.description ?? '');
+    setDetailsImageUrl(event.imageUrl ?? '');
+    setDetailsLinks(normalizeDetailLinks(event.links));
+  };
+
+  const handleSaveDetails = async () => {
+    const trimmedDescription = detailsDescription.trim();
+    const trimmedImage = detailsImageUrl.trim();
+    const sanitizedLinks = detailsLinks
+      .map(({ label, url }) => ({
+        label: label.trim(),
+        url: url.trim()
+      }))
+      .filter(({ label, url }) => label || url);
+
+    setSavingDetails(true);
+    try {
+      await firebaseService.updateEvent(event.id, {
+        description: trimmedDescription,
+        imageUrl: trimmedImage || undefined,
+        links: sanitizedLinks
+      });
+      setEditingDetails(false);
+    } catch (error) {
+      console.error('Error saving event details:', error);
+      alert('Failed to update event details. Please try again.');
+    } finally {
+      setSavingDetails(false);
     }
   };
 
@@ -524,12 +593,139 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
               </span>
             )}
           </div>
-          {event.description && <p className="event-description">{event.description}</p>}
+          {!editingDetails && (
+            <>
+              {event.description ? (
+                <p className="event-description">{event.description}</p>
+              ) : (
+                <p className="event-description event-description--empty">
+                  Add details so everyone knows what kind of hang this is.
+                </p>
+              )}
 
-          {event.imageUrl && (
-            <div className="event-hero">
-              <img src={event.imageUrl} alt={`${event.title} cover art`} />
+              {event.imageUrl && (
+                <div className="event-hero">
+                  <img src={event.imageUrl} alt={`${event.title} cover art`} />
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="event-details-edit-row">
+            <div>
+              <p className="event-details-eyebrow">Story & Links</p>
+              <p className="event-details-copy">
+                Keep the description, cover art, and handy links fresh as plans evolve.
+              </p>
             </div>
+            {!editingDetails && (
+              <button
+                type="button"
+                className="event-details-button"
+                onClick={() => setEditingDetails(true)}
+              >
+                {(event.description || event.imageUrl || (event.links?.length ?? 0) > 0)
+                  ? 'Edit details'
+                  : 'Add details'}
+              </button>
+            )}
+          </div>
+
+          {editingDetails ? (
+            <div className="event-details-editor">
+              <label htmlFor="details-description">Event description</label>
+              <textarea
+                id="details-description"
+                value={detailsDescription}
+                onChange={(e) => setDetailsDescription(e.target.value)}
+                rows={3}
+                placeholder="Drop the vibe, what to bring, or important reminders."
+              />
+
+              <label htmlFor="details-image">Cover image URL</label>
+              <input
+                id="details-image"
+                type="url"
+                value={detailsImageUrl}
+                onChange={(e) => setDetailsImageUrl(e.target.value)}
+                placeholder="https://example.com/photo.jpg"
+              />
+
+              <div className="event-details-links-header">
+                <span>Helpful links</span>
+                <button
+                  type="button"
+                  className="event-details-add-link"
+                  onClick={handleAddDetailsLink}
+                >
+                  + Add link
+                </button>
+              </div>
+
+              <div className="event-details-links-grid">
+                {detailsLinks.map((link, index) => (
+                  <div key={index} className="event-details-link-row">
+                    <input
+                      type="text"
+                      placeholder="Label (e.g., Map, RSVP, Roll20)"
+                      value={link.label}
+                      onChange={(e) => handleDetailsLinkChange(index, 'label', e.target.value)}
+                    />
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      value={link.url}
+                      onChange={(e) => handleDetailsLinkChange(index, 'url', e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="event-details-remove-link"
+                      onClick={() => handleRemoveDetailsLink(index)}
+                      disabled={detailsLinks.length === 1}
+                      aria-label="Remove link"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="event-details-editor-actions">
+                <button
+                  type="button"
+                  className="event-location-button secondary"
+                  onClick={handleCancelDetailsEdit}
+                  disabled={savingDetails}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="event-location-button"
+                  onClick={() => void handleSaveDetails()}
+                  disabled={savingDetails}
+                >
+                  {savingDetails ? 'Saving...' : 'Save changes'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            event.links && event.links.length > 0 && (
+              <div className="event-links-list">
+                {event.links.map((link, index) => (
+                  <a
+                    key={`${link.label}-${index}`}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="event-link-chip"
+                  >
+                    <span>{link.label || link.url}</span>
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                ))}
+              </div>
+            )
           )}
 
           <div className="event-location-card">
