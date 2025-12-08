@@ -1,0 +1,212 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function allowedAppIds() {
+      return [
+        '1:435277919251:web:4cfb2ec26e5c55a5007be6'
+      ];
+    }
+
+    function trustedClient() {
+      return request.auth != null &&
+        request.auth.token.app_id in allowedAppIds();
+    }
+
+    function nonEmptyString(value, maxLen) {
+      return value is string && value.size() > 0 && value.size() <= maxLen;
+    }
+
+    function optionalString(data, field, maxLen) {
+      return !(field in data) ||
+        (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    function optionalBool(data, field) {
+      return !(field in data) || data[field] is bool;
+    }
+
+    function optionalList(data, field, maxLen) {
+      return !(field in data) ||
+        (data[field] is list && data[field].size() <= maxLen);
+    }
+
+    function optionalMap(data, field) {
+      return !(field in data) || data[field] is map;
+    }
+
+    function isIsoTimestamp(value) {
+      return value is string &&
+        value.matches('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:.+Z$');
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+
+      allow create: if trustedClient() && validEvent(request.resource.data);
+      allow update: if trustedClient() &&
+        validEvent(request.resource.data) &&
+        request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+    }
+
+    function validEvent(data) {
+      return data.keys().hasOnly([
+        'title',
+        'description',
+        'imageUrl',
+        'eventType',
+        'confirmedTimeSlotId',
+        'links',
+        'createdBy',
+        'createdAt',
+        'updatedAt',
+        'timeSlots',
+        'participants',
+        'isActive',
+        'isCompleted',
+        'isTrashed',
+        'reactions',
+        'reminderSettings',
+        'remindersSent',
+        'location'
+      ]) &&
+      nonEmptyString(data.title, 140) &&
+      nonEmptyString(data.createdBy, 80) &&
+      isIsoTimestamp(data.createdAt) &&
+      isIsoTimestamp(data.updatedAt) &&
+      data.timeSlots is list &&
+      data.timeSlots.size() > 0 &&
+      data.timeSlots.size() <= 200 &&
+      data.participants is list &&
+      data.participants.size() <= 400 &&
+      data.isActive is bool &&
+      data.isCompleted is bool &&
+      optionalBool(data, 'isTrashed') &&
+      optionalString(data, 'description', 5000) &&
+      optionalString(data, 'imageUrl', 2048) &&
+      optionalString(data, 'eventType', 40) &&
+      optionalString(data, 'confirmedTimeSlotId', 200) &&
+      optionalList(data, 'links', 20) &&
+      optionalMap(data, 'reactions') &&
+      optionalMap(data, 'reminderSettings') &&
+      optionalMap(data, 'remindersSent') &&
+      optionalMap(data, 'location');
+    }
+
+    match /responses/{responseId} {
+      allow read: if true;
+
+      allow create: if trustedClient() && validResponse(request.resource.data);
+      allow delete: if trustedClient();
+      allow update: if false;
+    }
+
+    function validResponse(data) {
+      return data.keys().hasOnly([
+        'participantName',
+        'timeSlotId',
+        'available',
+        'eventId',
+        'notes',
+        'timestamp'
+      ]) &&
+      nonEmptyString(data.participantName, 120) &&
+      nonEmptyString(data.timeSlotId, 128) &&
+      nonEmptyString(data.eventId, 128) &&
+      data.available is bool &&
+      optionalString(data, 'notes', 1000) &&
+      optionalString(data, 'timestamp', 64);
+    }
+
+    match /secretSanta/{documentId} {
+      allow read: if true;
+
+      allow write: if trustedClient() && (
+        documentId == 'pairings' && validSecretSantaPairings(request.resource.data) ||
+        documentId == 'wishlists' && validSecretSantaWishlist(request.resource.data)
+      );
+    }
+
+    function secretSantaNames() {
+      return ['Michael', 'Diane', 'Sarah', 'Chris', 'Steve', 'Jess'];
+    }
+
+    function validSecretSantaPairings(data) {
+      return data.keys().hasOnly(['pairs', 'updatedAt']) &&
+        (
+          !('pairs' in data) ||
+          (
+            data.pairs is map &&
+            data.pairs.keys().hasOnly(secretSantaNames()) &&
+            validPairEntry(data.pairs, 'Michael', secretSantaNames()) &&
+            validPairEntry(data.pairs, 'Diane', secretSantaNames()) &&
+            validPairEntry(data.pairs, 'Sarah', secretSantaNames()) &&
+            validPairEntry(data.pairs, 'Chris', secretSantaNames()) &&
+            validPairEntry(data.pairs, 'Steve', secretSantaNames()) &&
+            validPairEntry(data.pairs, 'Jess', secretSantaNames())
+          )
+        ) &&
+        optionalString(data, 'updatedAt', 64);
+    }
+
+    function validSecretSantaWishlist(data) {
+      return data.keys().hasOnly(secretSantaNames()) &&
+        wishlistFieldValid(data, 'Michael') &&
+        wishlistFieldValid(data, 'Diane') &&
+        wishlistFieldValid(data, 'Sarah') &&
+        wishlistFieldValid(data, 'Chris') &&
+        wishlistFieldValid(data, 'Steve') &&
+        wishlistFieldValid(data, 'Jess');
+    }
+
+    function wishlistFieldValid(data, field) {
+      return !(field in data) ||
+        (data[field] is string && data[field].size() <= 2000);
+    }
+
+    function validPairEntry(pairs, giver, allowed) {
+      return !(giver in pairs) ||
+        (pairs[giver] is string &&
+          pairs[giver] in allowed &&
+          pairs[giver] != giver);
+    }
+
+    match /secretSourdough/{documentId} {
+      allow read: if true;
+
+      allow write: if trustedClient() &&
+        documentId == 'pairings' &&
+        validSourdoughPairings(request.resource.data);
+    }
+
+    function sourdoughNames() {
+      return [
+        'Jess & Steve',
+        'Craig & Kayla',
+        'Mike & Justine',
+        'Emily & Travis'
+      ];
+    }
+
+    function validSourdoughPairings(data) {
+      return data.keys().hasOnly(['pairs', 'updatedAt']) &&
+        (
+          !('pairs' in data) ||
+          (
+            data.pairs is map &&
+            data.pairs.keys().hasOnly(sourdoughNames()) &&
+            validPairEntry(data.pairs, 'Jess & Steve', sourdoughNames()) &&
+            validPairEntry(data.pairs, 'Craig & Kayla', sourdoughNames()) &&
+            validPairEntry(data.pairs, 'Mike & Justine', sourdoughNames()) &&
+            validPairEntry(data.pairs, 'Emily & Travis', sourdoughNames())
+          )
+        ) &&
+        optionalString(data, 'updatedAt', 64);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

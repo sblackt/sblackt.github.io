@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 
 // Your Firebase configuration
 // Replace these with your actual Firebase project config from the Firebase Console
@@ -15,6 +16,17 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialize App Check with reCAPTCHA Enterprise
+const appCheckSiteKey =
+  process.env.REACT_APP_FIREBASE_APPCHECK_SITE_KEY || '6LfFryQsAAAAADqdLut-1om_HfsZYq1zYno5HRiq';
+
+if (typeof window !== 'undefined') {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(appCheckSiteKey),
+    isTokenAutoRefreshEnabled: true
+  });
+}
 
 // Initialize Firestore
 export const db = getFirestore(app);

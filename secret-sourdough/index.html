@@ -385,6 +385,7 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app-check.js';
     import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
     const firebaseConfig = {
@@ -396,6 +397,8 @@
       appId: '1:435277919251:web:4cfb2ec26e5c55a5007be6',
       measurementId: 'G-9VPCFFFP7T'
     };
+
+    const appCheckSiteKey = '6LfFryQsAAAAADqdLut-1om_HfsZYq1zYno5HRiq';
 
     const people = ['Jess & Steve', 'Craig & Kayla', 'Mike & Justine', 'Emily & Travis'];
     const displayOrder = people.reduce((acc, name, index) => {
@@ -694,6 +697,10 @@
     async function bootstrapFirebase() {
       try {
         const app = initializeApp(firebaseConfig);
+        initializeAppCheck(app, {
+          provider: new ReCaptchaEnterpriseProvider(appCheckSiteKey),
+          isTokenAutoRefreshEnabled: true
+        });
         const db = getFirestore(app);
         pairingsDocRef = doc(db, 'secretSourdough', 'pairings');
         updatePairingsStatus('Connected · loading saved pairings…', 'syncing');
