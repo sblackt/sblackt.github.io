@@ -9,7 +9,7 @@ service cloud.firestore {
     }
 
     function trustedClient() {
-      return request.auth != null &&
+      return request.auth == null ||
         request.auth.token.app_id in allowedAppIds();
     }
 

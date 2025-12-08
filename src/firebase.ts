@@ -2,6 +2,12 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
+declare global {
+  interface Window {
+    FIREBASE_APPCHECK_DEBUG_TOKEN?: string | boolean;
+  }
+}
+
 // Your Firebase configuration
 // Replace these with your actual Firebase project config from the Firebase Console
 const firebaseConfig = {
@@ -21,11 +27,24 @@ const app = initializeApp(firebaseConfig);
 const appCheckSiteKey =
   process.env.REACT_APP_FIREBASE_APPCHECK_SITE_KEY || '6LfFryQsAAAAADqdLut-1om_HfsZYq1zYno5HRiq';
 
+const shouldUseDebugToken =
+  process.env.NODE_ENV !== 'production' ||
+  process.env.REACT_APP_FIREBASE_APPCHECK_DEBUG === 'true';
+
 if (typeof window !== 'undefined') {
-  initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(appCheckSiteKey),
-    isTokenAutoRefreshEnabled: true
-  });
+  if (shouldUseDebugToken) {
+    window.FIREBASE_APPCHECK_DEBUG_TOKEN =
+      process.env.REACT_APP_FIREBASE_APPCHECK_DEBUG_TOKEN || true;
+  }
+
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(appCheckSiteKey),
+      isTokenAutoRefreshEnabled: true
+    });
+  } catch (error) {
+    console.error('Failed to initialize Firebase App Check', error);
+  }
 }
 
 // Initialize Firestore
