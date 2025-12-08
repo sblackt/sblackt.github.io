@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 // Your Firebase configuration
 // Replace these with your actual Firebase project config from the Firebase Console
@@ -23,7 +23,7 @@ const appCheckSiteKey =
 
 if (typeof window !== 'undefined') {
   initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider(appCheckSiteKey),
+    provider: new ReCaptchaV3Provider(appCheckSiteKey),
     isTokenAutoRefreshEnabled: true
   });
 }
