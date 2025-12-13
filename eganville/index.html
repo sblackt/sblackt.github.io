@@ -396,7 +396,15 @@
             timezone: 'auto',
         });
 
-        const PROXY = 'https://api.allorigins.win/raw?url=';
+        const FEED_PROXIES = [
+            { type: 'text', build: (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}` },
+            {
+                type: 'json',
+                build: (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&charset=utf-8`,
+                transform: (data) => data?.contents,
+            },
+            { type: 'text', build: (url) => `https://r.jina.ai/${url}` },
+        ];
         const NEWS_FEED = 'https://www.cbc.ca/cmlink/rss-canada-ottawa';
         const TRAFFIC_FEED = 'https://www.waze.com/rtserver/web/TGeoRSS?ma=150&mj=200&left=-77.9&right=-76.5&top=46.1&bottom=45.0';
 
@@ -531,10 +539,32 @@
             });
         }
 
+        async function fetchFeedText(url) {
+            const failures = [];
+            for (const proxy of FEED_PROXIES) {
+                try {
+                    const response = await fetch(proxy.build(url), { cache: 'no-store' });
+                    if (!response.ok) {
+                        throw new Error(`Proxy returned ${response.status}`);
+                    }
+                    if (proxy.type === 'json') {
+                        const json = await response.json();
+                        const contents = typeof proxy.transform === 'function' ? proxy.transform(json) : json?.contents;
+                        if (!contents) {
+                            throw new Error('JSON proxy missing contents');
+                        }
+                        return contents;
+                    }
+                    return await response.text();
+                } catch (error) {
+                    failures.push(error.message);
+                }
+            }
+            throw new Error(`All proxies failed (${failures.join('; ')})`);
+        }
+
         async function loadNews() {
-            const raw = await fetch(`${PROXY}${encodeURIComponent(NEWS_FEED)}`);
-            if (!raw.ok) throw new Error('Failed to load news feed');
-            const text = await raw.text();
+            const text = await fetchFeedText(NEWS_FEED);
             const doc = new window.DOMParser().parseFromString(text, 'text/xml');
             const items = Array.from(doc.querySelectorAll('item')).map((item) => ({
                 title: item.querySelector('title')?.textContent?.trim(),
@@ -554,9 +584,7 @@
         }
 
         async function loadTraffic() {
-            const raw = await fetch(`${PROXY}${encodeURIComponent(TRAFFIC_FEED)}`);
-            if (!raw.ok) throw new Error('Failed to load traffic feed');
-            const text = await raw.text();
+            const text = await fetchFeedText(TRAFFIC_FEED);
             const doc = new window.DOMParser().parseFromString(text, 'text/xml');
             const items = Array.from(doc.querySelectorAll('item')).map((item) => ({
                 title: item.querySelector('title')?.textContent?.trim(),
