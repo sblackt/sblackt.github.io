@@ -564,56 +564,69 @@
         }
 
         async function loadNews() {
-            const text = await fetchFeedText(NEWS_FEED);
-            const doc = new window.DOMParser().parseFromString(text, 'text/xml');
-            const items = Array.from(doc.querySelectorAll('item')).map((item) => ({
-                title: item.querySelector('title')?.textContent?.trim(),
-                link: item.querySelector('link')?.textContent?.trim(),
-                pubDate: item.querySelector('pubDate')?.textContent,
-                description: item.querySelector('description')?.textContent?.replace(/<!\[CDATA\[|\]\]>/g, '').trim(),
-                source: item.querySelector('source')?.textContent || 'CBC Ottawa',
-            }));
+            try {
+                const text = await fetchFeedText(NEWS_FEED);
+                const doc = new window.DOMParser().parseFromString(text, 'text/xml');
+                const items = Array.from(doc.querySelectorAll('item')).map((item) => ({
+                    title: item.querySelector('title')?.textContent?.trim(),
+                    link: item.querySelector('link')?.textContent?.trim(),
+                    pubDate: item.querySelector('pubDate')?.textContent,
+                    description: item.querySelector('description')?.textContent?.replace(/<!\[CDATA\[|\]\]>/g, '').trim(),
+                    source: item.querySelector('source')?.textContent || 'CBC Ottawa',
+                }));
 
-            const localized = items.filter((item) => {
-                const haystack = `${item.title} ${item.description}`.toLowerCase();
-                return keywords.some((keyword) => haystack.includes(keyword));
-            });
+                const localized = items.filter((item) => {
+                    const haystack = `${item.title} ${item.description}`.toLowerCase();
+                    return keywords.some((keyword) => haystack.includes(keyword));
+                });
 
-            const stories = (localized.length ? localized : items).slice(0, 5);
-            renderFeed(stories, newsList, newsEmpty);
+                const stories = (localized.length ? localized : items).slice(0, 5);
+                renderFeed(stories, newsList, newsEmpty);
+            } catch (error) {
+                console.warn('News feed failed', error);
+                renderFeed([], newsList, newsEmpty, 'News feed timed out. Try again soon.');
+            }
         }
 
         async function loadTraffic() {
-            const text = await fetchFeedText(TRAFFIC_FEED);
-            const doc = new window.DOMParser().parseFromString(text, 'text/xml');
-            const items = Array.from(doc.querySelectorAll('item')).map((item) => ({
-                title: item.querySelector('title')?.textContent?.trim(),
-                link: item.querySelector('link')?.textContent?.trim(),
-                pubDate: item.querySelector('pubDate')?.textContent,
-                description: item.querySelector('description')?.textContent?.trim(),
-                point: item.querySelector('georss\\:point')?.textContent,
-                source: 'Waze reports',
-            }));
-
-            const trimmed = items
-                .filter((item) => item.title && item.description)
-                .slice(0, 6)
-                .map((item) => ({
-                    ...item,
-                    description: tidyTrafficText(item.description),
+            try {
+                const text = await fetchFeedText(TRAFFIC_FEED);
+                const doc = new window.DOMParser().parseFromString(text, 'text/xml');
+                const items = Array.from(doc.querySelectorAll('item')).map((item) => ({
+                    title: item.querySelector('title')?.textContent?.trim(),
+                    link: item.querySelector('link')?.textContent?.trim(),
+                    pubDate: item.querySelector('pubDate')?.textContent,
+                    description: item.querySelector('description')?.textContent?.trim(),
+                    point: item.querySelector('georss\\:point')?.textContent,
+                    source: 'Waze reports',
                 }));
 
-            renderFeed(trimmed, trafficList, trafficEmpty);
+                const trimmed = items
+                    .filter((item) => item.title && item.description)
+                    .slice(0, 6)
+                    .map((item) => ({
+                        ...item,
+                        description: tidyTrafficText(item.description),
+                    }));
+
+                renderFeed(trimmed, trafficList, trafficEmpty);
+            } catch (error) {
+                console.warn('Traffic feed failed', error);
+                renderFeed([], trafficList, trafficEmpty, 'Traffic feed offline right now.');
+            }
         }
 
         function tidyTrafficText(text = '') {
             return text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
         }
 
-        function renderFeed(items, listEl, emptyEl) {
+        function renderFeed(items, listEl, emptyEl, emptyMessage) {
             listEl.innerHTML = '';
             if (!items.length) {
                 emptyEl.hidden = false;
+                if (emptyMessage) {
+                    emptyEl.textContent = emptyMessage;
+                }
                 return;
             }
             emptyEl.hidden = true;
