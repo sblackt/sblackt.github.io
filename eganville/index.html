@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eganville Now | stevemwhite.com</title>
+    <meta name="description" content="Live weather, news, and travel conditions for Eganville, Ontario." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            color-scheme: light dark;
+            font-family: 'Inter', 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.5;
+            font-weight: 400;
+            background: #020617;
+            color: #f8fafc;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background: radial-gradient(circle at top, rgba(59, 130, 246, 0.35), transparent 55%),
+                radial-gradient(circle at 20% 20%, rgba(14, 165, 233, 0.5), transparent 45%),
+                #020617;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: min(8vh, 5rem) 1.25rem 3rem;
+        }
+
+        .page {
+            width: min(1200px, 100%);
+            background: rgba(2, 6, 23, 0.65);
+            backdrop-filter: blur(22px);
+            border-radius: 32px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: 0 40px 120px rgba(2, 6, 23, 0.8);
+            padding: clamp(1.5rem, 3vw, 3.5rem);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(1.75rem, 3vw, 2.75rem);
+        }
+
+        header.hero {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-size: clamp(2.3rem, 4vw, 3.4rem);
+            margin: 0 0 0.35rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            color: rgba(226, 232, 240, 0.8);
+            margin: 0.15rem 0 0;
+        }
+
+        .hero .meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        .updated-at {
+            font-size: 0.95rem;
+            color: rgba(226, 232, 240, 0.75);
+        }
+
+        button.refresh {
+            border: none;
+            border-radius: 999px;
+            padding: 0.65rem 1.6rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            background: linear-gradient(120deg, #22d3ee, #3b82f6);
+            color: #020617;
+            cursor: pointer;
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+        }
+
+        button.refresh:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        button.refresh:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(14, 165, 233, 0.45);
+        }
+
+        section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        h2.section-title {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-size: 1.35rem;
+            letter-spacing: 0.02em;
+            margin: 0;
+        }
+
+        .panel {
+            background: rgba(15, 23, 42, 0.65);
+            border-radius: 24px;
+            padding: clamp(1.25rem, 2vw, 1.75rem);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: inset 0 1px 0 rgba(248, 250, 252, 0.04);
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .current-temp {
+            font-size: clamp(3rem, 6vw, 4.5rem);
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .weather-meta {
+            display: grid;
+            gap: 0.35rem;
+            color: rgba(226, 232, 240, 0.9);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .stat {
+            padding: 0.8rem;
+            border-radius: 16px;
+            background: rgba(248, 250, 252, 0.05);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+        }
+
+        .stat .label {
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(148, 163, 184, 0.9);
+        }
+
+        .stat .value {
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        .forecast-strip {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(90px, 1fr);
+            overflow-x: auto;
+            gap: 0.6rem;
+            padding-bottom: 0.3rem;
+        }
+
+        .forecast-item {
+            border-radius: 20px;
+            padding: 0.9rem 0.5rem;
+            background: rgba(248, 250, 252, 0.04);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            text-align: center;
+            min-width: 90px;
+        }
+
+        .forecast-item .time {
+            font-size: 0.85rem;
+            color: rgba(226, 232, 240, 0.75);
+        }
+
+        .forecast-item .temp {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .forecast-item .precip {
+            font-size: 0.8rem;
+            color: #38bdf8;
+        }
+
+        .daily-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .daily-card {
+            border-radius: 20px;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.24);
+        }
+
+        .daily-card h3 {
+            margin: 0 0 0.45rem;
+            font-size: 1rem;
+        }
+
+        .daily-card .range {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .feed-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 0.85rem;
+        }
+
+        .feed-list li {
+            padding-bottom: 0.85rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+        }
+
+        .feed-list li:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .feed-list a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .feed-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 0.35rem;
+        }
+
+        .feed-meta {
+            font-size: 0.85rem;
+            color: rgba(148, 163, 184, 0.9);
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            color: rgba(148, 163, 184, 0.95);
+            font-size: 0.95rem;
+        }
+
+        .split-panels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .loading {
+            opacity: 0.6;
+            filter: saturate(0.6);
+        }
+
+        @media (max-width: 720px) {
+            .hero {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .hero .meta {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header class="hero">
+            <div>
+                <p class="label">Eganville, Ontario</p>
+                <h1>Valley Conditions</h1>
+                <p>Live weather, headlines, and travel signals for friends of Stonehedge.</p>
+            </div>
+            <div class="meta">
+                <div class="updated-at">Updated <span id="updated-at">–</span></div>
+                <button class="refresh" id="refresh">Refresh</button>
+            </div>
+        </header>
+
+        <section id="weather-section" class="panel">
+            <h2 class="section-title">Weather right now</h2>
+            <div class="weather-grid">
+                <div>
+                    <p class="current-temp" id="current-temp">--°C</p>
+                    <div class="weather-meta">
+                        <span id="current-condition">Loading…</span>
+                        <span id="feels-like">Feels like —°C</span>
+                        <span id="sun-cycle">Sunrise – • Sunset –</span>
+                    </div>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat">
+                        <div class="label">Humidity</div>
+                        <div class="value" id="humidity">–%</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Wind</div>
+                        <div class="value" id="wind">– km/h</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Gusts</div>
+                        <div class="value" id="gusts">– km/h</div>
+                    </div>
+                    <div class="stat">
+                        <div class="label">Precip.</div>
+                        <div class="value" id="precip">– mm</div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 class="section-title" style="font-size:1.1rem; margin-top:1.5rem;">Next 12 hours</h3>
+                <div id="hourly-forecast" class="forecast-strip"></div>
+            </div>
+            <div>
+                <h3 class="section-title" style="font-size:1.1rem; margin-top:1.5rem;">This week</h3>
+                <div id="daily-forecast" class="daily-grid"></div>
+            </div>
+        </section>
+
+        <div class="split-panels">
+            <section id="news" class="panel">
+                <h2 class="section-title">Ottawa Valley headlines</h2>
+                <ul id="news-list" class="feed-list"></ul>
+                <p id="news-empty" class="empty-state" hidden>No fresh news, which is good news.</p>
+            </section>
+            <section id="traffic" class="panel">
+                <h2 class="section-title">Road & traffic watch</h2>
+                <ul id="traffic-list" class="feed-list"></ul>
+                <p id="traffic-empty" class="empty-state" hidden>No active traffic alerts inside the Valley bubble.</p>
+            </section>
+        </div>
+    </div>
+
+    <template id="feed-item-template">
+        <li>
+            <a target="_blank" rel="noopener noreferrer">
+                <p class="feed-title"></p>
+                <div class="feed-meta"></div>
+                <p class="feed-description" style="margin:0; color:rgba(226,232,240,0.8);"></p>
+            </a>
+        </li>
+    </template>
+
+    <script>
+        const LATITUDE = 45.54;
+        const LONGITUDE = -77.1;
+        const WEATHER_URL = new URL('https://api.open-meteo.com/v1/forecast');
+        WEATHER_URL.search = new URLSearchParams({
+            latitude: LATITUDE,
+            longitude: LONGITUDE,
+            current: [
+                'temperature_2m',
+                'relative_humidity_2m',
+                'apparent_temperature',
+                'precipitation',
+                'weather_code',
+                'wind_speed_10m',
+                'wind_gusts_10m',
+            ].join(','),
+            hourly: ['temperature_2m', 'precipitation_probability'].join(','),
+            daily: [
+                'temperature_2m_max',
+                'temperature_2m_min',
+                'sunrise',
+                'sunset',
+                'precipitation_probability_max',
+            ].join(','),
+            forecast_days: 5,
+            timezone: 'auto',
+        });
+
+        const PROXY = 'https://api.allorigins.win/raw?url=';
+        const NEWS_FEED = 'https://www.cbc.ca/cmlink/rss-canada-ottawa';
+        const TRAFFIC_FEED = 'https://www.waze.com/rtserver/web/TGeoRSS?ma=150&mj=200&left=-77.9&right=-76.5&top=46.1&bottom=45.0';
+
+        const weatherSection = document.getElementById('weather-section');
+        const hourlyForecastEl = document.getElementById('hourly-forecast');
+        const dailyForecastEl = document.getElementById('daily-forecast');
+        const newsList = document.getElementById('news-list');
+        const newsEmpty = document.getElementById('news-empty');
+        const trafficList = document.getElementById('traffic-list');
+        const trafficEmpty = document.getElementById('traffic-empty');
+        const updatedAtEl = document.getElementById('updated-at');
+        const refreshButton = document.getElementById('refresh');
+        const feedTemplate = document.getElementById('feed-item-template');
+
+        const weatherCodeMap = new Map([
+            [0, 'Clear sky'],
+            [1, 'Mostly clear'],
+            [2, 'Partly cloudy'],
+            [3, 'Overcast'],
+            [45, 'Fog bank'],
+            [48, 'Freezing fog'],
+            [51, 'Light drizzle'],
+            [53, 'Drizzle'],
+            [55, 'Heavy drizzle'],
+            [56, 'Freezing drizzle'],
+            [57, 'Freezing drizzle'],
+            [61, 'Light rain'],
+            [63, 'Steady rain'],
+            [65, 'Heavy rain'],
+            [66, 'Freezing rain'],
+            [67, 'Icy rain'],
+            [71, 'Snowfall'],
+            [73, 'Snow showers'],
+            [75, 'Heavy snow'],
+            [77, 'Snow grains'],
+            [80, 'Rain showers'],
+            [81, 'Rain bursts'],
+            [82, 'Torrential rain'],
+            [85, 'Snow showers'],
+            [86, 'Snow squalls'],
+            [95, 'Thunderstorms'],
+            [96, 'Stormy mix'],
+            [99, 'Severe storms'],
+        ]);
+
+        const keywords = ['eganville', 'renfrew', 'ottawa valley', 'pembroke', 'killaloe', 'madawaska'];
+        let lastUpdated = null;
+
+        async function fetchJson(url) {
+            const response = await fetch(url, { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error(`Request failed: ${response.status}`);
+            }
+            return response.json();
+        }
+
+        async function loadWeather() {
+            const data = await fetchJson(WEATHER_URL);
+            const current = data.current;
+            const daily = data.daily;
+            const hourly = data.hourly;
+
+            document.getElementById('current-temp').textContent = `${Math.round(current.temperature_2m)}°C`;
+            const condition = weatherCodeMap.get(current.weather_code) || 'Outdoor mystery';
+            document.getElementById('current-condition').textContent = condition;
+            document.getElementById('feels-like').textContent = `Feels like ${Math.round(current.apparent_temperature)}°C`;
+            document.getElementById('humidity').textContent = `${Math.round(current.relative_humidity_2m)}%`;
+            document.getElementById('wind').textContent = `${Math.round(current.wind_speed_10m)} km/h`;
+            document.getElementById('gusts').textContent = `${Math.round(current.wind_gusts_10m)} km/h`;
+            document.getElementById('precip').textContent = `${current.precipitation?.toFixed(1) ?? '0.0'} mm`;
+
+            if (daily?.sunrise?.length) {
+                const sunrise = formatTime(daily.sunrise[0]);
+                const sunset = formatTime(daily.sunset[0]);
+                document.getElementById('sun-cycle').textContent = `Sunrise ${sunrise} • Sunset ${sunset}`;
+            }
+
+            renderHourly(hourly);
+            renderDaily(daily);
+        }
+
+        function renderHourly(hourly) {
+            hourlyForecastEl.innerHTML = '';
+            if (!hourly?.time?.length) {
+                hourlyForecastEl.textContent = 'No hourly forecast available right now.';
+                return;
+            }
+
+            const now = Date.now();
+            const timeIndex = hourly.time.findIndex((ts) => Date.parse(ts) >= now);
+            const startIndex = Math.max(0, timeIndex - 1);
+            const items = [];
+            for (let i = startIndex; i < hourly.time.length && items.length < 12; i += 1) {
+                items.push({
+                    time: hourly.time[i],
+                    temp: hourly.temperature_2m[i],
+                    precip: hourly.precipitation_probability?.[i],
+                });
+            }
+
+            items.forEach((item) => {
+                const div = document.createElement('div');
+                div.className = 'forecast-item';
+                const when = new Date(item.time);
+                div.innerHTML = `
+                    <div class="time">${formatHour(when)}</div>
+                    <div class="temp">${Math.round(item.temp)}°</div>
+                    <div class="precip">${item.precip ?? 0}% chance</div>
+                `;
+                hourlyForecastEl.appendChild(div);
+            });
+        }
+
+        function renderDaily(daily) {
+            dailyForecastEl.innerHTML = '';
+            if (!daily?.time?.length) {
+                dailyForecastEl.textContent = 'Weekly forecast not available.';
+                return;
+            }
+
+            daily.time.slice(0, 4).forEach((time, index) => {
+                const card = document.createElement('div');
+                card.className = 'daily-card';
+                const day = new Date(time);
+                const title = index === 0 ? 'Today' : day.toLocaleDateString(undefined, { weekday: 'long' });
+                card.innerHTML = `
+                    <h3>${title}</h3>
+                    <p class="range">${Math.round(daily.temperature_2m_max[index])}° / ${Math.round(daily.temperature_2m_min[index])}°</p>
+                    <p style="margin:0;color:rgba(226,232,240,0.75);">Precip ${daily.precipitation_probability_max?.[index] ?? 0}%</p>
+                `;
+                dailyForecastEl.appendChild(card);
+            });
+        }
+
+        async function loadNews() {
+            const raw = await fetch(`${PROXY}${encodeURIComponent(NEWS_FEED)}`);
+            if (!raw.ok) throw new Error('Failed to load news feed');
+            const text = await raw.text();
+            const doc = new window.DOMParser().parseFromString(text, 'text/xml');
+            const items = Array.from(doc.querySelectorAll('item')).map((item) => ({
+                title: item.querySelector('title')?.textContent?.trim(),
+                link: item.querySelector('link')?.textContent?.trim(),
+                pubDate: item.querySelector('pubDate')?.textContent,
+                description: item.querySelector('description')?.textContent?.replace(/<!\[CDATA\[|\]\]>/g, '').trim(),
+                source: item.querySelector('source')?.textContent || 'CBC Ottawa',
+            }));
+
+            const localized = items.filter((item) => {
+                const haystack = `${item.title} ${item.description}`.toLowerCase();
+                return keywords.some((keyword) => haystack.includes(keyword));
+            });
+
+            const stories = (localized.length ? localized : items).slice(0, 5);
+            renderFeed(stories, newsList, newsEmpty);
+        }
+
+        async function loadTraffic() {
+            const raw = await fetch(`${PROXY}${encodeURIComponent(TRAFFIC_FEED)}`);
+            if (!raw.ok) throw new Error('Failed to load traffic feed');
+            const text = await raw.text();
+            const doc = new window.DOMParser().parseFromString(text, 'text/xml');
+            const items = Array.from(doc.querySelectorAll('item')).map((item) => ({
+                title: item.querySelector('title')?.textContent?.trim(),
+                link: item.querySelector('link')?.textContent?.trim(),
+                pubDate: item.querySelector('pubDate')?.textContent,
+                description: item.querySelector('description')?.textContent?.trim(),
+                point: item.querySelector('georss\\:point')?.textContent,
+                source: 'Waze reports',
+            }));
+
+            const trimmed = items
+                .filter((item) => item.title && item.description)
+                .slice(0, 6)
+                .map((item) => ({
+                    ...item,
+                    description: tidyTrafficText(item.description),
+                }));
+
+            renderFeed(trimmed, trafficList, trafficEmpty);
+        }
+
+        function tidyTrafficText(text = '') {
+            return text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        }
+
+        function renderFeed(items, listEl, emptyEl) {
+            listEl.innerHTML = '';
+            if (!items.length) {
+                emptyEl.hidden = false;
+                return;
+            }
+            emptyEl.hidden = true;
+            items.forEach((item) => {
+                const entry = feedTemplate.content.firstElementChild.cloneNode(true);
+                const anchor = entry.querySelector('a');
+                anchor.href = item.link || '#';
+                entry.querySelector('.feed-title').textContent = item.title || 'Untitled';
+                entry.querySelector('.feed-description').textContent = item.description || '';
+                const meta = entry.querySelector('.feed-meta');
+                const parts = [];
+                if (item.source) {
+                    parts.push(item.source);
+                }
+                if (item.pubDate) {
+                    parts.push(relativeTime(item.pubDate));
+                }
+                if (item.point) {
+                    parts.push(item.point);
+                }
+                meta.textContent = parts.join(' • ');
+                listEl.appendChild(entry);
+            });
+        }
+
+        function formatTime(value) {
+            const date = new Date(value);
+            return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        }
+
+        function formatHour(date) {
+            return date.toLocaleTimeString([], { hour: 'numeric' });
+        }
+
+        function relativeTime(value) {
+            const date = value instanceof Date ? value : new Date(value);
+            const diffMs = date.getTime() - Date.now();
+            const divisions = [
+                { amount: 60, unit: 'seconds' },
+                { amount: 60, unit: 'minutes' },
+                { amount: 24, unit: 'hours' },
+                { amount: 7, unit: 'days' },
+                { amount: 4.34524, unit: 'weeks' },
+                { amount: 12, unit: 'months' },
+                { amount: Number.POSITIVE_INFINITY, unit: 'years' },
+            ];
+            let duration = diffMs / 1000;
+            for (const division of divisions) {
+                if (Math.abs(duration) < division.amount) {
+                    return new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' }).format(
+                        Math.round(duration),
+                        division.unit.replace(/s$/, '')
+                    );
+                }
+                duration /= division.amount;
+            }
+            return date.toLocaleDateString();
+        }
+
+        function setUpdated() {
+            if (!lastUpdated) return;
+            updatedAtEl.textContent = relativeTime(lastUpdated);
+        }
+
+        function setLoading(isLoading) {
+            refreshButton.disabled = isLoading;
+            weatherSection.classList.toggle('loading', isLoading);
+        }
+
+        async function refresh() {
+            setLoading(true);
+            try {
+                await Promise.all([loadWeather(), loadNews(), loadTraffic()]);
+                lastUpdated = new Date();
+                setUpdated();
+            } catch (error) {
+                console.error(error);
+                alert('Something went sideways while loading live data. Try again in a moment.');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        refreshButton.addEventListener('click', () => {
+            refresh();
+        });
+
+        refresh();
+        setInterval(setUpdated, 60 * 1000);
+    </script>
+</body>
+</html>
