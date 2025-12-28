@@ -763,9 +763,9 @@
         const USERNAME = 'sblackt';
         const DATA_LIMIT = 288;
         const HISTORY_DAYS = 7;
-        const TEMPERATURE_HISTORY_LIMIT = DATA_LIMIT * HISTORY_DAYS;
-        const TEMPERATURE_HISTORY_START = new Date('2023-11-06T00:00:00Z');
         const TEMPERATURE_HISTORY_MAX_POINTS = 60000;
+        const TEMPERATURE_HISTORY_LIMIT = TEMPERATURE_HISTORY_MAX_POINTS;
+        const TEMPERATURE_HISTORY_START = new Date('2023-11-06T00:00:00Z');
         const TEMPERATURE_HISTORY_CHUNK = 1000;
         const HISTORY_API_ENDPOINT = typeof window !== 'undefined' && window.STONEHEDGE_HISTORY_URL
             ? window.STONEHEDGE_HISTORY_URL

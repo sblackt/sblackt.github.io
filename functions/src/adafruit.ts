@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 
 const ADAFRUIT_MAX_CHUNK = 1000;
-export const ADAFRUIT_DEFAULT_HISTORY_LIMIT = 60000;
+export const ADAFRUIT_DEFAULT_HISTORY_LIMIT = 120000;
 
 export interface AdafruitPoint {
   value: number;
