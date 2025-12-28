@@ -7,6 +7,8 @@ admin.initializeApp();
 
 const firestore = admin.firestore();
 const EVENTS_COLLECTION = 'events';
+const FIRE_JOURNAL_COLLECTION = 'fireJournal';
+const FIRE_JOURNAL_MAX_LIMIT = 200;
 
 type EventCategory = 'board-game' | 'hangout' | 'worker-bee' | 'dnd' | 'other';
 
@@ -72,6 +74,22 @@ const EVENT_TYPE_MAP: Record<EventCategory, {
     accent: '#0984E3',
     embedColor: 0x0984E3
   }
+};
+
+interface FireJournalRecord {
+  timestamp: number;
+  sizeId: string;
+  sizeLabel: string;
+  detail?: string;
+  note?: string;
+  loggedAt?: FirebaseFirestore.FieldValue | FirebaseFirestore.Timestamp | null;
+}
+
+const FIRE_SIZE_MAP: Record<string, { id: string; label: string; detail: string }> = {
+  'top-up': { id: 'top-up', label: 'Small top-up', detail: 'Two or three splits keep the ducts warm without overheating bedrooms.' },
+  medium: { id: 'medium', label: 'Medium reload', detail: 'Half load the box so the forced air can cruise through the day.' },
+  large: { id: 'large', label: 'Large burn', detail: 'Full firebox to saturate the plenum for a long hold.' },
+  custom: { id: 'custom', label: 'Custom fire', detail: 'Logged manually' }
 };
 
 const DEFAULT_REMINDER_DAYS = [3, 1, 0];
@@ -431,6 +449,114 @@ export const adafruitHistory = functions.https.onRequest(async (req, res) => {
     res.status(500).json({ error: (error as Error).message });
   }
 });
+
+export const fireJournal = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+
+  try {
+    if (req.method === 'GET') {
+      const limitParam = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
+      const sinceParam = typeof req.query.since === 'string' ? Number(req.query.since) : undefined;
+      const limit = Number.isFinite(limitParam)
+        ? Math.max(1, Math.min(FIRE_JOURNAL_MAX_LIMIT, Number(limitParam)))
+        : 50;
+      let query: FirebaseFirestore.Query = firestore.collection(FIRE_JOURNAL_COLLECTION);
+      if (Number.isFinite(sinceParam)) {
+        const since = Number(sinceParam);
+        query = query.where('timestamp', '>=', since);
+      }
+      query = query.orderBy('timestamp', 'desc').limit(limit);
+      const snapshot = await query.get();
+      const entries = snapshot.docs
+        .map((doc) => serializeFireJournalDoc(doc))
+        .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+      res.set('Cache-Control', 'no-store');
+      res.status(200).json({ entries });
+      return;
+    }
+
+    if (req.method === 'POST') {
+      const body = typeof req.body === 'object' && req.body !== null
+        ? req.body as Record<string, unknown>
+        : {};
+      const sizeIdRaw = body.sizeId;
+      const noteRaw = body.note;
+      const timestampRaw = body.timestamp;
+      if (typeof sizeIdRaw !== 'string' || sizeIdRaw.trim() === '') {
+        res.status(400).json({ error: 'sizeId is required' });
+        return;
+      }
+      const meta = getFireJournalSizeMeta(sizeIdRaw);
+      const note = sanitizeFireJournalNote(typeof noteRaw === 'string' ? noteRaw : '');
+      const timestampCandidate = Number(timestampRaw);
+      const timestamp = Number.isFinite(timestampCandidate) ? timestampCandidate : Date.now();
+      const record: FireJournalRecord = {
+        sizeId: meta.id,
+        sizeLabel: meta.label,
+        detail: meta.detail,
+        note,
+        timestamp,
+        loggedAt: admin.firestore.FieldValue.serverTimestamp()
+      };
+      const docRef = await firestore.collection(FIRE_JOURNAL_COLLECTION).add(record);
+      res.status(201).json({
+        entry: {
+          id: docRef.id,
+          sizeId: record.sizeId,
+          sizeLabel: record.sizeLabel,
+          detail: record.detail ?? '',
+          note: record.note ?? '',
+          timestamp: record.timestamp
+        }
+      });
+      return;
+    }
+
+    res.status(405).json({ error: 'Method not allowed' });
+  } catch (error) {
+    functions.logger.error('fireJournal', error);
+    res.status(500).json({ error: (error as Error).message });
+  }
+});
+
+const getFireJournalSizeMeta = (sizeId: string) => {
+  const normalized = (sizeId || '').toLowerCase();
+  return FIRE_SIZE_MAP[normalized] ?? FIRE_SIZE_MAP.custom;
+};
+
+const sanitizeFireJournalNote = (value: string): string => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  return value.trim().slice(0, 240);
+};
+
+const serializeFireJournalDoc = (doc: FirebaseFirestore.DocumentSnapshot) => {
+  const data = doc.data() as FireJournalRecord | undefined;
+  if (!data || !Number.isFinite(data.timestamp)) {
+    return null;
+  }
+  let loggedAt: number | null = null;
+  if (data.loggedAt && typeof (data.loggedAt as FirebaseFirestore.Timestamp).toMillis === 'function') {
+    loggedAt = (data.loggedAt as FirebaseFirestore.Timestamp).toMillis();
+  }
+  return {
+    id: doc.id,
+    sizeId: data.sizeId,
+    sizeLabel: data.sizeLabel,
+    detail: data.detail ?? '',
+    note: data.note ?? '',
+    timestamp: data.timestamp,
+    loggedAt: loggedAt ?? data.timestamp
+  };
+};
 
 const runReminderJob = async () => {
   const now = new Date();

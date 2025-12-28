@@ -20,6 +20,17 @@
             padding: 0;
         }
 
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
@@ -465,6 +476,45 @@
             color: rgba(248, 250, 252, 0.7);
         }
 
+        .heat-history__actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.65rem;
+        }
+
+        .history-range {
+            display: inline-flex;
+            gap: 0.4rem;
+            padding: 0.2rem;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 250, 252, 0.2);
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .history-range__btn {
+            border: none;
+            background: transparent;
+            color: rgba(248, 250, 252, 0.8);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.35rem 0.9rem;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .history-range__btn:hover:not(:disabled) {
+            background: rgba(248, 250, 252, 0.15);
+            color: #fff;
+        }
+
+        .history-range__btn--active {
+            background: rgba(248, 250, 252, 0.22);
+            color: #0f172a;
+            cursor: default;
+        }
+
         .heat-history__chart {
             width: 100%;
             height: clamp(220px, 32vh, 360px);
@@ -475,22 +525,190 @@
             height: 100% !important;
         }
 
-.insights-grid {
+.fire-journal {
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: 24px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 1.25rem;
     display: grid;
     gap: 1rem;
-    justify-items: center;
 }
 
-.insight-card {
-    background: rgba(15, 23, 42, 0.7);
-    border-radius: 26px;
-    padding: clamp(1.2rem, 2vw, 1.8rem);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+.fire-journal__header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-family: 'Hepta Slab', 'Inter', serif;
+    color: #f8fafc;
+}
+
+.fire-journal__header p {
+    margin: 0.3rem 0 0;
+    color: rgba(248, 250, 252, 0.7);
+}
+
+.fire-size-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.fire-size-picker--error {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5);
+}
+
+.fire-size__btn {
+    border: 1px solid rgba(248, 250, 252, 0.25);
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.4);
+    color: rgba(248, 250, 252, 0.85);
+    padding: 0.55rem 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border 0.2s ease, color 0.2s ease;
+}
+
+.fire-size__btn--selected {
+    background: rgba(248, 250, 252, 0.9);
+    color: #0f172a;
+}
+
+.fire-journal__note {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(248, 250, 252, 0.2);
+    background: rgba(15, 23, 42, 0.35);
+    color: #f8fafc;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+    resize: vertical;
+}
+
+.fire-journal__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.fire-journal__submit {
+    border: none;
+    border-radius: 12px;
+    padding: 0.65rem 1.1rem;
+    background: linear-gradient(135deg, #fb923c, #f97316);
+    color: #0f172a;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 12px 24px -16px rgba(251, 146, 60, 0.8);
+}
+
+.fire-journal__submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.fire-journal__entries {
     display: grid;
     gap: 0.75rem;
-    box-shadow: 0 25px 40px -35px rgba(15, 23, 42, 0.9);
+}
+
+.fire-journal__entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.95rem;
+    color: rgba(248, 250, 252, 0.9);
+}
+
+.fire-journal__entry span {
+    font-size: 0.85rem;
+    color: rgba(248, 250, 252, 0.65);
+}
+
+.fire-journal__empty {
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 0.9rem;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.insight-report {
+    background: rgba(15, 23, 42, 0.78);
+    border-radius: 28px;
+    padding: clamp(1.4rem, 2.5vw, 2.4rem);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: grid;
+    gap: 0.85rem;
+    box-shadow: 0 28px 45px -30px rgba(15, 23, 42, 0.85);
     color: #f8fafc;
-    width: min(900px, 100%);
+    width: 100%;
+}
+
+.insight-report__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(248, 250, 252, 0.1);
+    border: 1px solid rgba(248, 250, 252, 0.25);
+    color: rgba(248, 250, 252, 0.8);
+    width: fit-content;
+}
+
+.insight-report__title {
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    margin: 0.25rem 0 0;
+    font-family: 'Hepta Slab', 'Inter', serif;
+    color: #f8fafc;
+}
+
+.insight-report__lede {
+    color: rgba(248, 250, 252, 0.8);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.insight-report__bullets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+    color: rgba(248, 250, 252, 0.9);
+}
+
+.insight-report__bullets li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px dashed rgba(248, 250, 252, 0.12);
+    font-variant-numeric: tabular-nums;
+}
+
+.insight-report__bullets li:last-child {
+    border-bottom: none;
+}
+
+.insight-report__bullets span {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.75rem;
+    color: rgba(248, 250, 252, 0.65);
+}
+
+.insight-report__footer {
+    font-size: 0.9rem;
+    color: rgba(248, 250, 252, 0.7);
+    margin-top: 0.5rem;
 }
 
         .insight-card--fire {
@@ -593,6 +811,21 @@
                 align-self: stretch;
             }
 
+            .heat-history__actions {
+                width: 100%;
+                align-items: stretch;
+            }
+
+            .history-range {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .history-range__btn {
+                flex: 1;
+                text-align: center;
+            }
+
             .heat-history__chart {
                 height: clamp(200px, 40vh, 300px);
             }
@@ -673,7 +906,7 @@
                 font-size: 1rem;
             }
             .insights-grid {
-                grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+                grid-template-columns: minmax(0, 1fr);
             }
         }
     </style>
@@ -717,10 +950,41 @@
                         <h3 id="heat-history-title">Heat history</h3>
                         <p id="heat-history-summary">Loading historical readings…</p>
                     </div>
-                    <span class="heat-history__range">Loading range…</span>
+                    <div class="heat-history__actions">
+                        <span class="heat-history__range">Loading range…</span>
+                        <div class="history-range" role="group" aria-label="Heat history range">
+                            <button type="button" class="history-range__btn" data-history-range="7d">7d</button>
+                            <button type="button" class="history-range__btn" data-history-range="30d">30d</button>
+                            <button type="button" class="history-range__btn" data-history-range="full">All</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="heat-history__chart">
                     <canvas id="heat-history-chart" aria-label="Indoor temperature trend over time"></canvas>
+                </div>
+            </section>
+            <section class="fire-journal" aria-labelledby="fire-journal-title">
+                <div class="fire-journal__header">
+                    <h3 id="fire-journal-title">Fire log</h3>
+                    <p>Mark when you reload the furnace so you can compare cadence with the sensor data.</p>
+                </div>
+                <form id="fire-journal-form" class="fire-journal__form">
+                    <div class="fire-size-picker" role="group" aria-label="Select fire size">
+                        <button type="button" class="fire-size__btn" data-fire-size="top-up">Top-up</button>
+                        <button type="button" class="fire-size__btn" data-fire-size="medium">Medium</button>
+                        <button type="button" class="fire-size__btn" data-fire-size="large">Large</button>
+                        <button type="button" class="fire-size__btn" data-fire-size="custom">Custom</button>
+                    </div>
+                    <label class="fire-journal__note-label">
+                        <span class="sr-only">Notes</span>
+                        <textarea id="fire-journal-note" class="fire-journal__note" placeholder="Notes or wood mix (optional)" rows="2"></textarea>
+                    </label>
+                    <div class="fire-journal__actions">
+                        <button type="submit" class="fire-journal__submit">Log fire</button>
+                    </div>
+                </form>
+                <div id="fire-journal-entries" class="fire-journal__entries">
+                    <p class="fire-journal__empty">No fires logged yet.</p>
                 </div>
             </section>
             <section id="insights-grid" class="insights-grid" aria-live="polite"></section>
@@ -732,6 +996,8 @@
     <script>
         window.STONEHEDGE_HISTORY_URL = window.STONEHEDGE_HISTORY_URL
             || 'https://us-central1-the-meeple-planner.cloudfunctions.net/adafruitHistory';
+        window.STONEHEDGE_FIRE_JOURNAL_URL = window.STONEHEDGE_FIRE_JOURNAL_URL
+            || 'https://us-central1-the-meeple-planner.cloudfunctions.net/fireJournal';
     </script>
     <script>
         const REFRESH_INTERVAL = 60000;
@@ -742,9 +1008,19 @@
         const TEMPERATURE_HISTORY_LIMIT = TEMPERATURE_HISTORY_MAX_POINTS;
         const TEMPERATURE_HISTORY_START = new Date('2023-11-06T00:00:00Z');
         const TEMPERATURE_HISTORY_CHUNK = 1000;
+        const HISTORY_RANGE_OPTIONS = [
+            { id: '7d', label: '7 days', days: 7 },
+            { id: '30d', label: '30 days', days: 30 },
+            { id: 'full', label: 'Full history', start: TEMPERATURE_HISTORY_START }
+        ];
+        const FIRE_JOURNAL_STORAGE_KEY = 'stonehedgeFireJournal';
+        const FIRE_JOURNAL_MAX_ENTRIES = 60;
         const HISTORY_API_ENDPOINT = typeof window !== 'undefined' && window.STONEHEDGE_HISTORY_URL
             ? window.STONEHEDGE_HISTORY_URL
             : '/adafruitHistory';
+        const FIRE_JOURNAL_ENDPOINT = typeof window !== 'undefined' && window.STONEHEDGE_FIRE_JOURNAL_URL
+            ? window.STONEHEDGE_FIRE_JOURNAL_URL
+            : '/fireJournal';
         const HUMOR_LINES = {
             'home.temperature': {
                 warm: [
@@ -938,19 +1214,32 @@
             insightsSummary: document.getElementById('insights-summary'),
             heatHistorySummary: document.getElementById('heat-history-summary'),
             heatHistoryCanvas: document.getElementById('heat-history-chart'),
-            heatHistoryRange: document.querySelector('.heat-history__range')
+            heatHistoryRange: document.querySelector('.heat-history__range'),
+            historyRangeButtons: Array.from(document.querySelectorAll('[data-history-range]')),
+            fireJournalForm: document.getElementById('fire-journal-form'),
+            fireJournalNote: document.getElementById('fire-journal-note'),
+            fireJournalButtons: Array.from(document.querySelectorAll('[data-fire-size]')),
+            fireJournalEntries: document.getElementById('fire-journal-entries')
         };
 
         const charts = new Map();
         let refreshTimer = null;
         let activeView = 'dashboard';
         let latestWeather = null;
+        let latestFeeds = null;
+        let latestHistory = null;
         let heatHistoryChart = null;
+        let selectedHistoryRange = HISTORY_RANGE_OPTIONS.find(option => option.id === 'full') || HISTORY_RANGE_OPTIONS[HISTORY_RANGE_OPTIONS.length - 1];
+        let fireJournalEntries = [];
+        let selectedFireSize = null;
+        let fireJournalSubmitting = false;
 
         init();
 
         function init() {
             initViewTabs();
+            initHistoryRangeControls();
+            initFireJournal();
             if (dom.refresh) {
                 dom.refresh.addEventListener('click', () => requestData(true));
             }
@@ -966,6 +1255,42 @@
             const buttons = dom.viewTabs.querySelectorAll('[data-view-tab]');
             buttons.forEach(button => {
                 button.addEventListener('click', () => switchView(button.dataset.viewTab));
+            });
+        }
+
+        function initHistoryRangeControls() {
+            if (!Array.isArray(dom.historyRangeButtons) || !dom.historyRangeButtons.length) {
+                return;
+            }
+            dom.historyRangeButtons.forEach(button => {
+                button.addEventListener('click', () => setHistoryRange(button.dataset.historyRange));
+            });
+            updateHistoryRangeButtons();
+        }
+
+        function setHistoryRange(rangeId) {
+            const next = HISTORY_RANGE_OPTIONS.find(option => option.id === rangeId);
+            if (!next || selectedHistoryRange?.id === next.id) {
+                updateHistoryRangeButtons();
+                return;
+            }
+            selectedHistoryRange = next;
+            updateHistoryRangeButtons();
+            reloadTemperatureHistory();
+        }
+
+        function updateHistoryRangeButtons() {
+            if (!Array.isArray(dom.historyRangeButtons)) {
+                return;
+            }
+            dom.historyRangeButtons.forEach(button => {
+                if (!button || !button.dataset) {
+                    return;
+                }
+                const isActive = button.dataset.historyRange === (selectedHistoryRange?.id);
+                button.classList.toggle('history-range__btn--active', Boolean(isActive));
+                button.disabled = Boolean(isActive);
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             });
         }
 
@@ -1014,6 +1339,291 @@
             }
         }
 
+        async function reloadTemperatureHistory() {
+            if (!latestFeeds || !latestFeeds.length) {
+                requestData(true);
+                return;
+            }
+            setHeatHistoryLoadingState();
+            try {
+                const history = await fetchTemperatureHistory({
+                    limit: TEMPERATURE_HISTORY_LIMIT,
+                    startDate: resolveHistoryStart()
+                });
+                latestHistory = history;
+                const temperatureFeed = latestFeeds.find(feed => feed.id === 'home.temperature');
+                updateHeatHistory(temperatureFeed, history);
+                updateInsights(latestFeeds, latestWeather, history);
+            } catch (error) {
+                console.warn('Unable to reload history', error);
+            }
+        }
+
+        function resolveHistoryStart(range = selectedHistoryRange) {
+            const baseStart = TEMPERATURE_HISTORY_START instanceof Date && !Number.isNaN(TEMPERATURE_HISTORY_START.getTime())
+                ? new Date(TEMPERATURE_HISTORY_START)
+                : null;
+            if (range?.start instanceof Date && !Number.isNaN(range.start.getTime())) {
+                return baseStart
+                    ? new Date(Math.max(baseStart.getTime(), range.start.getTime()))
+                    : new Date(range.start);
+            }
+            if (Number.isFinite(range?.days)) {
+                const date = new Date(Date.now() - range.days * 24 * 60 * 60 * 1000);
+                return baseStart
+                    ? new Date(Math.max(baseStart.getTime(), date.getTime()))
+                    : date;
+            }
+            return baseStart;
+        }
+
+        function setHeatHistoryLoadingState() {
+            if (dom.heatHistorySummary) {
+                dom.heatHistorySummary.textContent = 'Loading historical readings…';
+            }
+            if (dom.heatHistoryRange) {
+                dom.heatHistoryRange.textContent = 'Loading range…';
+            }
+        }
+
+        function initFireJournal() {
+            fireJournalEntries = loadFireJournalEntries();
+            renderFireJournalEntries();
+            if (Array.isArray(dom.fireJournalButtons)) {
+                dom.fireJournalButtons.forEach(button => {
+                    button.addEventListener('click', () => selectFireSize(button.dataset.fireSize));
+                });
+            }
+            if (dom.fireJournalForm) {
+                dom.fireJournalForm.addEventListener('submit', handleFireJournalSubmit);
+            }
+            syncFireJournalFromServer();
+        }
+
+        function selectFireSize(sizeId) {
+            selectedFireSize = sizeId;
+            updateFireSizeButtons();
+        }
+
+        function updateFireSizeButtons() {
+            if (!Array.isArray(dom.fireJournalButtons)) {
+                return;
+            }
+            dom.fireJournalButtons.forEach(button => {
+                const isSelected = button.dataset.fireSize === selectedFireSize;
+                button.classList.toggle('fire-size__btn--selected', Boolean(isSelected));
+            });
+        }
+
+        async function handleFireJournalSubmit(event) {
+            event.preventDefault();
+            if (fireJournalSubmitting) {
+                return;
+            }
+            if (!selectedFireSize) {
+                flagFireSizeError();
+                return;
+            }
+            const meta = getFireSizeMeta(selectedFireSize);
+            if (!meta) {
+                flagFireSizeError();
+                return;
+            }
+            const note = dom.fireJournalNote?.value?.trim().slice(0, 240) || '';
+            try {
+                setFireJournalSubmitting(true);
+                const entry = await postFireJournalEntry({ sizeId: meta.id, note });
+                addFireJournalEntry(entry);
+                if (dom.fireJournalNote) {
+                    dom.fireJournalNote.value = '';
+                }
+                selectedFireSize = null;
+                updateFireSizeButtons();
+            } catch (error) {
+                console.warn('Unable to log fire', error);
+                alert('Unable to log fire right now. Please try again.');
+            } finally {
+                setFireJournalSubmitting(false);
+            }
+        }
+
+        function flagFireSizeError() {
+            const picker = dom.fireJournalForm?.querySelector('.fire-size-picker');
+            if (!picker) {
+                return;
+            }
+            picker.classList.add('fire-size-picker--error');
+            setTimeout(() => picker.classList.remove('fire-size-picker--error'), 900);
+        }
+
+        function renderFireJournalEntries() {
+            if (!dom.fireJournalEntries) {
+                return;
+            }
+            if (!fireJournalEntries.length) {
+                dom.fireJournalEntries.innerHTML = '<p class="fire-journal__empty">No fires logged yet.</p>';
+                return;
+            }
+            const recent = fireJournalEntries.slice().sort((a, b) => b.timestamp - a.timestamp).slice(0, 6);
+            dom.fireJournalEntries.innerHTML = recent.map(entry => {
+                const timeLabel = formatDateTime(new Date(entry.timestamp));
+                const note = entry.note ? `<span>${escapeHtml(entry.note)}</span>` : '';
+                return `<p class="fire-journal__entry"><strong>${escapeHtml(entry.sizeLabel)}</strong><span>${timeLabel}${note ? ` · ${note}` : ''}</span></p>`;
+            }).join('');
+        }
+
+        function loadFireJournalEntries() {
+            if (typeof window === 'undefined' || !window.localStorage) {
+                return [];
+            }
+            try {
+                const raw = window.localStorage.getItem(FIRE_JOURNAL_STORAGE_KEY);
+                const parsed = raw ? JSON.parse(raw) : [];
+                if (!Array.isArray(parsed)) {
+                    return [];
+                }
+                return parsed
+                    .map(entry => ({
+                        id: entry.id || `fire-${entry.timestamp}`,
+                        timestamp: Number(entry.timestamp),
+                        sizeId: entry.sizeId,
+                        sizeLabel: entry.sizeLabel || entry.sizeId || 'Fire',
+                        detail: entry.detail || '',
+                        note: entry.note || ''
+                    }))
+                    .filter(entry => Number.isFinite(entry.timestamp));
+            } catch (error) {
+                console.warn('Unable to load fire journal', error);
+                return [];
+            }
+        }
+
+        function saveFireJournalEntries() {
+            if (typeof window === 'undefined' || !window.localStorage) {
+                return;
+            }
+            try {
+                window.localStorage.setItem(FIRE_JOURNAL_STORAGE_KEY, JSON.stringify(fireJournalEntries));
+            } catch (error) {
+                console.warn('Unable to save fire journal', error);
+            }
+        }
+
+        function addFireJournalEntry(entry) {
+            if (!entry || !Number.isFinite(entry.timestamp)) {
+                return;
+            }
+            fireJournalEntries = fireJournalEntries.filter(item => item.id !== entry.id);
+            fireJournalEntries.push(entry);
+            if (fireJournalEntries.length > FIRE_JOURNAL_MAX_ENTRIES) {
+                fireJournalEntries = fireJournalEntries
+                    .sort((a, b) => a.timestamp - b.timestamp)
+                    .slice(fireJournalEntries.length - FIRE_JOURNAL_MAX_ENTRIES);
+            }
+            saveFireJournalEntries();
+            renderFireJournalEntries();
+        }
+
+        function getFireSizeMeta(sizeId) {
+            if (!sizeId) {
+                return null;
+            }
+            const band = FURNACE_PROFILE.sizeBands.find(entry => entry.id === sizeId);
+            if (band) {
+                return { id: band.id, label: band.title, detail: band.detail };
+            }
+            if (sizeId === 'custom') {
+                return { id: 'custom', label: 'Custom fire', detail: 'Logged manually' };
+            }
+            return null;
+        }
+
+        function setFireJournalSubmitting(isSubmitting) {
+            fireJournalSubmitting = Boolean(isSubmitting);
+            const submitButton = dom.fireJournalForm?.querySelector('.fire-journal__submit');
+            if (submitButton) {
+                submitButton.disabled = fireJournalSubmitting;
+                submitButton.textContent = fireJournalSubmitting ? 'Logging…' : 'Log fire';
+            }
+        }
+
+        async function syncFireJournalFromServer() {
+            if (!FIRE_JOURNAL_ENDPOINT) {
+                return;
+            }
+            try {
+                const entries = await fetchFireJournalEntriesFromServer(FIRE_JOURNAL_MAX_ENTRIES);
+                if (Array.isArray(entries)) {
+                    fireJournalEntries = entries;
+                    saveFireJournalEntries();
+                    renderFireJournalEntries();
+                }
+            } catch (error) {
+                console.warn('Unable to sync fire journal', error);
+            }
+        }
+
+        async function fetchFireJournalEntriesFromServer(limit = FIRE_JOURNAL_MAX_ENTRIES) {
+            if (!FIRE_JOURNAL_ENDPOINT) {
+                return null;
+            }
+            const params = new URLSearchParams();
+            params.set('limit', String(Math.max(1, Math.min(limit, FIRE_JOURNAL_MAX_ENTRIES))));
+            const response = await fetch(`${FIRE_JOURNAL_ENDPOINT}?${params.toString()}`, { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error(`Fire journal fetch failed (${response.status})`);
+            }
+            const payload = await response.json();
+            const entries = Array.isArray(payload.entries) ? payload.entries : [];
+            return entries
+                .map(entry => ({
+                    id: entry.id || `fire-${entry.timestamp}`,
+                    timestamp: Number(entry.timestamp),
+                    sizeId: entry.sizeId,
+                    sizeLabel: entry.sizeLabel || entry.sizeId,
+                    detail: entry.detail || '',
+                    note: entry.note || ''
+                }))
+                .filter(entry => Number.isFinite(entry.timestamp));
+        }
+
+        async function postFireJournalEntry({ sizeId, note }) {
+            if (!FIRE_JOURNAL_ENDPOINT) {
+                throw new Error('Fire journal endpoint unavailable');
+            }
+            const response = await fetch(FIRE_JOURNAL_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sizeId, note })
+            });
+            if (!response.ok) {
+                let message = 'Unable to log fire';
+                try {
+                    const payload = await response.json();
+                    if (payload?.error) {
+                        message = payload.error;
+                    }
+                } catch (error) {
+                    message = await response.text();
+                }
+                throw new Error(message || 'Unable to log fire');
+            }
+            const payload = await response.json();
+            const entry = payload.entry;
+            if (!entry) {
+                throw new Error('Invalid response');
+            }
+            return {
+                id: entry.id || `fire-${entry.timestamp}`,
+                timestamp: Number(entry.timestamp),
+                sizeId: entry.sizeId,
+                sizeLabel: entry.sizeLabel || entry.sizeId,
+                detail: entry.detail || '',
+                note: entry.note || ''
+            };
+        }
+
+
         async function requestData(manualTrigger = false) {
             if (manualTrigger) {
                 dom.status.textContent = 'Refreshing…';
@@ -1024,10 +1634,15 @@
                 const [feeds, weather, temperatureHistory] = await Promise.all([
                     Promise.all(FEEDS.map(feed => fetchFeedData(feed))),
                     fetchWeatherData(),
-                    fetchTemperatureHistory(TEMPERATURE_HISTORY_LIMIT)
+                    fetchTemperatureHistory({
+                        limit: TEMPERATURE_HISTORY_LIMIT,
+                        startDate: resolveHistoryStart()
+                    })
                 ]);
+                latestFeeds = feeds;
                 latestWeather = weather;
-                updateDashboard(feeds, weather);
+                latestHistory = temperatureHistory;
+                updateDashboard(feeds, weather, temperatureHistory);
                 updateHeatHistory(feeds.find(feed => feed.id === 'home.temperature'), temperatureHistory);
                 dom.status.textContent = `Updated ${formatDateTime(new Date())} · ${USERNAME} · Last ${DATA_LIMIT} points`;
             } catch (error) {
@@ -1113,29 +1728,35 @@
             }
         }
 
-        async function fetchTemperatureHistory(limit = TEMPERATURE_HISTORY_LIMIT) {
+        async function fetchTemperatureHistory({ limit = TEMPERATURE_HISTORY_LIMIT, startDate } = {}) {
             const feed = FEEDS.find(item => item.id === 'home.temperature');
             if (!feed) {
                 return [];
             }
-            const startDate = TEMPERATURE_HISTORY_START instanceof Date && !Number.isNaN(TEMPERATURE_HISTORY_START.getTime())
-                ? TEMPERATURE_HISTORY_START
+            const baseStart = TEMPERATURE_HISTORY_START instanceof Date && !Number.isNaN(TEMPERATURE_HISTORY_START.getTime())
+                ? new Date(TEMPERATURE_HISTORY_START)
                 : null;
+            let rangeStart = baseStart;
+            if (startDate instanceof Date && !Number.isNaN(startDate.getTime())) {
+                rangeStart = baseStart
+                    ? new Date(Math.max(baseStart.getTime(), startDate.getTime()))
+                    : new Date(startDate);
+            }
             const adjustValue = typeof feed.adjust === 'function'
                 ? feed.adjust
                 : (value => value + (typeof feed.offset === 'number' ? feed.offset : 0));
             const baseLimit = Number.isFinite(limit) ? Math.max(DATA_LIMIT, Math.floor(limit)) : TEMPERATURE_HISTORY_LIMIT;
             const now = Date.now();
             const samplesPerDay = DATA_LIMIT;
-            const spanMs = startDate ? Math.max(0, now - startDate.getTime()) : 0;
-            const spanDays = startDate ? Math.max(1, Math.ceil(spanMs / (24 * 60 * 60 * 1000))) : 0;
-            const targetSamples = startDate
+            const spanMs = rangeStart ? Math.max(0, now - rangeStart.getTime()) : 0;
+            const spanDays = rangeStart ? Math.max(1, Math.ceil(spanMs / (24 * 60 * 60 * 1000))) : 0;
+            const targetSamples = rangeStart
                 ? Math.max(baseLimit, Math.min(TEMPERATURE_HISTORY_MAX_POINTS, spanDays * samplesPerDay))
                 : Math.min(baseLimit, TEMPERATURE_HISTORY_MAX_POINTS);
 
             const serverHistory = await fetchServerSideHistory({
                 limit: targetSamples,
-                startDate,
+                startDate: rangeStart,
                 adjustValue
             });
             if (Array.isArray(serverHistory) && serverHistory.length) {
@@ -1198,7 +1819,7 @@
                     break;
                 }
                 nextEndTime = oldestTs - 1000;
-                if (startDate && oldestTs <= startDate.getTime()) {
+                if (rangeStart && oldestTs <= rangeStart.getTime()) {
                     break;
                 }
                 guard += 1;
@@ -1209,7 +1830,7 @@
             }
 
             const filtered = entries
-                .filter(entry => !startDate || entry.timestamp >= startDate.getTime())
+                .filter(entry => !rangeStart || entry.timestamp >= rangeStart.getTime())
                 .sort((a, b) => a.timestamp - b.timestamp);
             const maxReturn = Math.min(targetSamples, TEMPERATURE_HISTORY_MAX_POINTS);
             if (filtered.length > maxReturn) {
@@ -1266,7 +1887,7 @@
             }
         }
 
-        function updateDashboard(feeds, weather) {
+        function updateDashboard(feeds, weather, temperatureHistory) {
             const latestPayload = buildLatestPayload(feeds);
             if (latestPayload) {
                 exposeLatestJson(latestPayload);
@@ -1288,7 +1909,7 @@
 
             removeStaleCards(dom.metricGrid, seen, 'card');
             removeStaleCards(dom.detailGrid, seen, 'detail');
-            updateInsights(feeds, weather);
+            updateInsights(feeds, weather, temperatureHistory);
         }
 
         function updateHeatHistory(feed, history) {
@@ -1396,7 +2017,7 @@
             }
         }
 
-        function updateInsights(feeds, weather) {
+        function updateInsights(feeds, weather, temperatureHistory) {
             if (!dom.insightsGrid) {
                 return;
             }
@@ -1405,9 +2026,23 @@
             const humidityFeed = feeds.find(feed => feed.id === 'home.humidity');
             const pressureFeed = feeds.find(feed => feed.id === 'home.pressure');
             const airFeed = feeds.find(feed => feed.id === 'home.gas');
-            const fireAnalysis = analyzeFireCycles(temperatureFeed);
+            const historicalSeries = Array.isArray(temperatureHistory) && temperatureHistory.length
+                ? temperatureHistory
+                    .slice()
+                    .sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0))
+                    .map(point => ({
+                        value: point.value,
+                        created_at: new Date(point.timestamp).toISOString()
+                    }))
+                : null;
+            const primaryTempFeed = temperatureFeed || { id: 'home.temperature', name: 'Indoor temperature', unit: '°C', data: [] };
+            const analysisSource = historicalSeries
+                ? { ...primaryTempFeed, data: historicalSeries }
+                : primaryTempFeed;
+            const fireAnalysis = analyzeFireCycles(analysisSource);
 
-            const coverage = deriveCoverage([temperatureFeed, humidityFeed, pressureFeed, airFeed]);
+            const coverage = deriveHistoryCoverage(temperatureHistory)
+                || deriveCoverage([temperatureFeed, humidityFeed, pressureFeed, airFeed]);
             if (dom.insightsSummary) {
                 const parts = [];
                 if (coverage) {
@@ -2494,6 +3129,236 @@ function exposeLatestJson(payload) {
             };
         }
 
+        function buildBurnPlaybookReport(analysis, feed, weather) {
+            if (!analysis || !feed) {
+                return null;
+            }
+            const unitLabel = feed.unit || '°C';
+            const now = new Date();
+            const nextAnchor = findNextFireAnchor(now);
+            const strings = [];
+            if (analysis.avgHoldHours) {
+                strings.push(`Large fires hold ${formatDuration(analysis.avgHoldHours * 3600000)} before drifting to ${analysis.targetTemp ?? 18}°.`);
+            }
+            if (analysis.recentCoolingRate) {
+                strings.push(`Current cooling pace is ${formatNumber(analysis.recentCoolingRate)}${unitLabel}/hr.`);
+            }
+            if (nextAnchor) {
+                strings.push(`Plan to feed the box before ${nextAnchor.label.toLowerCase()} (${formatTime(nextAnchor.timestamp)}) so ducts stay warm.`);
+            }
+            const points = [];
+            if (analysis.avgRise) {
+                points.push({ label: 'Average boost', detail: `${formatNumber(analysis.avgRise)}${unitLabel}` });
+            }
+            if (analysis.avgIntervalHours) {
+                points.push({ label: 'Spacing target', detail: `${formatNumber(analysis.avgIntervalHours)} hours` });
+            }
+            if (analysis.firesPerDay) {
+                points.push({ label: 'Fires/day', detail: `${formatNumber(analysis.firesPerDay)}` });
+            }
+            return {
+                id: 'burn-playbook',
+                label: 'Plan the next fires',
+                summary: strings.join(' '),
+                points,
+                footer: weather?.temperature ? `Outdoor ${formatNumber(weather.temperature)}${unitLabel} influencing the drop.` : '',
+                priority: 1,
+                variant: 'fire'
+            };
+        }
+
+        function buildFuelEfficiencySummary(analysis, feed) {
+            if (!analysis || !feed) {
+                return null;
+            }
+            const points = [];
+            if (analysis.avgHoldHours) {
+                points.push({ label: 'Hold to comfort', detail: formatDuration(analysis.avgHoldHours * 3600000) });
+            }
+            if (analysis.avgCoolingRate) {
+                points.push({ label: 'Cooling slope', detail: `${formatNumber(analysis.avgCoolingRate)}${feed.unit || '°C'}/hr` });
+            }
+            if (analysis.events.length) {
+                const bigBurn = analysis.events.reduce((max, event) => event.rise > max.rise ? event : max, analysis.events[0]);
+                points.push({ label: 'Best burn', detail: `${formatNumber(bigBurn.rise)}${feed.unit || '°C'} rise holding ${formatDuration(bigBurn.holdHours * 3600000)}` });
+            }
+            return {
+                id: 'fuel-efficiency',
+                label: 'Wood efficiency pulse',
+                summary: 'Tracking how much heat each burn delivers before the plenum cools back to the comfort floor.',
+                points,
+                footer: `Last fire ${analysis.lastFireTime ? formatTime(new Date(analysis.lastFireTime)) : 'unknown'} · ${analysis.events.length} burns sampled`,
+                priority: 2,
+                variant: 'fire'
+            };
+        }
+
+        function buildDaypartCadenceReport(analysis) {
+            if (!analysis || !Array.isArray(analysis.daypartProfiles) || !analysis.daypartProfiles.length) {
+                return null;
+            }
+            const daysOfData = analysis.coverageHours ? Math.max(1, analysis.coverageHours / 24) : 1;
+            const anchorParts = analysis.daypartProfiles.filter(part => part.anchor && part.count);
+            if (!anchorParts.length) {
+                return null;
+            }
+            const weakest = anchorParts.reduce((acc, part) => {
+                const goal = Number.isFinite(part.goalHours) ? part.goalHours : 0;
+                const hold = Number.isFinite(part.avgHoldHours) ? part.avgHoldHours : 0;
+                const gap = goal - hold;
+                if (!acc || gap > acc.gap) {
+                    return { part, gap };
+                }
+                return acc;
+            }, null);
+            const focus = weakest?.part || anchorParts[0];
+            const focusGoal = Number.isFinite(focus.goalHours) ? focus.goalHours : null;
+            const focusHold = Number.isFinite(focus.avgHoldHours) ? focus.avgHoldHours : null;
+            const closingGap = weakest && weakest.gap > 0.25;
+            const summaryParts = [];
+            if (focusHold && focusGoal) {
+                summaryParts.push(`${focus.label} burns hold ${formatDuration(focusHold * 3600000)} vs ${formatDuration(focusGoal * 3600000)} goal.`);
+                if (closingGap) {
+                    summaryParts.push('Consider a larger reload or earlier light-off to close the gap.');
+                } else {
+                    summaryParts.push('Cadence is matching the target window—keep the routine.');
+                }
+            } else {
+                summaryParts.push(`${focus.label} cadence logged ${formatNumber(focus.count / daysOfData)} burns/day.`);
+            }
+            summaryParts.push(`Averaging ${formatNumber(analysis.firesPerDay || (analysis.events?.length || 0) / daysOfData)} fires/day across ${Math.round(daysOfData)} days of data.`);
+            const points = anchorParts.map(part => {
+                const firesPerDay = part.count && daysOfData ? `${formatNumber(part.count / daysOfData)} fires/day` : `${part.count} fires`;
+                const holdLabel = Number.isFinite(part.avgHoldHours)
+                    ? formatDuration(part.avgHoldHours * 3600000)
+                    : '—';
+                const riseLabel = Number.isFinite(part.avgRise)
+                    ? `${formatNumber(part.avgRise)}°C`
+                    : '—';
+                const goalLabel = Number.isFinite(part.goalHours)
+                    ? formatDuration(part.goalHours * 3600000)
+                    : '—';
+                return {
+                    label: part.label,
+                    detail: `${firesPerDay} · rise ${riseLabel} · hold ${holdLabel} (goal ${goalLabel})`
+                };
+            });
+            return {
+                id: 'daypart-cadence',
+                label: 'Anchor cadence',
+                badge: 'Cadence',
+                summary: summaryParts.join(' '),
+                points,
+                priority: 3,
+                variant: 'fire'
+            };
+        }
+
+        function buildCoolingTrendReport(analysis, feed, weather) {
+            if (!analysis || !feed) {
+                return null;
+            }
+            const unitLabel = feed.unit || '°C';
+            const recent = Number.isFinite(analysis.recentCoolingRate) ? analysis.recentCoolingRate : null;
+            const baseline = Number.isFinite(analysis.avgCoolingRate)
+                ? analysis.avgCoolingRate
+                : Number.isFinite(FURNACE_PROFILE.defaultCoolingRate)
+                    ? FURNACE_PROFILE.defaultCoolingRate
+                    : null;
+            if (!recent && !baseline) {
+                return null;
+            }
+            const summaryParts = [];
+            if (recent && baseline) {
+                const ratio = baseline > 0 ? recent / baseline : null;
+                const trendWord = ratio
+                    ? ratio > 1.2
+                        ? 'accelerating'
+                        : ratio < 0.85
+                            ? 'coasting slower'
+                            : 'running on pace'
+                    : 'running on pace';
+                summaryParts.push(`Cooling is ${trendWord}: ${formatNumber(recent)}${unitLabel}/hr vs ${formatNumber(baseline)}${unitLabel}/hr typical.`);
+            } else if (recent) {
+                summaryParts.push(`Dropping ${formatNumber(recent)}${unitLabel}/hr right now.`);
+            } else {
+                summaryParts.push(`Typical cooling rate ${formatNumber(baseline)}${unitLabel}/hr.`);
+            }
+            if (Number.isFinite(analysis.predictedHoursToTarget)) {
+                const eta = new Date(Date.now() + analysis.predictedHoursToTarget * 3600000);
+                summaryParts.push(`Expect to hit ${analysis.targetTemp ?? 18}° near ${formatTime(eta)}.`);
+            }
+            if (weather?.temperature !== undefined && Number.isFinite(Number(weather.temperature))) {
+                summaryParts.push(`Outdoor ${formatNumber(weather.temperature)}${unitLabel} is influencing the drop.`);
+            }
+            const points = [];
+            if (recent) {
+                points.push({ label: 'Current slope', detail: `${formatNumber(recent)}${unitLabel}/hr` });
+            }
+            if (baseline) {
+                points.push({ label: 'Normal slope', detail: `${formatNumber(baseline)}${unitLabel}/hr` });
+            }
+            if (Number.isFinite(analysis.nextFireTime)) {
+                points.push({ label: 'Next fire ETA', detail: formatTime(new Date(analysis.nextFireTime)) });
+            }
+            if (Number.isFinite(analysis.firesPerDay)) {
+                points.push({ label: 'Fires / day', detail: formatNumber(analysis.firesPerDay) });
+            }
+            return {
+                id: 'cooling-trend',
+                label: 'Cooling pace',
+                badge: 'Cooling',
+                summary: summaryParts.join(' '),
+                points,
+                priority: 3.2,
+                variant: 'fire'
+            };
+        }
+
+        function buildStretchOptimizationReport(analysis, feed) {
+            if (!analysis || !feed || !Array.isArray(analysis.events) || !analysis.events.length) {
+                return null;
+            }
+            const unitLabel = feed.unit || '°C';
+            const holdSorted = analysis.events
+                .filter(event => Number.isFinite(event.holdHours))
+                .sort((a, b) => (b.holdHours ?? 0) - (a.holdHours ?? 0));
+            const longest = holdSorted[0] || analysis.events[0];
+            const latest = analysis.events[analysis.events.length - 1];
+            const summaryParts = [];
+            if (longest?.holdHours) {
+                const longestStart = new Date(longest.startTime);
+                const longestDrop = longest.dropTime ? new Date(longest.dropTime) : null;
+                summaryParts.push(`Best stretch held ${formatDuration(longest.holdHours * 3600000)} after a ${formatNumber(longest.rise)}${unitLabel} ramp starting ${formatTime(longestStart)}${longestDrop ? ` → ${formatTime(longestDrop)}` : ''}.`);
+            }
+            if (analysis.avgHoldHours) {
+                summaryParts.push(`Typical burns coast ${formatDuration(analysis.avgHoldHours * 3600000)} before the ducts cool back to ${analysis.targetTemp ?? 18}°.`);
+            }
+            const points = [];
+            if (analysis.avgIntervalHours) {
+                points.push({ label: 'Spacing average', detail: `${formatNumber(analysis.avgIntervalHours)} h between burns` });
+            }
+            if (analysis.avgHoldHours) {
+                points.push({ label: 'Typical hold', detail: formatDuration(analysis.avgHoldHours * 3600000) });
+            }
+            if (longest?.holdHours) {
+                points.push({ label: 'Record stretch', detail: formatDuration(longest.holdHours * 3600000) });
+            }
+            if (latest?.peakTime) {
+                points.push({ label: 'Last reload', detail: formatTime(new Date(latest.peakTime)) });
+            }
+            return {
+                id: 'stretch-optimizer',
+                label: 'Stretch the burn',
+                badge: 'Stretch',
+                summary: summaryParts.join(' '),
+                points,
+                footer: analysis.coverageHours ? `Data window ${formatDuration(analysis.coverageHours * 3600000)}` : '',
+                priority: 3.4,
+                variant: 'fire'
+            };
+        }
+
         function buildFuelEfficiencyReports({ fireAnalysis, temperatureFeed, weather }) {
             if (!fireAnalysis || !temperatureFeed) {
                 return [];
@@ -2506,6 +3371,18 @@ function exposeLatestJson(payload) {
             const efficiency = buildFuelEfficiencySummary(fireAnalysis, temperatureFeed, weather);
             if (efficiency) {
                 sections.push(efficiency);
+            }
+            const cadence = buildDaypartCadenceReport(fireAnalysis);
+            if (cadence) {
+                sections.push(cadence);
+            }
+            const cooling = buildCoolingTrendReport(fireAnalysis, temperatureFeed, weather);
+            if (cooling) {
+                sections.push(cooling);
+            }
+            const stretch = buildStretchOptimizationReport(fireAnalysis, temperatureFeed);
+            if (stretch) {
+                sections.push(stretch);
             }
             return sections;
         }
@@ -2523,6 +3400,24 @@ function exposeLatestJson(payload) {
                     }
                 });
             });
+            if (!timestamps.length) {
+                return null;
+            }
+            const latestTs = Math.max(...timestamps);
+            const earliestTs = Math.min(...timestamps);
+            return {
+                totalMs: Math.max(0, latestTs - earliestTs),
+                latest: new Date(latestTs)
+            };
+        }
+
+        function deriveHistoryCoverage(history) {
+            if (!Array.isArray(history) || history.length < 2) {
+                return null;
+            }
+            const timestamps = history
+                .map(point => Number(point.timestamp))
+                .filter(Number.isFinite);
             if (!timestamps.length) {
                 return null;
             }
@@ -2887,66 +3782,3 @@ function exposeLatestJson(payload) {
     </script>
 </body>
 </html>
-        function buildBurnPlaybookReport(analysis, feed, weather) {
-            if (!analysis || !feed) {
-                return null;
-            }
-            const unitLabel = feed.unit || '°C';
-            const now = new Date();
-            const nextAnchor = findNextFireAnchor(now);
-            const strings = [];
-            if (analysis.avgHoldHours) {
-                strings.push(`Large fires hold ${formatDuration(analysis.avgHoldHours * 3600000)} before drifting to ${analysis.targetTemp ?? 18}°.`);
-            }
-            if (analysis.recentCoolingRate) {
-                strings.push(`Current cooling pace is ${formatNumber(analysis.recentCoolingRate)}${unitLabel}/hr.`);
-            }
-            if (nextAnchor) {
-                strings.push(`Plan to feed the box before ${nextAnchor.label.toLowerCase()} (${formatTime(nextAnchor.timestamp)}) so ducts stay warm.`);
-            }
-            const points = [];
-            if (analysis.avgRise) {
-                points.push({ label: 'Average boost', detail: `${formatNumber(analysis.avgRise)}${unitLabel}` });
-            }
-            if (analysis.avgIntervalHours) {
-                points.push({ label: 'Spacing target', detail: `${formatNumber(analysis.avgIntervalHours)} hours` });
-            }
-            if (analysis.firesPerDay) {
-                points.push({ label: 'Fires/day', detail: `${formatNumber(analysis.firesPerDay)}` });
-            }
-            return {
-                id: 'burn-playbook',
-                label: 'Plan the next fires',
-                summary: strings.join(' '),
-                points,
-                footer: weather?.temperature ? `Outdoor ${formatNumber(weather.temperature)}${unitLabel} influencing the drop.` : '',
-                priority: 1,
-                variant: 'fire'
-            };
-        }
-
-        function buildFuelEfficiencySummary(analysis, feed) {
-            if (!analysis || !feed) {
-                return null;
-            }
-            const points = [];
-            if (analysis.avgHoldHours) {
-                points.push({ label: 'Hold to comfort', detail: formatDuration(analysis.avgHoldHours * 3600000) });
-            }
-            if (analysis.avgCoolingRate) {
-                points.push({ label: 'Cooling slope', detail: `${formatNumber(analysis.avgCoolingRate)}${feed.unit || '°C'}/hr` });
-            }
-            if (analysis.events.length) {
-                const bigBurn = analysis.events.reduce((max, event) => event.rise > max.rise ? event : max, analysis.events[0]);
-                points.push({ label: 'Best burn', detail: `${formatNumber(bigBurn.rise)}${feed.unit || '°C'} rise holding ${formatDuration(bigBurn.holdHours * 3600000)}` });
-            }
-            return {
-                id: 'fuel-efficiency',
-                label: 'Wood efficiency pulse',
-                summary: 'Tracking how much heat each burn delivers before the plenum cools back to the comfort floor.',
-                points,
-                footer: `Last fire ${analysis.lastFireTime ? formatTime(new Date(analysis.lastFireTime)) : 'unknown'} · ${analysis.events.length} burns sampled`,
-                priority: 2,
-                variant: 'fire'
-            };
-        }
