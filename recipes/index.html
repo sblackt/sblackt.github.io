@@ -4967,20 +4967,64 @@ Steps:
                   ? [step.body]
                   : step?.description
                     ? [step.description]
-                    : step?.text
-                      ? [step.text]
-                      : [];
+                    : step?.details
+                      ? [step.details]
+                      : step?.detail
+                        ? [step.detail]
+                        : step?.text
+                          ? [step.text]
+                          : [];
+        const extraLines = [];
+        ['details', 'detail'].forEach((key) => {
+          if (typeof step?.[key] === 'string' && !instructionsSource.includes(step[key])) {
+            extraLines.push(step[key]);
+          }
+        });
         const instructionLines = instructionsSource
+          .concat(extraLines)
           .map((line) => (line ?? '').toString().trim())
           .filter(Boolean);
         return {
           order,
-          title: step?.title || step?.name || step?.label || `Step ${order}`,
+          title: step?.title || step?.name || step?.label || step?.action || `Step ${order}`,
           instructions: instructionLines.length
             ? instructionLines
             : [`Add details for ${componentName || `component ${componentIndex + 1}`}.`]
         };
       });
+    };
+
+    const normalizeWorkflowItems = (rawItems = []) => {
+      const items = Array.isArray(rawItems) ? rawItems : [];
+      return items
+        .map((item) => {
+          if (!item) return null;
+          if (typeof item === 'string') {
+            return {
+              component: '',
+              step: null,
+              description: item.trim()
+            };
+          }
+          if (typeof item === 'object') {
+            return {
+              component: item.component || item.componentId || item.phaseComponent || '',
+              step:
+                item.step ?? item.order ?? item.index ?? (typeof item.line === 'number' ? item.line : null),
+              description:
+                item.description ||
+                item.detail ||
+                item.details ||
+                item.text ||
+                item.task ||
+                item.label ||
+                item.action ||
+                ''
+            };
+          }
+          return null;
+        })
+        .filter(Boolean);
     };
 
     const buildEditableRecipePayload = (recipe) => {
@@ -5129,8 +5173,27 @@ Steps:
         })
         .filter(Boolean);
 
+      const workflowFromRaw = Array.isArray(raw.workflow)
+        ? raw.workflow
+            .map((entry, index) => {
+              if (!entry) return null;
+              const candidateItemsSets = [
+                normalizeWorkflowItems(entry.items),
+                normalizeWorkflowItems(entry.tasks),
+                normalizeWorkflowItems(entry.steps)
+              ];
+              const phaseItems = candidateItemsSets.find((items) => items.length) || [];
+              return {
+                order: entry.order ?? index + 1,
+                label: entry.label || entry.phase || entry.name || `Phase ${index + 1}`,
+                items: phaseItems
+              };
+            })
+            .filter(Boolean)
+        : [];
+
       const normalizedWorkflow =
-        Array.isArray(raw.workflow) && raw.workflow.length ? raw.workflow : workflowFromComponents;
+        workflowFromRaw.length ? workflowFromRaw : workflowFromComponents;
 
       return {
         id: uniqueId,
@@ -5977,13 +6040,13 @@ Steps:
                     ? `
                         <ul>
                           ${phaseItems
-                            .map((item) => {
+                            .map((item, taskIndex) => {
                               const lookupKey = `${item.component}-${item.step}`;
                               const reference = stepLookup.get(lookupKey);
                               const componentName =
                                 reference?.component?.name ||
                                 item.component ||
-                                'Component';
+                                '';
                               let detail = '';
                               if (reference?.step) {
                                 detail = ` · Step ${reference.step.order
@@ -5992,7 +6055,17 @@ Steps:
                               } else if (item.step) {
                                 detail = ` · Step ${item.step}`;
                               }
-                              return `<li><strong>${componentName}</strong>${detail}</li>`;
+                              const descriptionText = item.description ? item.description.trim() : '';
+                              if (componentName) {
+                                return `<li><strong>${componentName}</strong>${
+                                  detail || (descriptionText ? ` · ${descriptionText}` : '')
+                                }</li>`;
+                              }
+                              const fallbackLabel =
+                                descriptionText ||
+                                (detail ? detail.replace(/^ · /, '') : '') ||
+                                `Task ${taskIndex + 1}`;
+                              return `<li>${fallbackLabel}</li>`;
                             })
                             .join('')}
                         </ul>
