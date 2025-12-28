@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recipe Library | stevemwhite.com</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2322110c'/%3E%3Cpath d='M9 21c3.5-3.5 5.6-5.6 7-10 1.4 4.4 3.5 6.5 7 10-2.1 1.4-5 2-7 2s-4.9-.6-7-2z' fill='%23f6a23a'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -5211,6 +5212,14 @@ Steps:
           }
         }
         firestore = firebase.firestore();
+        try {
+          firestore.settings({
+            experimentalAutoDetectLongPolling: true,
+            useFetchStreams: false
+          });
+        } catch (settingsError) {
+          console.warn('Firestore settings could not be applied', settingsError);
+        }
         watchRecipesFromFirestore();
       } catch (error) {
         console.warn('Firebase is not available in this environment.', error);
@@ -5932,35 +5941,74 @@ Steps:
     };
 
     const renderWorkflow = (recipe) => {
-      if (!recipe.workflow?.length) {
+      if (!Array.isArray(recipe.workflow) || !recipe.workflow.length) {
         return '<div class="empty-state">No workflow defined for this recipe.</div>';
       }
 
       const stepLookup = new Map();
-      recipe.components?.forEach((component) => {
-        component.steps?.forEach((step) => {
-          stepLookup.set(`${component.id}-${step.order}`, { component, step });
+      (recipe.components || []).forEach((component = {}) => {
+        const safeSteps = Array.isArray(component.steps) ? component.steps.filter(Boolean) : [];
+        safeSteps.forEach((step, index) => {
+          const stepOrder = Number.isFinite(step?.order) ? step.order : index + 1;
+          const key = `${component.id}-${stepOrder}`;
+          stepLookup.set(key, {
+            component,
+            step: {
+              ...step,
+              order: stepOrder,
+              title: step?.title || `Step ${stepOrder}`
+            }
+          });
         });
       });
 
-      return `
-        <ol class="workflow-list">
-          ${recipe.workflow.map((phase) => `
+      const workflowMarkup = recipe.workflow
+        .map((phase, phaseIndex) => {
+          if (!phase) return '';
+          const phaseOrder = Number.isFinite(phase.order) ? phase.order : phaseIndex + 1;
+          const phaseItems = Array.isArray(phase.items) ? phase.items.filter(Boolean) : [];
+          return `
             <li class="workflow-phase">
-              <div class="phase-badge">${phase.order.toString().padStart(2, '0')}</div>
+              <div class="phase-badge">${phaseOrder.toString().padStart(2, '0')}</div>
               <div>
-                <h3>${phase.label}</h3>
-                <ul>
-                  ${(phase.items || []).map((item) => {
-                    const reference = stepLookup.get(`${item.component}-${item.step}`);
-                    const componentName = reference?.component?.name || item.component;
-                    const stepTitle = reference?.step?.title ? ` · Step ${reference.step.order}: ${reference.step.title}` : '';
-                    return `<li><strong>${componentName}</strong>${stepTitle}</li>`;
-                  }).join('')}
-                </ul>
+                <h3>${phase.label || `Phase ${phaseOrder}`}</h3>
+                ${
+                  phaseItems.length
+                    ? `
+                        <ul>
+                          ${phaseItems
+                            .map((item) => {
+                              const lookupKey = `${item.component}-${item.step}`;
+                              const reference = stepLookup.get(lookupKey);
+                              const componentName =
+                                reference?.component?.name ||
+                                item.component ||
+                                'Component';
+                              let detail = '';
+                              if (reference?.step) {
+                                detail = ` · Step ${reference.step.order
+                                  .toString()
+                                  .padStart(2, '0')}: ${reference.step.title}`;
+                              } else if (item.step) {
+                                detail = ` · Step ${item.step}`;
+                              }
+                              return `<li><strong>${componentName}</strong>${detail}</li>`;
+                            })
+                            .join('')}
+                        </ul>
+                      `
+                    : '<p class="empty-state">Add items to this workflow phase.</p>'
+                }
               </div>
             </li>
-          `).join('')}
+          `;
+        })
+        .filter(Boolean)
+        .join('');
+
+      return `
+        <ol class="workflow-list">
+          ${workflowMarkup || '<li class="workflow-phase"><div class="empty-state">No workflow steps documented yet.</div></li>'}
         </ol>
       `;
     };
