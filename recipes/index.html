@@ -177,6 +177,22 @@
       cursor: pointer;
     }
 
+    .edit-recipe-button {
+      border-radius: 999px;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      color: var(--text);
+      font-weight: 500;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .edit-recipe-button[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .recipe-capture-panel {
       margin-top: 1rem;
       display: grid;
@@ -810,6 +826,7 @@
         ideas the second they appear, and share easy swaps with whoever is cooking next.
       </p>
       <div class="header-actions">
+        <button type="button" class="edit-recipe-button" id="editRecipeButton" disabled>Edit recipe</button>
         <button type="button" class="add-recipe-button" id="openRecipeCapture">Add recipe</button>
       </div>
     </header>
@@ -881,6 +898,9 @@ Steps:
       measurementId: 'G-9VPCFFFP7T'
     };
     const appCheckSiteKey = '6LfFryQsAAAAADqdLut-1om_HfsZYq1zYno5HRiq';
+    const trustedAppCheckHosts = ['stevemwhite.com', 'www.stevemwhite.com'];
+    const shouldUseAppCheckDebugToken =
+      typeof window !== 'undefined' && !trustedAppCheckHosts.includes(window.location.hostname);
 
     let firebaseApp = null;
     let firestore = null;
@@ -4696,6 +4716,7 @@ Steps:
     const recipeCaptureStatus = document.getElementById('recipeCaptureStatus');
     const recipeCaptureCancel = document.getElementById('recipeCaptureCancel');
     const recipeCaptureOpenButton = document.getElementById('openRecipeCapture');
+    const recipeEditButton = document.getElementById('editRecipeButton');
     const setCapturePanelState = (isOpen) => {
       if (!recipeCapturePanel) return;
       if (isOpen) {
@@ -4707,6 +4728,22 @@ Steps:
           recipeCaptureStatus.textContent = '';
         }
       }
+    };
+
+    const openRecipeEditor = () => {
+      if (!activeRecipe || !recipeCaptureInput) {
+        return;
+      }
+      const editableRecipe = buildEditableRecipePayload(activeRecipe);
+      if (!editableRecipe) {
+        return;
+      }
+      recipeCaptureInput.value = JSON.stringify(editableRecipe, null, 2);
+      if (recipeCaptureStatus) {
+        recipeCaptureStatus.textContent = `Editing "${activeRecipe.name}"`;
+      }
+      setCapturePanelState(true);
+      recipeCaptureInput.focus();
     };
 
     const formatComponentKind = (kind = '') =>
@@ -4945,6 +4982,16 @@ Steps:
       });
     };
 
+    const buildEditableRecipePayload = (recipe) => {
+      if (!recipe) return null;
+      const { createdAt, updatedAt, ...rest } = recipe;
+      try {
+        return JSON.parse(JSON.stringify(rest));
+      } catch (_error) {
+        return rest;
+      }
+    };
+
     const resolveComponentSource = (raw = {}) => {
       if (Array.isArray(raw.components) && raw.components.length) {
         return raw.components;
@@ -5139,6 +5186,10 @@ Steps:
           },
           (error) => {
             console.error('Failed to load recipes from Firestore', error);
+            if (!recipes.length) {
+              recipes = [...defaultRecipes];
+              refreshRecipeViews();
+            }
           }
         );
     };
@@ -5151,6 +5202,9 @@ Steps:
         firebaseApp = firebase.initializeApp(firebaseConfig);
         if (typeof firebase.appCheck === 'function') {
           try {
+            if (shouldUseAppCheckDebugToken && typeof self !== 'undefined') {
+              self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+            }
             firebase.appCheck().activate(appCheckSiteKey, true);
           } catch (appCheckError) {
             console.warn('Firebase App Check initialization failed', appCheckError);
@@ -5656,7 +5710,12 @@ Steps:
           throw error;
         }
       } else {
-        recipes.push(newRecipe);
+        const existingIndex = recipes.findIndex((entry) => entry.id === newRecipe.id);
+        if (existingIndex >= 0) {
+          recipes.splice(existingIndex, 1, newRecipe);
+        } else {
+          recipes.unshift(newRecipe);
+        }
         refreshRecipeViews({ highlightId: newRecipe.id });
         selectRecipe(newRecipe.id, { scrollToCard: true, closeDrawer: true });
       }
@@ -5906,11 +5965,23 @@ Steps:
       `;
     };
 
+    const updateRecipeActionState = () => {
+      if (!recipeEditButton) return;
+      if (activeRecipe) {
+        recipeEditButton.removeAttribute('disabled');
+        recipeEditButton.textContent = `Edit "${activeRecipe.name}"`;
+      } else {
+        recipeEditButton.setAttribute('disabled', 'true');
+        recipeEditButton.textContent = 'Edit recipe';
+      }
+    };
+
     const renderRecipeDetails = () => {
       if (!activeRecipe) {
         recipeDetailsEl.innerHTML = '<div class="empty-state">Pick a recipe to see the details.</div>';
         recipeDetailsEl.dataset.componentFiltering = 'false';
         pendingScrollComponentId = null;
+        updateRecipeActionState();
         return;
       }
 
@@ -6016,6 +6087,7 @@ Steps:
         });
         pendingScrollComponentId = null;
       }
+      updateRecipeActionState();
     };
 
     recipeListEl.addEventListener('click', (event) => {
@@ -6058,6 +6130,12 @@ Steps:
       if (recipeCaptureInput) {
         recipeCaptureInput.value = '';
       }
+    });
+    recipeEditButton?.addEventListener('click', () => {
+      if (!activeRecipe) {
+        return;
+      }
+      openRecipeEditor();
     });
 
     recipeCaptureForm?.addEventListener('submit', async (event) => {
