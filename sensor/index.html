@@ -1015,6 +1015,8 @@
         ];
         const FIRE_JOURNAL_STORAGE_KEY = 'stonehedgeFireJournal';
         const FIRE_JOURNAL_MAX_ENTRIES = 60;
+        const FIRE_JOURNAL_MATCH_TOLERANCE_MS = 2 * 60 * 60 * 1000;
+        const FIRE_JOURNAL_SYNTH_WINDOW_MS = 6 * 60 * 60 * 1000;
         const HISTORY_API_ENDPOINT = typeof window !== 'undefined' && window.STONEHEDGE_HISTORY_URL
             ? window.STONEHEDGE_HISTORY_URL
             : '/adafruitHistory';
@@ -1522,6 +1524,7 @@
             }
             saveFireJournalEntries();
             renderFireJournalEntries();
+            refreshInsights();
         }
 
         function getFireSizeMeta(sizeId) {
@@ -1557,6 +1560,7 @@
                     fireJournalEntries = entries;
                     saveFireJournalEntries();
                     renderFireJournalEntries();
+                    refreshInsights();
                 }
             } catch (error) {
                 console.warn('Unable to sync fire journal', error);
@@ -1912,6 +1916,13 @@
             updateInsights(feeds, weather, temperatureHistory);
         }
 
+        function refreshInsights() {
+            if (!latestFeeds || !latestFeeds.length) {
+                return;
+            }
+            updateInsights(latestFeeds, latestWeather, latestHistory);
+        }
+
         function updateHeatHistory(feed, history) {
             if (!dom.heatHistoryCanvas || !dom.heatHistorySummary) {
                 return;
@@ -2039,7 +2050,7 @@
             const analysisSource = historicalSeries
                 ? { ...primaryTempFeed, data: historicalSeries }
                 : primaryTempFeed;
-            const fireAnalysis = analyzeFireCycles(analysisSource);
+            const fireAnalysis = analyzeFireCycles(analysisSource, { fireJournalEntries });
 
             const coverage = deriveHistoryCoverage(temperatureHistory)
                 || deriveCoverage([temperatureFeed, humidityFeed, pressureFeed, airFeed]);
@@ -2685,7 +2696,7 @@ function exposeLatestJson(payload) {
             };
         }
 
-        function analyzeFireCycles(feed) {
+        function analyzeFireCycles(feed, options = {}) {
             if (!feed || !Array.isArray(feed.data) || feed.data.length < 3) {
                 return null;
             }
@@ -2777,17 +2788,34 @@ function exposeLatestJson(payload) {
                 }
             }
 
+            const journalEntries = normalizeFireJournalEntries(options.fireJournalEntries, series);
+            if (journalEntries.length) {
+                mergeFireJournalEvents(events, journalEntries, series);
+            }
+
+            if (!events.length) {
+                return null;
+            }
+
             const coverageHours = (series[series.length - 1].timestamp - series[0].timestamp) / 3600000;
             const avgRise = events.length
-                ? events.reduce((sum, event) => sum + event.rise, 0) / events.length
+                ? events.reduce((sum, event) => sum + (Number.isFinite(event.rise) ? event.rise : 0), 0) / events.length
                 : null;
             let avgIntervalHours = null;
             if (events.length > 1) {
+                let intervals = 0;
                 let totalInterval = 0;
                 for (let i = 1; i < events.length; i++) {
-                    totalInterval += (events[i].startTime - events[i - 1].startTime) / 3600000;
+                    const prevStart = events[i - 1].startTime ?? events[i - 1].peakTime;
+                    const nextStart = events[i].startTime ?? events[i].peakTime;
+                    if (Number.isFinite(prevStart) && Number.isFinite(nextStart)) {
+                        totalInterval += (nextStart - prevStart) / 3600000;
+                        intervals += 1;
+                    }
                 }
-                avgIntervalHours = totalInterval / (events.length - 1);
+                if (intervals > 0) {
+                    avgIntervalHours = totalInterval / intervals;
+                }
             }
 
             const dropDurations = [];
@@ -2860,6 +2888,11 @@ function exposeLatestJson(payload) {
                 : null;
 
             const daypartProfiles = summarizeFireDayparts(events);
+            const lastFireTime = lastEvent
+                ? lastEvent.fireJournal?.timestamp
+                    ?? lastEvent.startTime
+                    ?? lastEvent.peakTime
+                : null;
 
             return {
                 events,
@@ -2872,11 +2905,194 @@ function exposeLatestJson(payload) {
                 recentCoolingRate,
                 predictedHoursToTarget,
                 nextFireTime,
-                lastFireTime: events.length ? events[events.length - 1].peakTime : null,
+                lastFireTime,
                 targetTemp: TARGET_TEMP,
                 currentTemp: currentPoint.value,
                 daypartProfiles
             };
+        }
+
+        function normalizeFireJournalEntries(entries, series) {
+            if (!Array.isArray(entries) || !entries.length) {
+                return [];
+            }
+            const normalized = entries
+                .map(entry => ({
+                    id: entry.id,
+                    timestamp: Number(entry.timestamp),
+                    sizeId: entry.sizeId || '',
+                    sizeLabel: entry.sizeLabel || entry.sizeId || 'Logged fire',
+                    detail: entry.detail || '',
+                    note: entry.note || ''
+                }))
+                .filter(entry => Number.isFinite(entry.timestamp));
+            if (!normalized.length) {
+                return [];
+            }
+            const sorted = normalized.sort((a, b) => a.timestamp - b.timestamp);
+            if (!Array.isArray(series) || !series.length) {
+                return sorted;
+            }
+            const earliest = series[0].timestamp;
+            const latest = series[series.length - 1].timestamp;
+            return sorted.filter(entry => {
+                if (Number.isFinite(earliest) && entry.timestamp < earliest - FIRE_JOURNAL_SYNTH_WINDOW_MS) {
+                    return false;
+                }
+                if (Number.isFinite(latest) && entry.timestamp > latest + FIRE_JOURNAL_SYNTH_WINDOW_MS) {
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        function mergeFireJournalEvents(events, journalEntries, series) {
+            if (!Array.isArray(events) || !journalEntries.length) {
+                return events;
+            }
+            const matchedEvents = new Set();
+            journalEntries.forEach(entry => {
+                const match = matchFireJournalEntry(events, entry, matchedEvents);
+                if (match) {
+                    matchedEvents.add(match);
+                    match.fireJournal = entry;
+                    match.startTime = entry.timestamp;
+                    const sample = estimateSeriesSample(series, entry.timestamp);
+                    if (sample) {
+                        match.startValue = sample.value;
+                        if (Number.isFinite(match.peakValue)) {
+                            match.rise = match.peakValue - match.startValue;
+                        }
+                    }
+                    if (Number.isFinite(match.peakTime)) {
+                        match.durationMs = Math.max(match.durationMs || 0, match.peakTime - match.startTime);
+                    }
+                } else {
+                    const synthetic = synthesizeJournalDrivenEvent(series, entry);
+                    if (synthetic) {
+                        synthetic.fireJournal = entry;
+                        events.push(synthetic);
+                    }
+                }
+            });
+            events.sort((a, b) => {
+                const tsA = a.startTime ?? a.peakTime ?? 0;
+                const tsB = b.startTime ?? b.peakTime ?? 0;
+                return tsA - tsB;
+            });
+            return events;
+        }
+
+        function matchFireJournalEntry(events, entry, matchedEvents) {
+            if (!Array.isArray(events) || !events.length || !entry) {
+                return null;
+            }
+            const timestamp = entry.timestamp;
+            if (!Number.isFinite(timestamp)) {
+                return null;
+            }
+            let candidate = null;
+            events.forEach(event => {
+                if (!event || matchedEvents.has(event)) {
+                    return;
+                }
+                const eventTime = Number.isFinite(event.startTime)
+                    ? event.startTime
+                    : Number.isFinite(event.peakTime)
+                        ? event.peakTime
+                        : null;
+                if (!Number.isFinite(eventTime)) {
+                    return;
+                }
+                const delta = Math.abs(eventTime - timestamp);
+                if (delta > FIRE_JOURNAL_MATCH_TOLERANCE_MS) {
+                    return;
+                }
+                if (!candidate || delta < candidate.delta) {
+                    candidate = { event, delta };
+                }
+            });
+            return candidate?.event || null;
+        }
+
+        function synthesizeJournalDrivenEvent(series, entry) {
+            if (!Array.isArray(series) || !series.length || !entry || !Number.isFinite(entry.timestamp)) {
+                return null;
+            }
+            const sample = estimateSeriesSample(series, entry.timestamp);
+            if (!sample) {
+                return null;
+            }
+            const startIndex = findSeriesIndexAtOrBefore(series, sample.timestamp);
+            const searchEnd = entry.timestamp + FIRE_JOURNAL_SYNTH_WINDOW_MS;
+            let peakIndex = startIndex;
+            let peakValue = series[startIndex].value;
+            for (let i = startIndex; i < series.length; i++) {
+                const point = series[i];
+                if (!Number.isFinite(point.timestamp)) {
+                    continue;
+                }
+                if (point.timestamp > searchEnd) {
+                    break;
+                }
+                if (point.value >= peakValue) {
+                    peakValue = point.value;
+                    peakIndex = i;
+                }
+            }
+            if (peakIndex === startIndex) {
+                return null;
+            }
+            const rise = peakValue - series[startIndex].value;
+            if (!Number.isFinite(rise) || rise < 0.5) {
+                return null;
+            }
+            const peakPoint = series[peakIndex];
+            return {
+                startTime: entry.timestamp,
+                startValue: series[startIndex].value,
+                peakTime: peakPoint.timestamp,
+                peakValue,
+                peakIndex,
+                rise,
+                durationMs: Math.max(peakPoint.timestamp - entry.timestamp, 15 * 60 * 1000)
+            };
+        }
+
+        function findSeriesIndexAtOrBefore(series, timestamp) {
+            if (!Array.isArray(series) || !series.length || !Number.isFinite(timestamp)) {
+                return 0;
+            }
+            let low = 0;
+            let high = series.length - 1;
+            let result = 0;
+            while (low <= high) {
+                const mid = Math.floor((low + high) / 2);
+                if (series[mid].timestamp <= timestamp) {
+                    result = mid;
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+            }
+            return result;
+        }
+
+        function estimateSeriesSample(series, timestamp) {
+            if (!Array.isArray(series) || !series.length || !Number.isFinite(timestamp)) {
+                return null;
+            }
+            let best = null;
+            for (let i = 0; i < series.length; i++) {
+                const point = series[i];
+                const delta = Math.abs(point.timestamp - timestamp);
+                if (!best || delta < best.delta) {
+                    best = { timestamp: point.timestamp, value: point.value, delta };
+                } else if (point.timestamp > timestamp && delta > best.delta) {
+                    break;
+                }
+            }
+            return best ? { timestamp: best.timestamp, value: best.value } : null;
         }
 
 
