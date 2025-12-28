@@ -755,6 +755,10 @@
     </main>
 
     <script>
+        window.STONEHEDGE_HISTORY_URL = window.STONEHEDGE_HISTORY_URL
+            || 'https://us-central1-YOUR_FIREBASE_PROJECT.cloudfunctions.net/adafruitHistory';
+    </script>
+    <script>
         const REFRESH_INTERVAL = 60000;
         const USERNAME = 'sblackt';
         const DATA_LIMIT = 288;
