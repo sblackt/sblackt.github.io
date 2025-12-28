@@ -395,6 +395,15 @@ export const eventPreview = functions.https.onRequest(async (req, res) => {
 });
 
 export const adafruitHistory = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+
   const limitParam = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
   const startParam = typeof req.query.start === 'string' ? Number(new Date(req.query.start).getTime()) : undefined;
   const endParam = typeof req.query.end === 'string' ? Number(new Date(req.query.end).getTime()) : undefined;
