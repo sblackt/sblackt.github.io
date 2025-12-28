@@ -763,6 +763,9 @@
         const TEMPERATURE_HISTORY_START = new Date('2023-11-06T00:00:00Z');
         const TEMPERATURE_HISTORY_MAX_POINTS = 60000;
         const TEMPERATURE_HISTORY_CHUNK = 1000;
+        const HISTORY_API_ENDPOINT = typeof window !== 'undefined' && window.STONEHEDGE_HISTORY_URL
+            ? window.STONEHEDGE_HISTORY_URL
+            : '/adafruitHistory';
         const HUMOR_LINES = {
             'home.temperature': {
                 warm: [
@@ -1150,6 +1153,16 @@
             const targetSamples = startDate
                 ? Math.max(baseLimit, Math.min(TEMPERATURE_HISTORY_MAX_POINTS, spanDays * samplesPerDay))
                 : Math.min(baseLimit, TEMPERATURE_HISTORY_MAX_POINTS);
+
+            const serverHistory = await fetchServerSideHistory({
+                limit: targetSamples,
+                startDate,
+                adjustValue
+            });
+            if (Array.isArray(serverHistory) && serverHistory.length) {
+                return serverHistory;
+            }
+
             const entries = [];
             let nextEndTime = Date.now();
             let guard = 0;
@@ -1224,6 +1237,54 @@
                 return filtered.slice(filtered.length - maxReturn);
             }
             return filtered;
+        }
+
+        async function fetchServerSideHistory({ limit, startDate, adjustValue }) {
+            if (!HISTORY_API_ENDPOINT) {
+                return null;
+            }
+            const params = new URLSearchParams();
+            if (Number.isFinite(limit)) {
+                params.set('limit', String(limit));
+            }
+            if (startDate instanceof Date && !Number.isNaN(startDate.getTime())) {
+                params.set('start', startDate.toISOString());
+            }
+            const url = `${HISTORY_API_ENDPOINT}${params.toString() ? `?${params.toString()}` : ''}`;
+            try {
+                const response = await fetch(url, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error('History endpoint unavailable');
+                }
+                const payload = await response.json();
+                const points = Array.isArray(payload?.points)
+                    ? payload.points
+                    : Array.isArray(payload)
+                        ? payload
+                        : [];
+                if (!points.length) {
+                    return null;
+                }
+                return points
+                    .map(point => {
+                        const rawValue = Number(point.value);
+                        const timestamp = typeof point.timestamp === 'number'
+                            ? point.timestamp
+                            : Date.parse(point.timestamp);
+                        if (!Number.isFinite(rawValue) || Number.isNaN(timestamp)) {
+                            return null;
+                        }
+                        const adjusted = adjustValue(rawValue);
+                        return Number.isFinite(adjusted)
+                            ? { value: adjusted, timestamp }
+                            : null;
+                    })
+                    .filter(Boolean)
+                    .sort((a, b) => a.timestamp - b.timestamp);
+            } catch (error) {
+                console.warn('History API failed; falling back to Adafruit public data.', error);
+                return null;
+            }
         }
 
         function updateDashboard(feeds, weather) {
