@@ -4747,6 +4747,234 @@ Steps:
         : [...recipes];
       return filteredRecipes;
     };
+
+    const coerceArray = (value) => (Array.isArray(value) ? value : value != null ? [value] : []);
+
+    const normalizeSubstitution = (entry) => {
+      if (!entry) return null;
+      if (typeof entry === 'string') {
+        return { name: entry, ratio: '', notes: '' };
+      }
+      if (typeof entry === 'object') {
+        return {
+          name: entry.name || entry.title || entry.ingredient || entry.item || '',
+          ratio: entry.ratio || entry.quantity || entry.amount || '',
+          notes: entry.notes || entry.note || ''
+        };
+      }
+      return null;
+    };
+
+    const normalizeIngredientEntry = (entry) => {
+      if (!entry) return null;
+      if (typeof entry === 'string') {
+        return parseIngredientLine(entry) || {
+          name: entry,
+          amount: null,
+          unit: null,
+          prep: '',
+          notes: ''
+        };
+      }
+      if (typeof entry === 'object') {
+        if (Array.isArray(entry.items)) {
+          return null;
+        }
+        const substitutions = Array.isArray(entry.substitutions)
+          ? entry.substitutions.map(normalizeSubstitution).filter(Boolean)
+          : [];
+        const optional = Boolean(entry.optional ?? entry.isOptional);
+        const prep = entry.prep || entry.preparation || entry.prep_method || '';
+        const notes = entry.notes || entry.note || entry.description || '';
+        const rawText = entry.text || entry.line || entry.raw;
+        if (typeof rawText === 'string' && rawText.trim()) {
+          const parsed = parseIngredientLine(rawText);
+          if (parsed) {
+            return {
+              ...parsed,
+              notes: notes || parsed.notes,
+              prep: prep || parsed.prep,
+              optional,
+              substitutions
+            };
+          }
+        }
+        const name =
+          entry.name ||
+          entry.title ||
+          entry.ingredient ||
+          entry.item ||
+          entry.label ||
+          '';
+        const amountValue = entry.amount ?? entry.quantity ?? entry.qty ?? null;
+        const unitValue = entry.unit || entry.units || entry.measure || entry.measurement || null;
+        const compositeText = [amountValue, unitValue, name].filter(Boolean).join(' ');
+        if (compositeText.trim().length) {
+          const parsed = parseIngredientLine(compositeText);
+          if (parsed) {
+            return {
+              ...parsed,
+              notes: notes || parsed.notes,
+              prep: prep || parsed.prep,
+              optional,
+              substitutions
+            };
+          }
+        }
+
+        let numericAmount = null;
+        if (typeof amountValue === 'number') {
+          numericAmount = amountValue;
+        } else if (typeof amountValue === 'string') {
+          const parsedAmount = parseFraction(amountValue);
+          if (Number.isFinite(parsedAmount)) {
+            numericAmount = parsedAmount;
+          }
+        }
+
+        return {
+          name: name || notes || 'Ingredient',
+          amount: Number.isFinite(numericAmount) ? numericAmount : null,
+          unit: unitValue || null,
+          prep,
+          notes,
+          optional,
+          substitutions
+        };
+      }
+      return null;
+    };
+
+    const normalizeIngredientItems = (rawItems) =>
+      coerceArray(rawItems)
+        .map((entry) => normalizeIngredientEntry(entry))
+        .filter(Boolean);
+
+    const normalizeIngredientSections = (rawValue, defaultLabel = 'Ingredients') => {
+      if (!rawValue) {
+        return [];
+      }
+      if (Array.isArray(rawValue)) {
+        const looksLikeSections = rawValue.every(
+          (entry) => entry && typeof entry === 'object' && Array.isArray(entry.items)
+        );
+        if (looksLikeSections) {
+          return rawValue
+            .map((section, index) => ({
+              section: section.section || section.title || section.label || `${defaultLabel} ${index + 1}`,
+              items: normalizeIngredientItems(section.items || [])
+            }))
+            .filter((section) => section.items.length);
+        }
+        return [
+          {
+            section: defaultLabel,
+            items: normalizeIngredientItems(rawValue)
+          }
+        ].filter((section) => section.items.length);
+      }
+      if (typeof rawValue === 'object') {
+        return Object.entries(rawValue)
+          .map(([label, value]) => ({
+            section: label || defaultLabel,
+            items: normalizeIngredientItems(value)
+          }))
+          .filter((section) => section.items.length);
+      }
+      if (typeof rawValue === 'string') {
+        return [
+          {
+            section: defaultLabel,
+            items: normalizeIngredientItems([rawValue])
+          }
+        ];
+      }
+      return [];
+    };
+
+    const normalizeStepEntries = (rawSteps = [], componentName = '', componentIndex = 0) => {
+      const steps = Array.isArray(rawSteps) ? rawSteps : rawSteps ? [rawSteps] : [];
+      return steps.map((step, stepIndex) => {
+        const order = step?.order ?? stepIndex + 1;
+        if (typeof step === 'string') {
+          const [maybeTitle, ...rest] = step.split(':');
+          if (rest.length) {
+            return {
+              order,
+              title: maybeTitle.trim() || `Step ${order}`,
+              instructions: [rest.join(':').trim() || step.trim()]
+            };
+          }
+          return {
+            order,
+            title: `Step ${order}`,
+            instructions: [step.trim()]
+          };
+        }
+        if (Array.isArray(step)) {
+          return {
+            order,
+            title: `Step ${order}`,
+            instructions: step.map((line) => (line ?? '').toString()).filter(Boolean)
+          };
+        }
+        const instructionsSource =
+          Array.isArray(step?.instructions)
+            ? step.instructions
+            : typeof step?.instructions === 'string'
+              ? [step.instructions]
+              : Array.isArray(step?.lines)
+                ? step.lines
+                : step?.body
+                  ? [step.body]
+                  : step?.description
+                    ? [step.description]
+                    : step?.text
+                      ? [step.text]
+                      : [];
+        const instructionLines = instructionsSource
+          .map((line) => (line ?? '').toString().trim())
+          .filter(Boolean);
+        return {
+          order,
+          title: step?.title || step?.name || step?.label || `Step ${order}`,
+          instructions: instructionLines.length
+            ? instructionLines
+            : [`Add details for ${componentName || `component ${componentIndex + 1}`}.`]
+        };
+      });
+    };
+
+    const resolveComponentSource = (raw = {}) => {
+      if (Array.isArray(raw.components) && raw.components.length) {
+        return raw.components;
+      }
+      if (raw.components && typeof raw.components === 'object') {
+        const values = Object.values(raw.components).filter(Boolean);
+        if (values.length) {
+          return values;
+        }
+      }
+      if (Array.isArray(raw.sections) && raw.sections.length) {
+        return raw.sections;
+      }
+      const fallbackIngredients =
+        raw.ingredients ||
+        raw.ingredientSections ||
+        raw.ingredient_sections ||
+        raw.ingredientGroups;
+      const fallbackSteps = raw.steps || raw.directions || raw.instructions || raw.method;
+      if (fallbackIngredients || fallbackSteps) {
+        return [
+          {
+            name: raw.componentName || raw.defaultComponentName || raw.name || raw.title,
+            ingredients: fallbackIngredients,
+            steps: fallbackSteps
+          }
+        ];
+      }
+      return [];
+    };
     const refreshRecipeViews = ({ highlightId } = {}) => {
       const previousActiveId = activeRecipe?.id;
       applySearchFilter();
@@ -4783,28 +5011,61 @@ Steps:
     };
 
     const normalizeRecipe = (raw = {}) => {
-      const baseName = raw.name || `Untitled Recipe ${recipes.length + 1}`;
+      const derivedName =
+        raw.name ||
+        raw.title ||
+        raw.recipeName ||
+        raw.displayName ||
+        raw.label ||
+        '';
+      const baseName = derivedName || `Untitled Recipe ${recipes.length + 1}`;
       const slugBase = slugify(baseName);
       const uniqueId = raw.id || `${slugBase}-${Date.now()}`;
       const makeComponentId = (component, index) =>
         component.id || `${uniqueId}-component-${index + 1}`;
 
-      const normalizedComponents = Array.isArray(raw.components)
-        ? raw.components.map((component, index) => ({
-            ...component,
-            id: makeComponentId(component || {}, index),
-            ingredients: component?.ingredients || [],
-            steps: (component?.steps || []).map((step, stepIndex) => ({
-              order: step?.order ?? stepIndex + 1,
-              title: step?.title || `Step ${stepIndex + 1}`,
-              instructions: Array.isArray(step?.instructions)
-                ? step.instructions
-                : typeof step?.instructions === 'string'
-                  ? [step.instructions]
-                  : []
-            }))
-          }))
-        : [];
+      const rawComponents = resolveComponentSource(raw);
+      const normalizedComponents = rawComponents.map((component, index) => {
+        const componentName =
+          component?.name || component?.title || component?.label || `Component ${index + 1}`;
+        const ingredientSource =
+          component?.ingredients ||
+          component?.ingredientSections ||
+          component?.ingredient_sections ||
+          component?.ingredientGroups ||
+          component?.sections;
+        const normalizedIngredients = normalizeIngredientSections(ingredientSource, 'Ingredients');
+        const rawSteps =
+          component?.steps ||
+          component?.instructions ||
+          component?.directions ||
+          component?.method ||
+          component?.stepsList;
+        const normalizedSteps = normalizeStepEntries(rawSteps, componentName, index);
+
+        const hasContent =
+          normalizedIngredients.some((section) => section.items.length) || normalizedSteps.length;
+
+        if (!hasContent) {
+          return null;
+        }
+
+        return {
+          ...component,
+          name: componentName,
+          id: makeComponentId(component || {}, index),
+          ingredients: normalizedIngredients,
+          steps: normalizedSteps.length
+            ? normalizedSteps
+            : [
+                {
+                  order: 1,
+                  title: componentName || `Step ${index + 1}`,
+                  instructions: ['Add instructions for this component.']
+                }
+              ]
+        };
+      }).filter(Boolean);
 
       const workflowFromComponents = normalizedComponents
         .map((component, index) => {
@@ -4827,21 +5088,34 @@ Steps:
         id: uniqueId,
         name: baseName,
         version: raw.version ?? 1,
-        servings: raw.servings || { count: '—', note: '' },
+        servings:
+          typeof raw.servings === 'number'
+            ? { count: raw.servings, note: raw.servingsNote || '' }
+            : typeof raw.servings === 'string'
+              ? { count: raw.servings, note: '' }
+              : raw.servings || { count: raw.yield || '—', note: raw.servingsNote || '' },
         metadata: {
-          style: raw.metadata?.style || '',
+          style: raw.metadata?.style || raw.style || '',
           diet: {
-            vegetarian: Boolean(raw.metadata?.diet?.vegetarian),
-            vegan: Boolean(raw.metadata?.diet?.vegan),
-            gluten_free: Boolean(raw.metadata?.diet?.gluten_free),
-            contains_dairy: Boolean(raw.metadata?.diet?.contains_dairy),
-            contains_lentils: Boolean(raw.metadata?.diet?.contains_lentils)
+            vegetarian: Boolean(raw.metadata?.diet?.vegetarian ?? raw.diet?.vegetarian),
+            vegan: Boolean(raw.metadata?.diet?.vegan ?? raw.diet?.vegan),
+            gluten_free: Boolean(raw.metadata?.diet?.gluten_free ?? raw.diet?.gluten_free),
+            contains_dairy: Boolean(
+              raw.metadata?.diet?.contains_dairy ?? raw.diet?.contains_dairy
+            ),
+            contains_lentils: Boolean(
+              raw.metadata?.diet?.contains_lentils ?? raw.diet?.contains_lentils
+            )
           },
-          context: raw.metadata?.context || ''
+          context: raw.metadata?.context || raw.context || ''
         },
         components: normalizedComponents,
         workflow: normalizedWorkflow,
-        substitution_summary: raw.substitution_summary || {}
+        substitution_summary:
+          raw.substitution_summary ||
+          raw.substitutionSummary ||
+          raw.substitutions ||
+          {}
       };
     };
 
@@ -4889,7 +5163,7 @@ Steps:
       }
     };
 
-    const parseFraction = (value) => {
+    function parseFraction(value) {
       if (!value) return null;
       if (value.includes('/')) {
         const [numerator, denominator] = value.split('/').map((part) => parseFloat(part));
@@ -4899,9 +5173,9 @@ Steps:
       }
       const numeric = parseFloat(value);
       return Number.isFinite(numeric) ? numeric : null;
-    };
+    }
 
-    const parseIngredientLine = (line) => {
+    function parseIngredientLine(line) {
       const cleaned = line.replace(/^[-•\s]+/, '').trim();
       if (!cleaned) return null;
       const [main, ...noteParts] = cleaned.split(' - ');
@@ -4941,7 +5215,7 @@ Steps:
         notes,
         optional
       };
-    };
+    }
 
     const buildIngredientsFromText = (input = '') => {
       const items = input
