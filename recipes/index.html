@@ -4761,12 +4761,23 @@ Steps:
       return [rounded, item.unit].filter(Boolean).join(' ');
     };
 
-    const slugify = (text) =>
-      (text || '')
+    const slugify = (text) => {
+      const normalized = (text || '')
         .toString()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '') || `recipe-${Date.now()}`;
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+      const slug = normalized.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      return slug || `recipe-${Date.now()}`;
+    };
+
+    const slugsShareToken = (slugA, slugB) => {
+      if (!slugA || !slugB) return false;
+      const tokensA = slugA.split('-').filter((token) => token.length > 2);
+      if (!tokensA.length) return false;
+      const tokenSet = new Set(tokensA);
+      return slugB.split('-').some((token) => token.length > 2 && tokenSet.has(token));
+    };
 
     const matchesSearchQuery = (recipe, normalizedQuery = '') => {
       if (!normalizedQuery) return true;
@@ -5042,6 +5053,46 @@ Steps:
         .filter(Boolean);
     };
 
+    const deriveStepsFromWorkflow = (component, workflowPhases = []) => {
+      if (!workflowPhases.length) return [];
+      const componentSlug = slugify(component.name || component.id || '');
+      if (!componentSlug) return [];
+
+      const matchingPhases = workflowPhases.filter((phase) => {
+        const labelSlug = slugify(phase.label || '');
+        if (slugsShareToken(componentSlug, labelSlug)) {
+          return true;
+        }
+        const descriptionSlug = slugify(phase.description || phase.notes || '');
+        return slugsShareToken(componentSlug, descriptionSlug);
+      });
+
+      if (!matchingPhases.length) {
+        return [];
+      }
+
+      let derivedIndex = 1;
+      return matchingPhases.map((phase) => {
+        const instructions = (phase.items || [])
+          .map((item) => item.description || '')
+          .filter(Boolean);
+        if (!instructions.length && phase.description) {
+          instructions.push(phase.description);
+        }
+        if (!instructions.length && phase.notes) {
+          instructions.push(phase.notes);
+        }
+        if (!instructions.length) {
+          instructions.push('Follow the workflow guidance for this phase.');
+        }
+        return {
+          order: derivedIndex++,
+          title: phase.label || `Phase ${phase.order ?? derivedIndex - 1}`,
+          instructions
+        };
+      });
+    };
+
     const buildEditableRecipePayload = (recipe) => {
       if (!recipe) return null;
       const { createdAt, updatedAt, ...rest } = recipe;
@@ -5202,7 +5253,9 @@ Steps:
               return {
                 order: entry.order ?? entry.step ?? index + 1,
                 label: entry.label || entry.phase || entry.name || `Phase ${index + 1}`,
-                items: phaseItems
+                items: phaseItems,
+                description: entry.description || '',
+                notes: entry.notes || entry.note || ''
               };
             })
             .filter(Boolean)
@@ -5210,6 +5263,20 @@ Steps:
 
       const normalizedWorkflow =
         workflowFromRaw.length ? workflowFromRaw : workflowFromComponents;
+
+      const componentsWithDerivedSteps = normalizedComponents.map((component) => {
+        if (component.steps?.length) {
+          return component;
+        }
+        const derivedSteps = deriveStepsFromWorkflow(component, workflowFromRaw);
+        if (derivedSteps.length) {
+          return {
+            ...component,
+            steps: derivedSteps
+          };
+        }
+        return component;
+      });
 
       return {
         id: uniqueId,
@@ -5236,7 +5303,7 @@ Steps:
           },
           context: raw.metadata?.context || raw.context || ''
         },
-        components: normalizedComponents,
+        components: componentsWithDerivedSteps,
         workflow: normalizedWorkflow,
         substitution_summary:
           raw.substitution_summary ||
