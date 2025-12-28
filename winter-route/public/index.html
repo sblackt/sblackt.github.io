@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Winter-Safe Route Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="stylesheet" href="./styles.css?v=20241205" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <p class="eyebrow">MVP</p>
+        <h1>Winter-Safe Route Planner</h1>
+        <p>
+          Choose a conservative route that favours plowed highways, paved surfaces, and avoids seasonal road surprises. When you're ready,
+          hand off to Google Maps with just a few anchor waypoints for GPS guidance.
+        </p>
+      </header>
+
+      <section class="planner">
+        <form id="route-form" class="inputs" autocomplete="off">
+          <div class="field">
+            <div class="field-top">
+              <label for="origin-input">Origin</label>
+              <button type="button" id="location-btn" class="ghost-btn">Use my location</button>
+            </div>
+            <input id="origin-input" name="origin" placeholder="Ottawa, ON" />
+            <p class="hint" id="origin-hint">Defaults to your current GPS position when allowed.</p>
+          </div>
+
+          <div class="field">
+            <label for="destination-input">Destination</label>
+            <input id="destination-input" name="destination" placeholder="Algonquin Provincial Park" required />
+          </div>
+
+          <div class="toggles">
+            <label class="toggle">
+              <input type="checkbox" id="winter-toggle" checked />
+              <span>
+                <strong>Winter-safe weighting</strong>
+                <small>Penalize gravel, seasonal, and low-class roads.</small>
+              </span>
+            </label>
+          </div>
+
+          <button type="submit" class="primary-btn" id="plan-btn">Plan route</button>
+          <p class="form-error hidden" id="form-error"></p>
+        </form>
+
+        <div class="result-panel">
+          <div class="stat-grid">
+            <div>
+              <p class="label">ETA</p>
+              <p class="value" id="eta-value">—</p>
+            </div>
+            <div>
+              <p class="label">Distance</p>
+              <p class="value" id="distance-value">—</p>
+            </div>
+            <div>
+              <p class="label">Winter profile</p>
+              <p class="value" id="profile-value">—</p>
+            </div>
+          </div>
+
+          <div class="reasons">
+            <div class="section-header">
+              <h2>Why safer</h2>
+              <span class="badge" id="reasons-count">0</span>
+            </div>
+            <ul id="reasons-list"></ul>
+          </div>
+
+          <div class="anchors">
+            <div class="section-header">
+              <h2>Anchor waypoints</h2>
+              <span id="anchors-count" class="badge">0</span>
+            </div>
+            <p class="hint">We give Google Maps up to two “steering” anchors to stay on the winter-safe corridor.</p>
+            <div class="anchor-pills" id="anchor-pills"></div>
+          </div>
+
+          <button id="maps-btn" class="secondary-btn" disabled>Open in Google Maps</button>
+        </div>
+      </section>
+
+      <section class="map-section">
+        <div id="map"></div>
+        <div class="map-empty" id="map-empty">
+          <p>Plan a route to render a winter-safe corridor with anchor points.</p>
+        </div>
+      </section>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="./app.js?v=20241205" type="module"></script>
+  </body>
+</html>

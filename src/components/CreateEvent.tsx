@@ -305,6 +305,38 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
       <form onSubmit={handleSubmit} className="create-form">
         <div className="form-section">
           <h2>Event Details</h2>
+
+          <div className="form-group">
+            <label>Event Type &amp; Theme</label>
+            <p className="form-helper">Pick a vibe so friends immediately know what to expect.</p>
+            <div className="event-type-grid">
+              {EVENT_TYPE_OPTIONS.map((option) => (
+                <button
+                  type="button"
+                  key={option.value}
+                  className={`event-type-card ${eventType === option.value ? 'selected' : ''}`}
+                  onClick={() => setEventType(option.value)}
+                  style={
+                    {
+                      '--accent-color': option.accent,
+                      '--accent-strong': option.accentStrong,
+                      '--accent-bg': option.background,
+                      '--accent-text': option.text
+                    } as React.CSSProperties
+                  }
+                  aria-pressed={eventType === option.value}
+                >
+                  <div className="event-type-icon" aria-hidden="true">
+                    {option.icon}
+                  </div>
+                  <div className="event-type-copy">
+                    <div className="event-type-label">{option.label}</div>
+                    <div className="event-type-description">{option.description}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
           
           <div className="form-group">
             <label htmlFor="title">Event Title *</label>
@@ -378,38 +410,6 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
             <button type="button" className="add-link-button" onClick={addLink}>
               + Add link
             </button>
-          </div>
-
-          <div className="form-group">
-            <label>Event Type &amp; Theme</label>
-            <p className="form-helper">Pick a vibe so friends immediately know what to expect.</p>
-            <div className="event-type-grid">
-              {EVENT_TYPE_OPTIONS.map((option) => (
-                <button
-                  type="button"
-                  key={option.value}
-                  className={`event-type-card ${eventType === option.value ? 'selected' : ''}`}
-                  onClick={() => setEventType(option.value)}
-                  style={
-                    {
-                      '--accent-color': option.accent,
-                      '--accent-strong': option.accentStrong,
-                      '--accent-bg': option.background,
-                      '--accent-text': option.text
-                    } as React.CSSProperties
-                  }
-                  aria-pressed={eventType === option.value}
-                >
-                  <div className="event-type-icon" aria-hidden="true">
-                    {option.icon}
-                  </div>
-                  <div className="event-type-copy">
-                    <div className="event-type-label">{option.label}</div>
-                    <div className="event-type-description">{option.description}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 

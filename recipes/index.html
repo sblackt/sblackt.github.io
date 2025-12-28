@@ -137,6 +137,7 @@
       width: 100%;
     }
 
+
     .panel {
       background: var(--panel);
       border: 1px solid var(--panel-border);
@@ -157,63 +158,81 @@
       color: var(--text-muted);
     }
 
-    .recipe-add-toggle {
+    .header-actions {
       display: flex;
       justify-content: flex-end;
-      width: 100%;
-      margin-bottom: 0.5rem;
-    }
-
-    .recipe-add-toggle button {
-      border-radius: 999px;
-      border: 1px solid var(--panel-border);
-      background: var(--panel-highlight);
-      color: var(--text);
-      padding: 0.4rem 1rem;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-
-    .recipe-add-panel h2 {
-      letter-spacing: 0.18em;
-      font-size: 0.95rem;
-    }
-
-    .recipe-add-form {
-      display: grid;
-      gap: 0.5rem;
-    }
-
-    .recipe-add-form textarea {
-      width: 100%;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text);
-      padding: 0.75rem;
-      font-family: 'Inter', monospace;
-      min-height: 140px;
-      resize: vertical;
-    }
-
-    .recipe-add-actions {
-      display: flex;
-      flex-wrap: wrap;
       align-items: center;
       gap: 0.75rem;
+      margin-top: 1rem;
     }
 
-    .recipe-add-actions button {
+    .add-recipe-button {
       border-radius: 999px;
       border: 1px solid var(--panel-border);
       background: linear-gradient(90deg, var(--accent), var(--accent-strong));
       color: #1b0c04;
       font-weight: 600;
-      padding: 0.55rem 1.4rem;
+      padding: 0.65rem 1.5rem;
+      font-size: 0.95rem;
       cursor: pointer;
     }
 
-    #recipeAddStatus {
+    .recipe-capture-panel {
+      margin-top: 1rem;
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .recipe-capture-panel[hidden] {
+      display: none;
+    }
+
+    .recipe-capture-form textarea {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 0.85rem;
+      font-size: 1rem;
+      min-height: 220px;
+      resize: vertical;
+      font-family: 'Inter', monospace;
+      line-height: 1.45;
+    }
+
+    .capture-helper {
+      margin: 0.25rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .recipe-capture-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .recipe-capture-actions button {
+      border-radius: 999px;
+      border: 1px solid var(--panel-border);
+      padding: 0.5rem 1.3rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .recipe-capture-actions button[type="submit"] {
+      background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+      color: #1b0c04;
+    }
+
+    .recipe-capture-actions button[type="button"] {
+      background: transparent;
+      color: var(--text);
+    }
+
+    #recipeCaptureStatus {
       font-size: 0.85rem;
       color: var(--text-muted);
       min-height: 1.2em;
@@ -777,6 +796,8 @@
       to { opacity: 1; transform: translateY(0); }
     }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <main>
@@ -784,32 +805,41 @@
       <p class="eyebrow">Recipe library</p>
       <h1>Field Notes From the Bonfire Kitchen</h1>
       <p>
-        Track the recipes that show up in the tin mug rotation, search them quickly,
-        and keep swaps handy for friends with different pantry vibes.
+        Keep the cabin pantry organized: search what you already perfected, jot down new
+        ideas the second they appear, and share easy swaps with whoever is cooking next.
       </p>
+      <div class="header-actions">
+        <button type="button" class="add-recipe-button" id="openRecipeCapture">Add recipe</button>
+      </div>
     </header>
+
+    <section class="panel recipe-capture-panel" id="recipeCapturePanel" hidden>
+      <form id="recipeCaptureForm" class="recipe-capture-form">
+        <label for="recipeCaptureInput">Paste recipe notes or JSON</label>
+        <textarea id="recipeCaptureInput" placeholder="Title: Bonfire ramen
+Style: Midnight broth
+Diet: vegan, gluten-free
+Component: Broth (kind: soup)
+Ingredients:
+- 4 cups veg stock - simmering
+- 1 thumb ginger; sliced
+Steps:
+1. Simmer aromatics until fragrant.
+2. Add noodles, finish with chili crisp."></textarea>
+        <p class="capture-helper">We’ll auto-detect JSON blobs or smart text and turn them into full components, steps, workflow, and substitutions.</p>
+        <div class="recipe-capture-actions">
+          <button type="submit">Save</button>
+          <button type="button" id="recipeCaptureCancel">Cancel</button>
+          <span id="recipeCaptureStatus" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+    </section>
 
     <section class="controls">
       <div class="search-field">
         <label for="recipeSearch">Search recipes</label>
         <input type="search" id="recipeSearch" placeholder="Try &ldquo;bonfire soup&rdquo; or &ldquo;vegan&rdquo;">
       </div>
-    </section>
-
-    <div class="recipe-add-toggle">
-      <button type="button" id="addRecipeToggle" aria-expanded="false">Add recipe JSON</button>
-    </div>
-
-    <section class="panel recipe-add-panel" id="recipeAddPanel" hidden>
-      <h2>Paste recipe JSON</h2>
-      <form id="recipeJsonForm" class="recipe-add-form">
-        <label for="recipeJsonInput">Recipe object</label>
-        <textarea id="recipeJsonInput" placeholder="Paste a recipe JSON blob here..." rows="6"></textarea>
-        <div class="recipe-add-actions">
-          <button type="submit">Add recipe to list</button>
-          <span id="recipeAddStatus" role="status" aria-live="polite"></span>
-        </div>
-      </form>
     </section>
 
     <button class="mobile-nav-button" id="mobileRecipeToggle" type="button" aria-expanded="false">
@@ -840,7 +870,22 @@
   </main>
 
   <script>
-    const recipes = [
+    const firebaseConfig = {
+      apiKey: 'AIzaSyD3giFeU-zkVUx36U4D2YGAM-_vtP15aho',
+      authDomain: 'the-meeple-planner.firebaseapp.com',
+      projectId: 'the-meeple-planner',
+      storageBucket: 'the-meeple-planner.firebasestorage.app',
+      messagingSenderId: '435277919251',
+      appId: '1:435277919251:web:4cfb2ec26e5c55a5007be6',
+      measurementId: 'G-9VPCFFFP7T'
+    };
+
+    let firebaseApp = null;
+    let firestore = null;
+    let recipesUnsubscribe = null;
+    let pendingRecipeSelectionId = null;
+
+    const defaultRecipes = [
       {
         id: 'roasted-musquee-dhiver-bonfire-soup',
         name: 'Roasted Musquée d’Hiver Bonfire Soup',
@@ -4628,6 +4673,7 @@
       }
     ];
 
+    let recipes = [...defaultRecipes];
     let filteredRecipes = [...recipes];
     let activeRecipe = recipes[0] || null;
     let activeTab = 'ingredients';
@@ -4642,11 +4688,24 @@
     const mobileDrawerListEl = document.getElementById('mobileRecipeList');
     const mobileToggleButton = document.getElementById('mobileRecipeToggle');
     const mobileCloseButton = document.getElementById('mobileRecipeClose');
-    const recipeAddPanel = document.getElementById('recipeAddPanel');
-    const addRecipeToggle = document.getElementById('addRecipeToggle');
-    const recipeJsonForm = document.getElementById('recipeJsonForm');
-    const recipeJsonInput = document.getElementById('recipeJsonInput');
-    const recipeAddStatus = document.getElementById('recipeAddStatus');
+    const recipeCapturePanel = document.getElementById('recipeCapturePanel');
+    const recipeCaptureForm = document.getElementById('recipeCaptureForm');
+    const recipeCaptureInput = document.getElementById('recipeCaptureInput');
+    const recipeCaptureStatus = document.getElementById('recipeCaptureStatus');
+    const recipeCaptureCancel = document.getElementById('recipeCaptureCancel');
+    const recipeCaptureOpenButton = document.getElementById('openRecipeCapture');
+    const setCapturePanelState = (isOpen) => {
+      if (!recipeCapturePanel) return;
+      if (isOpen) {
+        recipeCapturePanel.removeAttribute('hidden');
+        recipeCaptureInput?.focus();
+      } else {
+        recipeCapturePanel.setAttribute('hidden', '');
+        if (recipeCaptureStatus) {
+          recipeCaptureStatus.textContent = '';
+        }
+      }
+    };
 
     const formatComponentKind = (kind = '') =>
       kind
@@ -4669,6 +4728,58 @@
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '') || `recipe-${Date.now()}`;
 
+    const matchesSearchQuery = (recipe, normalizedQuery = '') => {
+      if (!normalizedQuery) return true;
+      const haystack = [
+        recipe.name || '',
+        recipe.metadata?.style || '',
+        recipe.metadata?.context || ''
+      ].join(' ').toLowerCase();
+      return haystack.includes(normalizedQuery);
+    };
+
+    const applySearchFilter = (queryText = recipeSearchEl?.value || '') => {
+      const normalizedQuery = (queryText || '').toLowerCase();
+      filteredRecipes = normalizedQuery
+        ? recipes.filter((recipe) => matchesSearchQuery(recipe, normalizedQuery))
+        : [...recipes];
+      return filteredRecipes;
+    };
+    const refreshRecipeViews = ({ highlightId } = {}) => {
+      const previousActiveId = activeRecipe?.id;
+      applySearchFilter();
+
+      if (highlightId) {
+        const highlighted =
+          filteredRecipes.find((recipe) => recipe.id === highlightId) ||
+          recipes.find((recipe) => recipe.id === highlightId);
+        if (highlighted) {
+          activeRecipe = highlighted;
+        }
+      }
+
+      if (activeRecipe) {
+        const stillVisible = filteredRecipes.some((recipe) => recipe.id === activeRecipe.id);
+        if (!stillVisible) {
+          activeRecipe = filteredRecipes[0] || null;
+        }
+      } else {
+        activeRecipe = filteredRecipes[0] || null;
+      }
+
+      if (activeRecipe?.id !== previousActiveId) {
+        activeComponentId = null;
+        activeTab = 'ingredients';
+      }
+
+      renderRecipeList();
+      renderRecipeDetails();
+
+      if (highlightId && activeRecipe?.id === highlightId) {
+        pendingScrollComponentId = null;
+      }
+    };
+
     const normalizeRecipe = (raw = {}) => {
       const baseName = raw.name || `Untitled Recipe ${recipes.length + 1}`;
       const slugBase = slugify(baseName);
@@ -4681,9 +4792,34 @@
             ...component,
             id: makeComponentId(component || {}, index),
             ingredients: component?.ingredients || [],
-            steps: component?.steps || []
+            steps: (component?.steps || []).map((step, stepIndex) => ({
+              order: step?.order ?? stepIndex + 1,
+              title: step?.title || `Step ${stepIndex + 1}`,
+              instructions: Array.isArray(step?.instructions)
+                ? step.instructions
+                : typeof step?.instructions === 'string'
+                  ? [step.instructions]
+                  : []
+            }))
           }))
         : [];
+
+      const workflowFromComponents = normalizedComponents
+        .map((component, index) => {
+          if (!component.steps?.length) return null;
+          return {
+            order: index + 1,
+            label: component.name || `Component ${index + 1}`,
+            items: component.steps.map((step) => ({
+              component: component.id,
+              step: step.order
+            }))
+          };
+        })
+        .filter(Boolean);
+
+      const normalizedWorkflow =
+        Array.isArray(raw.workflow) && raw.workflow.length ? raw.workflow : workflowFromComponents;
 
       return {
         id: uniqueId,
@@ -4702,9 +4838,546 @@
           context: raw.metadata?.context || ''
         },
         components: normalizedComponents,
-        workflow: Array.isArray(raw.workflow) ? raw.workflow : [],
+        workflow: normalizedWorkflow,
         substitution_summary: raw.substitution_summary || {}
       };
+    };
+
+    const watchRecipesFromFirestore = () => {
+      if (!firestore || recipesUnsubscribe) {
+        return;
+      }
+      recipesUnsubscribe = firestore
+        .collection('recipes')
+        .orderBy('updatedAt', 'desc')
+        .onSnapshot(
+          (snapshot) => {
+            const docs = snapshot.docs.map((doc) => normalizeRecipe({ id: doc.id, ...doc.data() }));
+            recipes = docs.length ? docs : [...defaultRecipes];
+            const highlightId = pendingRecipeSelectionId;
+            pendingRecipeSelectionId = null;
+            refreshRecipeViews({ highlightId });
+            if (highlightId) {
+              selectRecipe(highlightId, { scrollToCard: true, closeDrawer: true });
+            }
+          },
+          (error) => {
+            console.error('Failed to load recipes from Firestore', error);
+          }
+        );
+    };
+
+    const initializeFirebase = () => {
+      if (!window.firebase || firestore) {
+        return;
+      }
+      try {
+        firebaseApp = firebase.initializeApp(firebaseConfig);
+        firestore = firebase.firestore();
+        watchRecipesFromFirestore();
+      } catch (error) {
+        console.warn('Firebase is not available in this environment.', error);
+      }
+    };
+
+    const parseFraction = (value) => {
+      if (!value) return null;
+      if (value.includes('/')) {
+        const [numerator, denominator] = value.split('/').map((part) => parseFloat(part));
+        if (Number.isFinite(numerator) && Number.isFinite(denominator) && denominator !== 0) {
+          return numerator / denominator;
+        }
+      }
+      const numeric = parseFloat(value);
+      return Number.isFinite(numeric) ? numeric : null;
+    };
+
+    const parseIngredientLine = (line) => {
+      const cleaned = line.replace(/^[-•\s]+/, '').trim();
+      if (!cleaned) return null;
+      const [main, ...noteParts] = cleaned.split(' - ');
+      const notes = noteParts.join(' - ').trim();
+      const parts = main.split(/\s+/);
+      let amount = null;
+      let unit = null;
+
+      if (parts.length && /^(\d+\/\d+|\d+\.\d+|\d+)$/.test(parts[0])) {
+        amount = parseFraction(parts.shift());
+      }
+
+      if (parts.length && amount !== null && /^[^\d]+$/.test(parts[0])) {
+        unit = parts.shift();
+      }
+
+      const remaining = parts.join(' ').trim();
+      if (!remaining) {
+        return null;
+      }
+
+      let name = remaining;
+      let prep = '';
+      if (remaining.includes(';')) {
+        const [primary, ...prepParts] = remaining.split(';');
+        name = primary.trim();
+        prep = prepParts.join(';').trim();
+      }
+
+      const optional = /optional/i.test(notes) || /optional/i.test(remaining);
+
+      return {
+        name,
+        amount,
+        unit: unit || null,
+        prep,
+        notes,
+        optional
+      };
+    };
+
+    const buildIngredientsFromText = (input = '') => {
+      const items = input
+        .split('\n')
+        .map((line) => line.trim())
+        .map(parseIngredientLine)
+        .filter(Boolean);
+
+      return items.length
+        ? [
+            {
+              section: 'Ingredients',
+              items
+            }
+          ]
+        : [];
+    };
+
+    const buildStepsFromText = (input = '') => {
+      const blocks = input
+        .split(/\n{2,}/)
+        .map((block) => block.trim())
+        .filter(Boolean);
+
+      return blocks.map((block, index) => {
+        const lines = block
+          .split('\n')
+          .map((line) => line.replace(/^[-•\s]+/, '').trim())
+          .filter(Boolean);
+        if (!lines.length) {
+          return null;
+        }
+        let title = `Step ${index + 1}`;
+        let firstLine = lines[0];
+        if (firstLine.includes(':')) {
+          const [maybeTitle, ...rest] = firstLine.split(':');
+          const candidateTitle = maybeTitle.trim();
+          const remainder = rest.join(':').trim();
+          if (candidateTitle) {
+            title = candidateTitle;
+          }
+          if (remainder) {
+            lines[0] = remainder;
+          } else {
+            lines.shift();
+          }
+        } else {
+          title = firstLine;
+          lines.shift();
+        }
+        if (!lines.length) {
+          lines.push(title);
+        }
+        return {
+          order: index + 1,
+          title,
+          instructions: lines
+        };
+      }).filter(Boolean);
+    };
+
+    const buildSubstitutionSummary = (input = '') => {
+      return input
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .reduce((summary, line, index) => {
+          const [label, ...details] = line.split(':');
+          const key = label ? slugify(label).replace(/-/g, '_') : `note_${index + 1}`;
+          summary[key || `note_${index + 1}`] = details.join(':').trim() || label.trim();
+          return summary;
+        }, {});
+    };
+
+    const buildWorkflowFromComponents = (components = []) =>
+      components.map((component, index) => ({
+        order: index + 1,
+        label: component.name || `Phase ${index + 1}`,
+        items: (component.steps || []).map((step) => ({
+          component: component.id,
+          step: step.order
+        }))
+      })).filter((phase) => phase.items?.length);
+
+    const buildWorkflowFromLabels = (labels = [], components = []) => {
+      const byName = new Map();
+      components.forEach((component) => {
+        if (component.name) {
+          byName.set(component.name.toLowerCase(), component);
+        }
+      });
+      const phases = labels.map((entry, index) => {
+        const component = entry.componentName
+          ? byName.get(entry.componentName.toLowerCase())
+          : null;
+        const items = component
+          ? (component.steps || []).map((step) => ({
+              component: component.id,
+              step: step.order
+            }))
+          : [];
+        return {
+          order: index + 1,
+          label: entry.label || `Phase ${index + 1}`,
+          items
+        };
+      }).filter((phase) => phase.items.length);
+      return phases.length ? phases : buildWorkflowFromComponents(components);
+    };
+
+    const buildRecipeFromSmartText = (blob, defaults) => {
+      const recipe = {
+        name: '',
+        metadata: {
+          style: defaults.style,
+          diet: { ...defaults.diet },
+          context: defaults.context
+        },
+        servings: {
+          count: defaults.servingsCount || '—',
+          note: defaults.servingsNote
+        },
+        components: [],
+        workflow: [],
+        substitution_summary: {}
+      };
+
+      const workflowDraft = [];
+      const lines = blob.split(/\r?\n/);
+
+      const createComponent = (name, kind = '') => {
+        const safeName = name || `Component ${recipe.components.length + 1}`;
+        const componentId = `${slugify(safeName) || 'component'}-${Date.now().toString(36)}-${recipe.components.length + 1}`;
+        const component = {
+          id: componentId,
+          name: safeName,
+          kind,
+          ingredients: [{ section: 'Ingredients', items: [] }],
+          steps: []
+        };
+        recipe.components.push(component);
+        return component;
+      };
+
+      let currentComponent = createComponent(defaults.componentName || 'Main Dish');
+      let currentIngredientSection = currentComponent.ingredients[0];
+      let mode = 'ingredients';
+
+      const startIngredientSection = (label = 'Ingredients') => {
+        const section = { section: label, items: [] };
+        currentComponent.ingredients.push(section);
+        currentIngredientSection = section;
+      };
+
+      const pushIngredientLine = (line) => {
+        const parsed = parseIngredientLine(line);
+        const targetSection = currentIngredientSection || currentComponent.ingredients[0] || { section: 'Ingredients', items: [] };
+        if (!currentComponent.ingredients.includes(targetSection)) {
+          currentComponent.ingredients.push(targetSection);
+        }
+        if (parsed) {
+          targetSection.items.push(parsed);
+        } else {
+          targetSection.items.push({
+            name: line.replace(/^[-•\s]+/, '').trim(),
+            amount: null,
+            unit: null,
+            prep: '',
+            notes: ''
+          });
+        }
+      };
+
+      const pushStepLine = (line) => {
+        const normalized = line.replace(/^\d+[\).\s-]*/, '').trim();
+        const colonIndex = normalized.indexOf(':');
+        const looksLikeNewStep =
+          /^\d+/.test(line) ||
+          /^step\s+\d+/i.test(line) ||
+          (colonIndex > 0 && colonIndex < normalized.length - 1);
+        if (!currentComponent.steps.length || looksLikeNewStep) {
+          let title = `Step ${String(currentComponent.steps.length + 1).padStart(2, '0')}`;
+          let body = normalized;
+          if (colonIndex > 0) {
+            title = normalized.slice(0, colonIndex).trim() || title;
+            body = normalized.slice(colonIndex + 1).trim();
+          }
+          currentComponent.steps.push({
+            order: currentComponent.steps.length + 1,
+            title,
+            instructions: body ? [body] : []
+          });
+        } else {
+          currentComponent.steps[currentComponent.steps.length - 1].instructions.push(line.trim());
+        }
+      };
+
+      const pushSubstitutionLine = (line) => {
+        const [label, ...details] = line.split(':');
+        const key = label ? slugify(label).replace(/-/g, '_') : `note_${Object.keys(recipe.substitution_summary).length + 1}`;
+        recipe.substitution_summary[key || `note_${Object.keys(recipe.substitution_summary).length + 1}`] =
+          details.join(':').trim() || label.trim();
+      };
+
+      const pushWorkflowLine = (line) => {
+        const cleaned = line.replace(/^\d+[\).\s-]*/, '').trim();
+        if (!cleaned) return;
+        const [labelPart, componentPart] = cleaned.split(' - ');
+        workflowDraft.push({
+          label: (labelPart || '').trim(),
+          componentName: (componentPart || '').trim()
+        });
+      };
+
+      lines.forEach((rawLine) => {
+        const line = rawLine.trim();
+        if (!line) {
+          return;
+        }
+
+        if (/^title\s*:/i.test(line)) {
+          recipe.name = line.split(':').slice(1).join(':').trim();
+          return;
+        }
+        if (/^style\s*:/i.test(line)) {
+          recipe.metadata.style = line.split(':').slice(1).join(':').trim();
+          return;
+        }
+        if (/^context\s*:/i.test(line)) {
+          recipe.metadata.context = line.split(':').slice(1).join(':').trim();
+          return;
+        }
+        if (/^diet\s*:/i.test(line)) {
+          const tokens = line.split(':').slice(1).join(':').split(/[,/]/);
+          tokens.forEach((token) => {
+            const normalized = token.trim().toLowerCase();
+            if (!normalized) return;
+            if (normalized.includes('vegan')) recipe.metadata.diet.vegan = true;
+            if (normalized.includes('vegetarian')) recipe.metadata.diet.vegetarian = true;
+            if (normalized.includes('gluten')) recipe.metadata.diet.gluten_free = true;
+            if (normalized.includes('dairy')) recipe.metadata.diet.contains_dairy = true;
+            if (normalized.includes('lentil')) recipe.metadata.diet.contains_lentils = true;
+          });
+          return;
+        }
+        if (/^serv(es|ings)\s*:/i.test(line)) {
+          const value = line.split(':').slice(1).join(':').trim();
+          const countMatch = value.match(/(\d+([./]\d+)?)/);
+          if (countMatch) {
+            recipe.servings.count = countMatch[1];
+          }
+          const note = value.replace(countMatch?.[0] || '', '').replace(/[()]/g, '').trim();
+          if (note) {
+            recipe.servings.note = note;
+          }
+          return;
+        }
+        const componentMatch = line.match(/^(?:component|##)\s*:?\s*(.+)$/i);
+        if (componentMatch) {
+          const descriptor = componentMatch[1].trim();
+          const kindMatch = descriptor.match(/\(kind:\s*([^)]+)\)/i);
+          const componentName = kindMatch ? descriptor.replace(kindMatch[0], '').trim() : descriptor;
+          currentComponent = createComponent(componentName || `Component ${recipe.components.length + 1}`, kindMatch ? kindMatch[1].trim() : '');
+          currentIngredientSection = currentComponent.ingredients[0];
+          mode = 'ingredients';
+          return;
+        }
+        if (/^kind\s*:/i.test(line) && currentComponent) {
+          currentComponent.kind = line.split(':').slice(1).join(':').trim();
+          return;
+        }
+        const ingredientsMatch = line.match(/^ingredients?(?:\s*[-:]\s*(.+))?/i);
+        if (ingredientsMatch) {
+          const label = (ingredientsMatch[1] || 'Ingredients').trim();
+          if (!currentComponent.ingredients.length) {
+            currentComponent.ingredients.push({ section: label, items: [] });
+          } else {
+            startIngredientSection(label);
+          }
+          currentIngredientSection = currentComponent.ingredients[currentComponent.ingredients.length - 1];
+          mode = 'ingredients';
+          return;
+        }
+        const sectionMatch = line.match(/^\[(.+)\]$/);
+        if (sectionMatch) {
+          startIngredientSection(sectionMatch[1].trim());
+          mode = 'ingredients';
+          return;
+        }
+        if (/^steps?|^directions?/i.test(line)) {
+          mode = 'steps';
+          return;
+        }
+        if (/^workflow/i.test(line)) {
+          mode = 'workflow';
+          return;
+        }
+        if (/^(substitutions?|substitution summary|summary)/i.test(line)) {
+          mode = 'substitutions';
+          return;
+        }
+
+        if (mode === 'workflow') {
+          pushWorkflowLine(line);
+          return;
+        }
+        if (mode === 'substitutions') {
+          pushSubstitutionLine(line);
+          return;
+        }
+        if (mode === 'steps') {
+          pushStepLine(line);
+          return;
+        }
+        pushIngredientLine(line);
+      });
+
+      if (!recipe.name) {
+        recipe.name = defaults.name;
+      }
+      if (!recipe.name) {
+        throw new Error('Include a Title line or fill the recipe title field.');
+      }
+
+      recipe.components = recipe.components.filter((component) => {
+        const hasIngredients = (component.ingredients || []).some((section) => section.items.length);
+        const hasSteps = (component.steps || []).length;
+        return hasIngredients || hasSteps;
+      }).map((component) => ({
+        ...component,
+        steps: component.steps.length
+          ? component.steps
+          : [
+              {
+                order: 1,
+                title: component.name || 'Step 1',
+                instructions: ['Add instructions for this component.']
+              }
+            ]
+      }));
+
+      if (!recipe.components.length) {
+        throw new Error('Add at least one line of ingredients or steps so we can build the recipe.');
+      }
+
+      recipe.workflow = workflowDraft.length
+        ? buildWorkflowFromLabels(workflowDraft, recipe.components)
+        : buildWorkflowFromComponents(recipe.components);
+
+      if (!Object.keys(recipe.substitution_summary).length && defaults.substitutionsText.trim()) {
+        recipe.substitution_summary = buildSubstitutionSummary(defaults.substitutionsText);
+      }
+
+      return recipe;
+    };
+    const parseRecipeJsonInput = (jsonText = '') => {
+      let parsed;
+      try {
+        parsed = JSON.parse(jsonText);
+      } catch (error) {
+        throw new Error(`That JSON doesn't look right: ${error.message}`);
+      }
+
+      const pickRecipeObject = (value) =>
+        Array.isArray(value) ? value.find((entry) => entry && typeof entry === 'object') : null;
+
+      if (Array.isArray(parsed)) {
+        const candidate = pickRecipeObject(parsed);
+        if (candidate) {
+          return candidate;
+        }
+        throw new Error('JSON array must contain at least one recipe object.');
+      }
+
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.recipe && typeof parsed.recipe === 'object') {
+          return parsed.recipe;
+        }
+        if (Array.isArray(parsed.recipes)) {
+          const candidate = pickRecipeObject(parsed.recipes);
+          if (candidate) {
+            return candidate;
+          }
+          throw new Error('`recipes` must contain at least one recipe object.');
+        }
+        return parsed;
+      }
+
+      throw new Error('JSON recipe must describe an object.');
+    };
+
+    const parseRecipeInput = (rawInput = '') => {
+      const payload = rawInput.trim();
+      if (!payload) {
+        throw new Error('Paste a recipe first.');
+      }
+      if (payload.startsWith('{') || payload.startsWith('[')) {
+        return parseRecipeJsonInput(payload);
+      }
+      const defaults = {
+        name: '',
+        style: '',
+        context: '',
+        servingsCount: '',
+        servingsNote: '',
+        componentName: 'Main Dish',
+        componentKind: '',
+        ingredientsText: '',
+        stepsText: '',
+        substitutionsText: '',
+        diet: {
+          vegetarian: false,
+          vegan: false,
+          gluten_free: false,
+          contains_dairy: false,
+          contains_lentils: false
+        }
+      };
+      return buildRecipeFromSmartText(payload, defaults);
+    };
+
+    const addRecipeToLibrary = async (recipeInput) => {
+      const newRecipe = normalizeRecipe(recipeInput);
+      if (firestore) {
+        try {
+          pendingRecipeSelectionId = newRecipe.id;
+          const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+          await firestore.collection('recipes').doc(newRecipe.id).set(
+            {
+              ...newRecipe,
+              createdAt: newRecipe.createdAt || timestamp,
+              updatedAt: timestamp
+            },
+            { merge: true }
+          );
+        } catch (error) {
+          pendingRecipeSelectionId = null;
+          throw error;
+        }
+      } else {
+        recipes.push(newRecipe);
+        refreshRecipeViews({ highlightId: newRecipe.id });
+        selectRecipe(newRecipe.id, { scrollToCard: true, closeDrawer: true });
+      }
+      return newRecipe;
     };
 
     const setMobileDrawerState = (isOpen) => {
@@ -5074,25 +5747,8 @@
       selectRecipe(card.dataset.recipeId, { scrollToCard: false, closeDrawer: true });
     });
 
-    recipeSearchEl.addEventListener('input', (event) => {
-      const query = event.target.value.toLowerCase();
-      filteredRecipes = recipes.filter((recipe) => {
-        const haystack = [
-          recipe.name,
-          recipe.metadata?.style,
-          recipe.metadata?.context
-        ].join(' ').toLowerCase();
-        return haystack.includes(query);
-      });
-      const nextActive = filteredRecipes.includes(activeRecipe) ? activeRecipe : filteredRecipes[0] || null;
-      if (activeRecipe !== nextActive) {
-        activeRecipe = nextActive;
-        activeComponentId = null;
-      } else {
-        activeRecipe = nextActive;
-      }
-      renderRecipeList();
-      renderRecipeDetails();
+    recipeSearchEl.addEventListener('input', () => {
+      refreshRecipeViews();
     });
 
     mobileToggleButton?.addEventListener('click', () => {
@@ -5109,57 +5765,45 @@
       }
     });
 
-    addRecipeToggle?.addEventListener('click', () => {
-      if (!recipeAddPanel) return;
-      const isHidden = recipeAddPanel.hasAttribute('hidden');
-      if (isHidden) {
-        recipeAddPanel.removeAttribute('hidden');
-      } else {
-        recipeAddPanel.setAttribute('hidden', '');
-      }
-      addRecipeToggle.setAttribute('aria-expanded', String(isHidden));
-      if (isHidden) {
-        recipeJsonInput?.focus();
+    recipeCaptureOpenButton?.addEventListener('click', () => {
+      const isHidden = recipeCapturePanel?.hasAttribute('hidden');
+      setCapturePanelState(Boolean(isHidden));
+    });
+
+    recipeCaptureCancel?.addEventListener('click', () => {
+      setCapturePanelState(false);
+      if (recipeCaptureInput) {
+        recipeCaptureInput.value = '';
       }
     });
 
-    recipeJsonForm?.addEventListener('submit', (event) => {
+    recipeCaptureForm?.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const payload = recipeJsonInput.value.trim();
-      if (!payload) {
-        recipeAddStatus.textContent = 'Please paste a JSON object first.';
-        return;
-      }
       try {
-        const parsed = JSON.parse(payload);
-        const recipeInput = Array.isArray(parsed) ? parsed[0] : parsed;
-        if (!recipeInput || typeof recipeInput !== 'object') {
-          throw new Error('JSON must describe an object.');
+        if (recipeCaptureStatus) {
+          recipeCaptureStatus.textContent = 'Saving...';
         }
-        const newRecipe = normalizeRecipe(recipeInput);
-        recipes.push(newRecipe);
-        const activeQuery = (recipeSearchEl?.value || '').toLowerCase();
-        filteredRecipes = activeQuery
-          ? recipes.filter((recipe) => {
-              const haystack = [
-                recipe.name,
-                recipe.metadata?.style,
-                recipe.metadata?.context
-              ].join(' ').toLowerCase();
-              return haystack.includes(activeQuery);
-            })
-          : [...recipes];
-        recipeJsonInput.value = '';
-        recipeAddStatus.textContent = 'Recipe added.';
-        selectRecipe(newRecipe.id, { scrollToCard: false, closeDrawer: true });
+        const parsedRecipe = parseRecipeInput(recipeCaptureInput?.value || '');
+        await addRecipeToLibrary(parsedRecipe);
+        if (recipeCaptureInput) {
+          recipeCaptureInput.value = '';
+        }
+        if (recipeCaptureStatus) {
+          recipeCaptureStatus.textContent = 'Recipe saved.';
+        }
+        setCapturePanelState(false);
       } catch (error) {
-        recipeAddStatus.textContent = `Could not parse recipe: ${error.message}`;
+        console.error('Failed to save recipe', error);
+        if (recipeCaptureStatus) {
+          recipeCaptureStatus.textContent = error.message || 'Could not save that recipe.';
+        }
       }
     });
 
-    renderRecipeList();
-    renderRecipeDetails();
+    initializeFirebase();
+    refreshRecipeViews();
     setMobileDrawerState(false);
+    setCapturePanelState(false);
   </script>
 </body>
 </html>

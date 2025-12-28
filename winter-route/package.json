@@ -1,0 +1,23 @@
+{
+  "name": "winter-route",
+  "version": "0.1.0",
+  "description": "Winter-safe route planner backend + static frontend bundle",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "routing",
+    "winter",
+    "graphhopper"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0"
+  }
+}

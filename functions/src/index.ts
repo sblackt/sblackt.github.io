@@ -1,6 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { differenceInCalendarDays, format } from 'date-fns';
+import { ADAFRUIT_DEFAULT_HISTORY_LIMIT, fetchAdafruitHistory } from './adafruit';
 
 admin.initializeApp();
 
@@ -390,6 +391,35 @@ export const eventPreview = functions.https.onRequest(async (req, res) => {
   } catch (error) {
     functions.logger.error('eventPreview', error);
     res.status(500).send('Internal error');
+  }
+});
+
+export const adafruitHistory = functions.https.onRequest(async (req, res) => {
+  const limitParam = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
+  const startParam = typeof req.query.start === 'string' ? Number(new Date(req.query.start).getTime()) : undefined;
+  const endParam = typeof req.query.end === 'string' ? Number(new Date(req.query.end).getTime()) : undefined;
+  const limit = Number.isFinite(limitParam) ? limitParam : ADAFRUIT_DEFAULT_HISTORY_LIMIT;
+
+  try {
+    const history = await fetchAdafruitHistory({
+      limit,
+      startTime: startParam,
+      endTime: endParam
+    });
+    const payload = history.map((point) => ({
+      value: Number(point.value.toFixed(3)),
+      timestamp: point.timestamp
+    }));
+    res.set('Cache-Control', 'public, max-age=30, s-maxage=60');
+    res.status(200).json({
+      count: payload.length,
+      newest: payload[payload.length - 1]?.timestamp ?? null,
+      oldest: payload[0]?.timestamp ?? null,
+      points: payload
+    });
+  } catch (error) {
+    functions.logger.error('adafruitHistory', error);
+    res.status(500).json({ error: (error as Error).message });
   }
 });
 

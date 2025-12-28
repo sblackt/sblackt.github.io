@@ -205,6 +205,12 @@ service cloud.firestore {
         optionalString(data, 'updatedAt', 64);
     }
 
+    match /recipes/{recipeId} {
+      allow read: if true;
+      allow create, update: if trustedClient();
+      allow delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
