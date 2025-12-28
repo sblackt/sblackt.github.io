@@ -797,6 +797,7 @@
     }
   </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
@@ -879,6 +880,7 @@ Steps:
       appId: '1:435277919251:web:4cfb2ec26e5c55a5007be6',
       measurementId: 'G-9VPCFFFP7T'
     };
+    const appCheckSiteKey = '6LfFryQsAAAAADqdLut-1om_HfsZYq1zYno5HRiq';
 
     let firebaseApp = null;
     let firestore = null;
@@ -4873,6 +4875,13 @@ Steps:
       }
       try {
         firebaseApp = firebase.initializeApp(firebaseConfig);
+        if (typeof firebase.appCheck === 'function') {
+          try {
+            firebase.appCheck().activate(appCheckSiteKey, true);
+          } catch (appCheckError) {
+            console.warn('Firebase App Check initialization failed', appCheckError);
+          }
+        }
         firestore = firebase.firestore();
         watchRecipesFromFirestore();
       } catch (error) {
