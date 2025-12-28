@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions';
 
 const ADAFRUIT_MAX_CHUNK = 1000;
+const ADAFRUIT_CHUNK_WINDOW_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 export const ADAFRUIT_DEFAULT_HISTORY_LIMIT = 120000;
 
 export interface AdafruitPoint {
@@ -20,12 +21,16 @@ const fetchAdafruitChunk = async (params: {
   feed: string;
   key: string;
   endTime?: number;
+  startTime?: number;
   limit?: number;
 }): Promise<AdafruitPoint[]> => {
-  const { username, feed, key, endTime, limit = ADAFRUIT_MAX_CHUNK } = params;
+  const { username, feed, key, endTime, startTime, limit = ADAFRUIT_MAX_CHUNK } = params;
   const search = new URLSearchParams({ limit: String(limit) });
   if (typeof endTime === 'number') {
     search.set('end_time', new Date(endTime).toISOString());
+  }
+  if (typeof startTime === 'number') {
+    search.set('start_time', new Date(startTime).toISOString());
   }
   const url = `https://io.adafruit.com/api/v2/${encodeURIComponent(username)}/feeds/${encodeURIComponent(feed)}/data?${search.toString()}`;
   const response = await fetch(url, {
@@ -71,11 +76,16 @@ export const fetchAdafruitHistory = async (options: {
 
   while (results.length < maxSamples && guard < 600) {
     const remaining = maxSamples - results.length;
+    const chunkEnd = nextEndTime;
+    const chunkStart = startBoundary
+      ? Math.max(startBoundary, chunkEnd - ADAFRUIT_CHUNK_WINDOW_MS)
+      : chunkEnd - ADAFRUIT_CHUNK_WINDOW_MS;
     const chunk = await fetchAdafruitChunk({
       username,
       feed: feedKey,
       key,
-      endTime: nextEndTime,
+      endTime: chunkEnd,
+      startTime: chunkStart,
       limit: Math.min(ADAFRUIT_MAX_CHUNK, remaining)
     });
     if (!chunk.length) {
@@ -86,10 +96,10 @@ export const fetchAdafruitHistory = async (options: {
     if (!Number.isFinite(oldest)) {
       break;
     }
-    if (startBoundary && oldest <= startBoundary) {
+    if (startBoundary && chunkStart <= startBoundary) {
       break;
     }
-    nextEndTime = oldest - 1000;
+    nextEndTime = chunkStart - 1000;
     guard += 1;
   }
 
