@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hepta+Slab:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="./heat-timeline-utils.js"></script>
     <style>
         :root {
             color-scheme: light dark;
@@ -476,6 +477,19 @@
             color: rgba(248, 250, 252, 0.7);
         }
 
+        .heat-history__delta {
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border-radius: 999px;
+            padding: 0.3rem 0.85rem;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            background: rgba(56, 189, 248, 0.12);
+            color: rgba(248, 250, 252, 0.85);
+            min-width: 78px;
+            text-align: center;
+        }
+
         .heat-history__actions {
             display: flex;
             flex-direction: column;
@@ -711,6 +725,48 @@
     margin-top: 0.5rem;
 }
 
+.insight-table {
+    margin-top: 1rem;
+    overflow-x: auto;
+}
+
+.insight-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.insight-table th,
+.insight-table td {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid rgba(248, 250, 252, 0.15);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.insight-table th {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    color: rgba(248, 250, 252, 0.65);
+}
+
+.insight-download {
+    margin-top: 0.75rem;
+    border: 1px solid rgba(99, 102, 241, 0.6);
+    background: transparent;
+    color: rgba(15, 23, 42, 0.85);
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    width: fit-content;
+}
+
+.insight-download:hover {
+    background: rgba(99, 102, 241, 0.1);
+}
+
         .insight-card--fire {
             border-color: rgba(248, 113, 113, 0.5);
         }
@@ -814,6 +870,10 @@
             .heat-history__actions {
                 width: 100%;
                 align-items: stretch;
+            }
+
+            .heat-history__delta {
+                align-self: flex-start;
             }
 
             .history-range {
@@ -952,10 +1012,11 @@
                     </div>
                     <div class="heat-history__actions">
                         <span class="heat-history__range">Loading range…</span>
+                        <span id="heat-history-delta" class="heat-history__delta" aria-live="polite">ΔT —</span>
                         <div class="history-range" role="group" aria-label="Heat history range">
+                            <button type="button" class="history-range__btn" data-history-range="24h">24h</button>
+                            <button type="button" class="history-range__btn" data-history-range="3d">3d</button>
                             <button type="button" class="history-range__btn" data-history-range="7d">7d</button>
-                            <button type="button" class="history-range__btn" data-history-range="30d">30d</button>
-                            <button type="button" class="history-range__btn" data-history-range="full">All</button>
                         </div>
                     </div>
                 </div>
@@ -998,6 +1059,8 @@
             || 'https://us-central1-the-meeple-planner.cloudfunctions.net/adafruitHistory';
         window.STONEHEDGE_FIRE_JOURNAL_URL = window.STONEHEDGE_FIRE_JOURNAL_URL
             || 'https://us-central1-the-meeple-planner.cloudfunctions.net/fireJournal';
+        window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
+            || 'https://us-central1-the-meeple-planner.cloudfunctions.net/meteoOutdoorHistory';
     </script>
     <script>
         const REFRESH_INTERVAL = 60000;
@@ -1009,9 +1072,9 @@
         const TEMPERATURE_HISTORY_START = new Date('2023-11-06T00:00:00Z');
         const TEMPERATURE_HISTORY_CHUNK = 1000;
         const HISTORY_RANGE_OPTIONS = [
-            { id: '7d', label: '7 days', days: 7 },
-            { id: '30d', label: '30 days', days: 30 },
-            { id: 'full', label: 'Full history', start: TEMPERATURE_HISTORY_START }
+            { id: '24h', label: '24 hours', days: 1 },
+            { id: '3d', label: '3 days', days: 3 },
+            { id: '7d', label: '7 days', days: 7 }
         ];
         const FIRE_JOURNAL_STORAGE_KEY = 'stonehedgeFireJournal';
         const FIRE_JOURNAL_MAX_ENTRIES = 60;
@@ -1023,6 +1086,41 @@
         const FIRE_JOURNAL_ENDPOINT = typeof window !== 'undefined' && window.STONEHEDGE_FIRE_JOURNAL_URL
             ? window.STONEHEDGE_FIRE_JOURNAL_URL
             : '/fireJournal';
+        const OUTDOOR_HISTORY_ENDPOINT = typeof window !== 'undefined' && window.STONEHEDGE_OUTDOOR_URL
+            ? window.STONEHEDGE_OUTDOOR_URL
+            : '/outdoorSamples';
+        const OUTDOOR_CACHE_KEY_PREFIX = 'stonehedgeOutdoorHistory';
+        const OUTDOOR_CACHE_TTL_MS = 10 * 60 * 1000;
+        const OUTDOOR_TIMELINE_VERSION = 'v1';
+        const TIMELINE_RESOLUTION_MINUTES = 5;
+        const INDOOR_ALIGNMENT_TOLERANCE_MS = 3 * 60 * 1000;
+        const OUTDOOR_ALIGNMENT_TOLERANCE_MS = 15 * 60 * 1000;
+        const timelineUtils = typeof window !== 'undefined' ? window.HeatTimelineUtils : null;
+        const buildUnifiedTimeline = timelineUtils?.buildUnifiedTimeline || (() => []);
+        const computeNormalizedCoolingIntervals = timelineUtils?.computeNormalizedCoolingIntervals || (() => []);
+        const summarizeDailyNormalizedCooling = timelineUtils?.summarizeDailyNormalizedCooling || (() => []);
+        const computeFireEffectivenessEvents = timelineUtils?.computeFireEffectivenessEvents || (() => ({ metrics: [], excluded: 0 }));
+        const summarizeFireEffectivenessBySize = timelineUtils?.summarizeFireEffectivenessBySize || (() => []);
+        const computeHeatingDegreeDailyMetrics = timelineUtils?.computeHeatingDegreeDailyMetrics || (() => ({ days: [], excludedFires: 0 }));
+        const computeCoolingAnomalies = timelineUtils?.computeCoolingAnomalies || (() => []);
+        const HEATING_DEGREE_BASE_TEMP = 18;
+        const computeMedian = timelineUtils?.median || (values => {
+            if (!Array.isArray(values) || !values.length) {
+                return null;
+            }
+            const sorted = values
+                .map(Number)
+                .filter(Number.isFinite)
+                .sort((a, b) => a - b);
+            if (!sorted.length) {
+                return null;
+            }
+            const mid = Math.floor(sorted.length / 2);
+            if (sorted.length % 2 === 0) {
+                return (sorted[mid - 1] + sorted[mid]) / 2;
+            }
+            return sorted[mid];
+        });
         const HUMOR_LINES = {
             'home.temperature': {
                 warm: [
@@ -1217,6 +1315,7 @@
             heatHistorySummary: document.getElementById('heat-history-summary'),
             heatHistoryCanvas: document.getElementById('heat-history-chart'),
             heatHistoryRange: document.querySelector('.heat-history__range'),
+            heatHistoryDelta: document.getElementById('heat-history-delta'),
             historyRangeButtons: Array.from(document.querySelectorAll('[data-history-range]')),
             fireJournalForm: document.getElementById('fire-journal-form'),
             fireJournalNote: document.getElementById('fire-journal-note'),
@@ -1230,8 +1329,10 @@
         let latestWeather = null;
         let latestFeeds = null;
         let latestHistory = null;
+        let latestOutdoorSamples = null;
+        let latestHeatTimeline = null;
         let heatHistoryChart = null;
-        let selectedHistoryRange = HISTORY_RANGE_OPTIONS.find(option => option.id === 'full') || HISTORY_RANGE_OPTIONS[HISTORY_RANGE_OPTIONS.length - 1];
+        let selectedHistoryRange = HISTORY_RANGE_OPTIONS.find(option => option.id === '7d') || HISTORY_RANGE_OPTIONS[HISTORY_RANGE_OPTIONS.length - 1];
         let fireJournalEntries = [];
         let selectedFireSize = null;
         let fireJournalSubmitting = false;
@@ -1353,8 +1454,9 @@
                     startDate: resolveHistoryStart()
                 });
                 latestHistory = history;
+                const { timeline } = await refreshHeatHistoryContext(history);
                 const temperatureFeed = latestFeeds.find(feed => feed.id === 'home.temperature');
-                updateHeatHistory(temperatureFeed, history);
+                updateHeatHistory(temperatureFeed, history, timeline);
                 updateInsights(latestFeeds, latestWeather, history);
             } catch (error) {
                 console.warn('Unable to reload history', error);
@@ -1386,6 +1488,192 @@
             if (dom.heatHistoryRange) {
                 dom.heatHistoryRange.textContent = 'Loading range…';
             }
+            if (dom.heatHistoryDelta) {
+                dom.heatHistoryDelta.textContent = 'ΔT —';
+            }
+        }
+
+        async function refreshHeatHistoryContext(history) {
+            if (!Array.isArray(history) || !history.length) {
+                latestOutdoorSamples = [];
+                latestHeatTimeline = [];
+                return { timeline: [], outdoorSamples: [] };
+            }
+            const startDate = new Date(history[0].timestamp);
+            const endDate = new Date(history[history.length - 1].timestamp);
+            try {
+                const outdoorSamples = await loadOutdoorSamplesForRange({
+                    startDate,
+                    endDate,
+                    rangeId: selectedHistoryRange?.id || 'custom'
+                });
+                latestOutdoorSamples = outdoorSamples;
+                const timeline = buildHeatHistoryTimeline(history, outdoorSamples, { startDate, endDate });
+                latestHeatTimeline = timeline;
+                return { timeline, outdoorSamples };
+            } catch (error) {
+                console.warn('Unable to load outdoor samples', error);
+                latestOutdoorSamples = [];
+                latestHeatTimeline = [];
+                return { timeline: [], outdoorSamples: [] };
+            }
+        }
+
+        async function loadOutdoorSamplesForRange({ startDate, endDate, rangeId }) {
+            if (!(startDate instanceof Date) || Number.isNaN(startDate.getTime()) || !(endDate instanceof Date) || Number.isNaN(endDate.getTime())) {
+                return [];
+            }
+            const requestStart = startDate.getTime();
+            const requestEnd = endDate.getTime();
+            const cacheKey = buildOutdoorCacheKey(rangeId);
+            const cached = readOutdoorCache(cacheKey, requestStart, requestEnd);
+            if (cached) {
+                return cached.samples || [];
+            }
+            const samples = await fetchOutdoorSamples({
+                startDate,
+                endDate
+            });
+            writeOutdoorCache(cacheKey, {
+                samples,
+                rangeStart: requestStart,
+                rangeEnd: requestEnd
+            });
+            return samples;
+        }
+
+        function buildOutdoorCacheKey(rangeId) {
+            return `${OUTDOOR_CACHE_KEY_PREFIX}:${rangeId || 'custom'}:${OUTDOOR_TIMELINE_VERSION}`;
+        }
+
+        function readOutdoorCache(key, requestStart, requestEnd) {
+            if (typeof window === 'undefined' || !window.localStorage) {
+                return null;
+            }
+            try {
+                const raw = window.localStorage.getItem(key);
+                if (!raw) {
+                    return null;
+                }
+                const payload = JSON.parse(raw);
+                if (!payload || Date.now() - Number(payload.cachedAt) > OUTDOOR_CACHE_TTL_MS) {
+                    return null;
+                }
+                const cacheStart = Number(payload.rangeStart);
+                const cacheEnd = Number(payload.rangeEnd);
+                if (Number.isFinite(requestStart) && (!Number.isFinite(cacheStart) || cacheStart > requestStart + OUTDOOR_ALIGNMENT_TOLERANCE_MS)) {
+                    return null;
+                }
+                if (Number.isFinite(requestEnd) && (!Number.isFinite(cacheEnd) || cacheEnd < requestEnd - OUTDOOR_ALIGNMENT_TOLERANCE_MS)) {
+                    return null;
+                }
+                return payload;
+            } catch (error) {
+                console.warn('Unable to read outdoor cache', error);
+                return null;
+            }
+        }
+
+        function writeOutdoorCache(key, payload) {
+            if (typeof window === 'undefined' || !window.localStorage) {
+                return;
+            }
+            try {
+                window.localStorage.setItem(key, JSON.stringify({
+                    ...payload,
+                    cachedAt: Date.now()
+                }));
+            } catch (error) {
+                console.warn('Unable to cache outdoor samples', error);
+            }
+        }
+
+        async function fetchOutdoorSamples({ startDate, endDate }) {
+            if (!startDate || !endDate) {
+                return [];
+            }
+            const startIso = startDate.toISOString();
+            const endIso = endDate.toISOString();
+            if (typeof window !== 'undefined' && typeof window.getOutdoorSamples === 'function') {
+                try {
+                    const payload = await window.getOutdoorSamples(startIso, endIso);
+                    return normalizeOutdoorSamples(payload);
+                } catch (error) {
+                    console.warn('getOutdoorSamples failed', error);
+                }
+            }
+            if (!OUTDOOR_HISTORY_ENDPOINT) {
+                return [];
+            }
+            const params = new URLSearchParams();
+            params.set('start', startIso);
+            params.set('end', endIso);
+            try {
+                const response = await fetch(`${OUTDOOR_HISTORY_ENDPOINT}?${params.toString()}`, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error('Outdoor history unavailable');
+                }
+                const payload = await response.json();
+                const points = Array.isArray(payload?.points)
+                    ? payload.points
+                    : Array.isArray(payload)
+                        ? payload
+                        : [];
+                return normalizeOutdoorSamples(points);
+            } catch (error) {
+                console.warn('Outdoor history fetch failed', error);
+                return [];
+            }
+        }
+
+        function normalizeOutdoorSamples(samples) {
+            if (!Array.isArray(samples)) {
+                return [];
+            }
+            return samples
+                .map(entry => {
+                    const timestamp = typeof entry.timestamp === 'number'
+                        ? entry.timestamp
+                        : typeof entry.ts === 'number'
+                            ? entry.ts
+                            : Date.parse(entry.ts || entry.timestamp || entry.created_at);
+                    const value = Number(entry.temp_out_c ?? entry.temp ?? entry.temperature ?? entry.value);
+                    if (!Number.isFinite(value) || Number.isNaN(timestamp)) {
+                        return null;
+                    }
+                    const wind = Number(entry.wind_kph ?? entry.wind ?? entry.wind_speed ?? entry.windSpeed);
+                    return {
+                        value,
+                        timestamp,
+                        wind_kph: Number.isFinite(wind) ? wind : null
+                    };
+                })
+                .filter(Boolean)
+                .sort((a, b) => a.timestamp - b.timestamp);
+        }
+
+        function buildHeatHistoryTimeline(history, outdoorSamples, bounds = {}) {
+            if (!Array.isArray(history) || !history.length) {
+                return [];
+            }
+            const startBoundary = bounds.startDate instanceof Date && !Number.isNaN(bounds.startDate.getTime())
+                ? bounds.startDate.getTime()
+                : history[0].timestamp;
+            const endBoundary = bounds.endDate instanceof Date && !Number.isNaN(bounds.endDate.getTime())
+                ? bounds.endDate.getTime()
+                : history[history.length - 1].timestamp;
+            if (!Number.isFinite(startBoundary) || !Number.isFinite(endBoundary)) {
+                return [];
+            }
+            return buildUnifiedTimeline({
+                start: startBoundary,
+                end: endBoundary,
+                stepMinutes: TIMELINE_RESOLUTION_MINUTES,
+                indoorSamples: history,
+                outdoorSamples: outdoorSamples || [],
+                indoorToleranceMs: INDOOR_ALIGNMENT_TOLERANCE_MS,
+                outdoorToleranceMs: OUTDOOR_ALIGNMENT_TOLERANCE_MS
+            });
         }
 
         function initFireJournal() {
@@ -1646,8 +1934,9 @@
                 latestFeeds = feeds;
                 latestWeather = weather;
                 latestHistory = temperatureHistory;
+                const { timeline } = await refreshHeatHistoryContext(temperatureHistory);
                 updateDashboard(feeds, weather, temperatureHistory);
-                updateHeatHistory(feeds.find(feed => feed.id === 'home.temperature'), temperatureHistory);
+                updateHeatHistory(feeds.find(feed => feed.id === 'home.temperature'), temperatureHistory, timeline);
                 dom.status.textContent = `Updated ${formatDateTime(new Date())} · ${USERNAME} · Last ${DATA_LIMIT} points`;
             } catch (error) {
                 console.error(error);
@@ -1923,7 +2212,7 @@
             updateInsights(latestFeeds, latestWeather, latestHistory);
         }
 
-        function updateHeatHistory(feed, history) {
+        function updateHeatHistory(feed, history, timeline = latestHeatTimeline) {
             if (!dom.heatHistoryCanvas || !dom.heatHistorySummary) {
                 return;
             }
@@ -1932,6 +2221,7 @@
                 if (dom.heatHistoryRange) {
                     dom.heatHistoryRange.textContent = 'Range unavailable';
                 }
+                updateHeatDeltaChip(null);
                 resetHeatHistoryChart();
                 return;
             }
@@ -1957,26 +2247,69 @@
                 dom.heatHistoryRange.textContent = formatHistoryRangeLabel(startDate, endDate);
             }
 
-            const chartPoints = downsampleHistoryPoints(points, 2000).map(point => ({
+            let timelineSeries = Array.isArray(timeline) && timeline.length
+                ? timeline
+                : buildHeatHistoryTimeline(history, latestOutdoorSamples, { startDate, endDate });
+            if (!Array.isArray(timelineSeries)) {
+                timelineSeries = [];
+            }
+            latestHeatTimeline = timelineSeries;
+            const indoorTimeline = timelineSeries.length
+                ? timelineSeries
+                    .filter(entry => Number.isFinite(entry.temp_in_c))
+                    .map(entry => ({ x: entry.timestamp, y: entry.temp_in_c }))
+                : points.slice();
+            const outdoorTimeline = timelineSeries.length
+                ? timelineSeries
+                    .filter(entry => Number.isFinite(entry.temp_out_c))
+                    .map(entry => ({ x: entry.timestamp, y: entry.temp_out_c }))
+                : [];
+            updateHeatDeltaChip(timelineSeries);
+
+            const indoorChartPoints = downsampleHistoryPoints(indoorTimeline, 2000).map(point => ({
                 x: new Date(point.x),
                 y: point.y
             }));
+            const outdoorChartPoints = downsampleHistoryPoints(outdoorTimeline, 2000).map(point => ({
+                x: new Date(point.x),
+                y: point.y
+            }));
+            const axisMin = indoorChartPoints[0]?.x
+                ?? outdoorChartPoints[0]?.x
+                ?? undefined;
+            const axisMax = indoorChartPoints[indoorChartPoints.length - 1]?.x
+                ?? outdoorChartPoints[outdoorChartPoints.length - 1]?.x
+                ?? undefined;
 
             if (!heatHistoryChart) {
                 heatHistoryChart = new Chart(dom.heatHistoryCanvas, {
                     type: 'line',
                     data: {
-                        datasets: [{
-                            label: 'Indoor temperature',
-                            data: chartPoints,
-                            borderColor: '#fb923c',
-                            backgroundColor: 'rgba(251, 146, 60, 0.15)',
-                            pointRadius: 0,
-                            tension: 0.25,
-                            fill: true,
-                            parsing: false,
-                            spanGaps: true
-                        }]
+                        datasets: [
+                            {
+                                label: 'Indoor temperature',
+                                data: indoorChartPoints,
+                                borderColor: '#fb923c',
+                                backgroundColor: 'rgba(251, 146, 60, 0.15)',
+                                pointRadius: 0,
+                                tension: 0.25,
+                                fill: true,
+                                parsing: false,
+                                spanGaps: true
+                            },
+                            {
+                                label: 'Outdoor temperature',
+                                data: outdoorChartPoints,
+                                borderColor: '#38bdf8',
+                                backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                                pointRadius: 0,
+                                tension: 0.2,
+                                fill: false,
+                                borderDash: [6, 4],
+                                parsing: false,
+                                spanGaps: true
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
@@ -2006,11 +2339,12 @@
                             }
                         },
                         plugins: {
-                            legend: { display: false },
+                            legend: { display: true },
                             tooltip: {
                                 callbacks: {
                                     label(context) {
-                                        return `${formatNumber(context.parsed.y)}${unitLabel}`;
+                                        const prefix = context.dataset?.label ? `${context.dataset.label}: ` : '';
+                                        return `${prefix}${formatNumber(context.parsed.y)}${unitLabel}`;
                                     }
                                 }
                             }
@@ -2018,14 +2352,53 @@
                         parsing: false
                     }
                 });
-                heatHistoryChart.options.scales.x.min = chartPoints[0]?.x ?? undefined;
-                heatHistoryChart.options.scales.x.max = chartPoints[chartPoints.length - 1]?.x ?? undefined;
+                heatHistoryChart.options.scales.x.min = axisMin;
+                heatHistoryChart.options.scales.x.max = axisMax;
             } else {
-                heatHistoryChart.data.datasets[0].data = chartPoints;
-                heatHistoryChart.options.scales.x.min = chartPoints[0]?.x ?? undefined;
-                heatHistoryChart.options.scales.x.max = chartPoints[chartPoints.length - 1]?.x ?? undefined;
+                if (!Array.isArray(heatHistoryChart.data.datasets) || heatHistoryChart.data.datasets.length < 2) {
+                    heatHistoryChart.data.datasets = heatHistoryChart.data.datasets || [];
+                    heatHistoryChart.data.datasets[0] = heatHistoryChart.data.datasets[0] || {};
+                    heatHistoryChart.data.datasets.push({
+                        label: 'Outdoor temperature',
+                        data: outdoorChartPoints,
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                        pointRadius: 0,
+                        tension: 0.2,
+                        fill: false,
+                        borderDash: [6, 4],
+                        parsing: false,
+                        spanGaps: true
+                    });
+                }
+                heatHistoryChart.data.datasets[0].data = indoorChartPoints;
+                heatHistoryChart.data.datasets[1].data = outdoorChartPoints;
+                heatHistoryChart.options.scales.x.min = axisMin;
+                heatHistoryChart.options.scales.x.max = axisMax;
                 heatHistoryChart.update('none');
             }
+        }
+
+        function updateHeatDeltaChip(timeline) {
+            if (!dom.heatHistoryDelta) {
+                return;
+            }
+            if (!Array.isArray(timeline) || !timeline.length) {
+                dom.heatHistoryDelta.textContent = 'ΔT —';
+                dom.heatHistoryDelta.title = 'Need indoor & outdoor data to compute delta';
+                return;
+            }
+            for (let i = timeline.length - 1; i >= 0; i--) {
+                const entry = timeline[i];
+                if (Number.isFinite(entry?.temp_in_c) && Number.isFinite(entry?.temp_out_c)) {
+                    const delta = entry.temp_in_c - entry.temp_out_c;
+                    dom.heatHistoryDelta.textContent = `ΔT ${formatNumber(delta)}°C`;
+                    dom.heatHistoryDelta.title = `Indoor ${formatNumber(entry.temp_in_c)}°C vs Outdoor ${formatNumber(entry.temp_out_c)}°C`;
+                    return;
+                }
+            }
+            dom.heatHistoryDelta.textContent = 'ΔT —';
+            dom.heatHistoryDelta.title = 'Need indoor & outdoor data to compute delta';
         }
 
         function updateInsights(feeds, weather, temperatureHistory) {
@@ -2051,6 +2424,18 @@
                 ? { ...primaryTempFeed, data: historicalSeries }
                 : primaryTempFeed;
             const fireAnalysis = analyzeFireCycles(analysisSource, { fireJournalEntries });
+            const normalizedIntervals = Array.isArray(latestHeatTimeline) && latestHeatTimeline.length
+                ? computeNormalizedCoolingIntervals({
+                    timeline: latestHeatTimeline,
+                    fireEvents: fireAnalysis?.events
+                })
+                : [];
+            const coolingAnomalies = normalizedIntervals.length
+                ? computeCoolingAnomalies({
+                    intervals: normalizedIntervals,
+                    timeline: latestHeatTimeline
+                })
+                : [];
 
             const coverage = deriveHistoryCoverage(temperatureHistory)
                 || deriveCoverage([temperatureFeed, humidityFeed, pressureFeed, airFeed]);
@@ -2070,7 +2455,10 @@
             renderInsightReports(buildFuelEfficiencyReports({
                 fireAnalysis,
                 temperatureFeed,
-                weather
+                weather,
+                heatTimeline: latestHeatTimeline,
+                normalizedIntervals,
+                coolingAnomalies
             }));
         }
 
@@ -2095,17 +2483,91 @@
                 const report = document.createElement('article');
                 report.className = `insight-report${item.variant ? ` insight-card--${item.variant}` : ''}`;
                 report.dataset.insightId = item.id;
-                report.innerHTML = `
-                    <div>
-                        <p class="insight-report__badge">${escapeHtml(item.badge || 'Fuel Tuning')}</p>
-                        <h3 class="insight-report__title">${escapeHtml(item.label)}</h3>
-                    </div>
-                    <p class="insight-report__lede">${escapeHtml(item.summary)}</p>
-                    ${item.points?.length ? `<ul class="insight-report__bullets">${item.points.map(point => `<li><span>${escapeHtml(point.label)}:</span>${escapeHtml(point.detail)}</li>`).join('')}</ul>` : ''}
-                    ${item.footer ? `<p class="insight-report__footer">${escapeHtml(item.footer)}</p>` : ''}
-                `;
+
+                const header = document.createElement('div');
+                const badge = document.createElement('p');
+                badge.className = 'insight-report__badge';
+                badge.textContent = item.badge || 'Fuel Tuning';
+                const title = document.createElement('h3');
+                title.className = 'insight-report__title';
+                title.textContent = item.label || 'Insight';
+                header.appendChild(badge);
+                header.appendChild(title);
+                report.appendChild(header);
+
+                const summary = document.createElement('p');
+                summary.className = 'insight-report__lede';
+                summary.textContent = item.summary || '';
+                report.appendChild(summary);
+
+                if (Array.isArray(item.points) && item.points.length) {
+                    const list = document.createElement('ul');
+                    list.className = 'insight-report__bullets';
+                    item.points.forEach(point => {
+                        const li = document.createElement('li');
+                        const label = document.createElement('span');
+                        label.textContent = point.label ? `${point.label}:` : '';
+                        const detail = document.createElement('span');
+                        detail.textContent = point.detail || '';
+                        li.appendChild(label);
+                        li.appendChild(detail);
+                        list.appendChild(li);
+                    });
+                    report.appendChild(list);
+                }
+
+                if (item.table && Array.isArray(item.table.headers) && Array.isArray(item.table.rows)) {
+                    report.appendChild(buildInsightTable(item.table));
+                }
+
+                if (item.footer) {
+                    const footer = document.createElement('p');
+                    footer.className = 'insight-report__footer';
+                    footer.textContent = item.footer;
+                    report.appendChild(footer);
+                }
+
+                if (item.csv?.content) {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'insight-download';
+                    button.textContent = item.csv.label || 'Export CSV';
+                    button.addEventListener('click', () => {
+                        triggerCsvDownload(item.csv.content, item.csv.filename || `${item.id || 'insight'}.csv`);
+                    });
+                    report.appendChild(button);
+                }
+
                 dom.insightsGrid.appendChild(report);
             });
+        }
+
+        function buildInsightTable(tableData) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'insight-table';
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const headRow = document.createElement('tr');
+            tableData.headers.forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                headRow.appendChild(th);
+            });
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+            const tbody = document.createElement('tbody');
+            tableData.rows.forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            wrapper.appendChild(table);
+            return wrapper;
         }
 
         function renderMetricCard(feed) {
@@ -3531,6 +3993,286 @@ function exposeLatestJson(payload) {
             };
         }
 
+        function buildFireEffectivenessReport({ fireAnalysis, timeline }) {
+            if (!fireAnalysis || !Array.isArray(fireAnalysis.events) || !Array.isArray(timeline) || !timeline.length) {
+                return null;
+            }
+            const { metrics, excluded } = computeFireEffectivenessEvents({
+                timeline,
+                fireEvents: fireAnalysis.events,
+                baselineMinutes: 10,
+                analysisHours: 4
+            });
+            if (!metrics.length) {
+                return null;
+            }
+            const referenceTime = Number.isFinite(timeline[timeline.length - 1]?.timestamp)
+                ? timeline[timeline.length - 1].timestamp
+                : Date.now();
+            const summary = summarizeFireEffectivenessBySize({
+                metrics,
+                referenceTime,
+                lookbackMs: 30 * 24 * 60 * 60 * 1000
+            });
+            if (!summary.length) {
+                return null;
+            }
+            const summaryParts = [
+                `${metrics.length} fires analyzed in the last 30 days.`
+            ];
+            summaryParts.push(`${excluded} excluded due to missing baseline or outdoor readings.`);
+            const points = summary.map(entry => {
+                const gainInLabel = Number.isFinite(entry.medianGainIn)
+                    ? `+${formatNumber(entry.medianGainIn)}°C`
+                    : 'n/a';
+                const gainDeltaLabel = Number.isFinite(entry.medianGainDelta)
+                    ? `+${formatNumber(entry.medianGainDelta)} ΔT`
+                    : 'n/a';
+                const timeLabel = Number.isFinite(entry.medianTimeToPeak)
+                    ? formatDuration(entry.medianTimeToPeak * 60000)
+                    : 'n/a';
+                return {
+                    label: `${entry.sizeLabel || entry.sizeId || 'Fire'} (${entry.count})`,
+                    detail: `${gainInLabel} · ${gainDeltaLabel} · ${timeLabel} to peak`
+                };
+            });
+            return {
+                id: 'fire-effectiveness',
+                label: 'Outdoor-normalized fire effectiveness',
+                badge: 'Effectiveness',
+                summary: summaryParts.join(' '),
+                points,
+                priority: 2.4,
+                variant: 'fire'
+            };
+        }
+
+        function buildHeatingDegreeReport({ timeline, fireAnalysis }) {
+            if (!Array.isArray(timeline) || !timeline.length) {
+                return null;
+            }
+            const fireEvents = fireAnalysis?.events || [];
+            const { days, excludedFires } = computeHeatingDegreeDailyMetrics({
+                timeline,
+                fireEvents,
+                baseTemp: HEATING_DEGREE_BASE_TEMP,
+                dayCount: 14
+            });
+            if (!Array.isArray(days) || !days.length) {
+                return null;
+            }
+            const latest = days[0];
+            const summaryParts = [
+                `Base ${HEATING_DEGREE_BASE_TEMP}°C demand profile across ${days.length} days.`
+            ];
+            if (latest) {
+                const latestLabel = formatDayLabel(latest.dayStart);
+                const latestHdd = formatNumber(latest.hdd);
+                const latestFires = formatNumber(latest.fireCount);
+                const latestWeighted = formatNumber(latest.weightedFireCount);
+                const latestRatio = Number.isFinite(latest.firesPerHdd) ? formatNumber(latest.firesPerHdd) : 'n/a';
+                const latestWeightedRatio = Number.isFinite(latest.weightedFiresPerHdd) ? formatNumber(latest.weightedFiresPerHdd) : 'n/a';
+                summaryParts.push(`${latestLabel}: ${latestHdd} HDD · ${latestFires} fires (${latestWeighted} weighted).`);
+                summaryParts.push(`${latestRatio} fires/HDD · ${latestWeightedRatio} weighted/HDD.`);
+            }
+            if (excludedFires) {
+                summaryParts.push(`${excludedFires} fires excluded (outside range or missing weight).`);
+            }
+            const headers = ['Date', 'HDD', 'Fires', 'Weighted Fires', 'Fires/HDD'];
+            const rows = days.map(day => [
+                formatDayLabel(day.dayStart),
+                formatNumber(day.hdd),
+                formatNumber(day.fireCount),
+                formatNumber(day.weightedFireCount),
+                Number.isFinite(day.firesPerHdd) ? formatNumber(day.firesPerHdd) : 'n/a'
+            ]);
+            const csv = buildHeatingDegreeCsv(days);
+            return {
+                id: 'heating-degree',
+                label: 'Heating degree cadence',
+                badge: 'Heating',
+                summary: summaryParts.join(' '),
+                table: { headers, rows },
+                csv: { filename: 'heating-degree.csv', content: csv },
+                priority: 2.3,
+                variant: 'fire'
+            };
+        }
+
+        function buildNormalizedCoolingReport({ fireAnalysis, timeline, intervals: providedIntervals }) {
+            if (!fireAnalysis || !Array.isArray(fireAnalysis.events)) {
+                return null;
+            }
+            let intervals = Array.isArray(providedIntervals) ? providedIntervals.slice() : null;
+            if (!intervals || !intervals.length) {
+                if (!Array.isArray(timeline) || !timeline.length) {
+                    return null;
+                }
+                intervals = computeNormalizedCoolingIntervals({
+                    timeline,
+                    fireEvents: fireAnalysis.events,
+                    minDurationMinutes: 60,
+                    minDelta: 2
+                });
+            }
+            if (!intervals.length) {
+                return null;
+            }
+            intervals = intervals
+                .slice()
+                .sort((a, b) => {
+                    const aKey = Number.isFinite(a?.end) ? a.end : a?.start ?? 0;
+                    const bKey = Number.isFinite(b?.end) ? b.end : b?.start ?? 0;
+                    return aKey - bKey;
+                });
+            const referenceCandidate = Array.isArray(timeline) && timeline.length
+                ? timeline[timeline.length - 1]?.timestamp
+                : intervals[intervals.length - 1]?.end;
+            const referenceTime = Number.isFinite(referenceCandidate) ? referenceCandidate : Date.now();
+            const lastInterval = intervals[intervals.length - 1];
+            if (!Number.isFinite(lastInterval?.normalized)) {
+                return null;
+            }
+            const windowStart = referenceTime - 7 * 24 * 60 * 60 * 1000;
+            const recentIntervals = intervals.filter(interval => Number.isFinite(interval.end) && interval.end >= windowStart);
+            const windowValues = recentIntervals
+                .map(interval => interval.normalized)
+                .filter(Number.isFinite);
+            const medianNormalized = windowValues.length ? computeMedian(windowValues) : null;
+            const flagWorse = medianNormalized !== null
+                ? Math.abs(lastInterval.normalized) > Math.abs(medianNormalized) * 1.2
+                : false;
+            const summaryParts = [
+                `Normalized cooling (last interval): ${formatCoolingRate(lastInterval.normalized)}`
+            ];
+            summaryParts.push(`7-day median: ${medianNormalized !== null ? formatCoolingRate(medianNormalized) : 'n/a'}`);
+            if (flagWorse) {
+                summaryParts.push('Cooling faster than target.');
+            }
+            const dailyRows = summarizeDailyNormalizedCooling({
+                intervals,
+                days: 7,
+                referenceTime
+            }).map(row => ({
+                label: formatDayLabel(row.dayStart),
+                detail: formatCoolingRate(row.median)
+            }));
+            const points = dailyRows.length
+                ? dailyRows
+                : [{ label: 'Daily medians', detail: 'Need more intervals.' }];
+            return {
+                id: 'normalized-cooling',
+                label: 'Normalized cooling',
+                badge: 'Cooling',
+                summary: summaryParts.join(' · '),
+                points,
+                priority: 2.6,
+                variant: flagWorse ? 'fire' : undefined
+            };
+        }
+
+        function buildCoolingAlertsReport({ anomalies }) {
+            if (!Array.isArray(anomalies) || !anomalies.length) {
+                return null;
+            }
+            const ordered = anomalies
+                .slice()
+                .sort((a, b) => {
+                    const aKey = Number.isFinite(a?.end) ? a.end : a?.start ?? 0;
+                    const bKey = Number.isFinite(b?.end) ? b.end : b?.start ?? 0;
+                    return bKey - aKey;
+                });
+            const worst = ordered.reduce((acc, interval) => {
+                if (!interval || !Number.isFinite(interval.normalized)) {
+                    return acc;
+                }
+                if (!acc || !Number.isFinite(acc.normalized)) {
+                    return interval;
+                }
+                return interval.normalized < acc.normalized ? interval : acc;
+            }, null);
+            if (!worst || !Number.isFinite(worst.normalized)) {
+                return null;
+            }
+            const latest = ordered[0];
+            const windLikelyCount = ordered.filter(interval => interval.windLikely).length;
+            const summaryParts = [
+                `${ordered.length} cooling alert${ordered.length === 1 ? '' : 's'} flagged this week.`,
+                `Worst slope ${formatCoolingRate(worst.normalized)} vs median ${formatCoolingRate(worst.median)}`
+            ];
+            if (Number.isFinite(worst.threshold)) {
+                summaryParts.push(`Trigger line ${formatCoolingRate(worst.threshold)}`);
+            }
+            if (latest?.start) {
+                summaryParts.push(`Latest started ${formatDateTime(latest.start)}`);
+            }
+            if (windLikelyCount) {
+                summaryParts.push(`${windLikelyCount} looked wind-driven`);
+            }
+            const describeSeverity = ratio => {
+                if (!Number.isFinite(ratio)) {
+                    return 'Alert';
+                }
+                const faster = Math.max(0, Math.abs(ratio) - 1);
+                if (faster >= 0.5) {
+                    return 'Severe';
+                }
+                if (faster >= 0.3) {
+                    return 'High';
+                }
+                if (faster >= 0.15) {
+                    return 'Elevated';
+                }
+                return 'Alert';
+            };
+            const formatWindowLabel = (start, end) => {
+                const startLabel = formatDateTime(start);
+                const endLabel = formatDateTime(end);
+                if (startLabel && endLabel && startLabel !== endLabel) {
+                    return `${startLabel} → ${endLabel}`;
+                }
+                return startLabel || endLabel || 'Cooling interval';
+            };
+            const formatFasterPercent = ratio => {
+                if (!Number.isFinite(ratio)) {
+                    return null;
+                }
+                const faster = Math.max(0, Math.abs(ratio) - 1);
+                return Math.round(faster * 100);
+            };
+            const points = ordered.slice(0, 4).map(interval => {
+                const fasterPercent = formatFasterPercent(interval.severityRatio);
+                const detailParts = [
+                    `${describeSeverity(interval.severityRatio)} ${formatCoolingRate(interval.normalized)}`
+                ];
+                if (Number.isFinite(interval.median)) {
+                    detailParts.push(`median ${formatCoolingRate(interval.median)}`);
+                }
+                if (Number.isFinite(fasterPercent) && fasterPercent > 0) {
+                    detailParts.push(`${fasterPercent}% faster`);
+                }
+                if (interval.windLikely) {
+                    detailParts.push('Wind-driven heat loss likely');
+                }
+                return {
+                    label: formatWindowLabel(interval.start, interval.end),
+                    detail: detailParts.join(' · ')
+                };
+            });
+            if (!points.length) {
+                return null;
+            }
+            return {
+                id: 'cooling-alerts',
+                label: 'Cooling alerts',
+                badge: 'Alerts',
+                summary: summaryParts.join(' · '),
+                points,
+                priority: 2.7,
+                variant: 'risk'
+            };
+        }
+
         function buildStretchOptimizationReport(analysis, feed) {
             if (!analysis || !feed || !Array.isArray(analysis.events) || !analysis.events.length) {
                 return null;
@@ -3575,7 +4317,7 @@ function exposeLatestJson(payload) {
             };
         }
 
-        function buildFuelEfficiencyReports({ fireAnalysis, temperatureFeed, weather }) {
+        function buildFuelEfficiencyReports({ fireAnalysis, temperatureFeed, weather, heatTimeline, normalizedIntervals, coolingAnomalies }) {
             if (!fireAnalysis || !temperatureFeed) {
                 return [];
             }
@@ -3599,6 +4341,34 @@ function exposeLatestJson(payload) {
             const stretch = buildStretchOptimizationReport(fireAnalysis, temperatureFeed);
             if (stretch) {
                 sections.push(stretch);
+            }
+            const effectiveness = buildFireEffectivenessReport({
+                fireAnalysis,
+                timeline: heatTimeline
+            });
+            if (effectiveness) {
+                sections.push(effectiveness);
+            }
+            const heating = buildHeatingDegreeReport({
+                timeline: heatTimeline,
+                fireAnalysis
+            });
+            if (heating) {
+                sections.push(heating);
+            }
+            const normalizedCooling = buildNormalizedCoolingReport({
+                fireAnalysis,
+                timeline: Array.isArray(heatTimeline) ? heatTimeline : null,
+                intervals: normalizedIntervals
+            });
+            if (normalizedCooling) {
+                sections.push(normalizedCooling);
+            }
+            const alerts = buildCoolingAlertsReport({
+                anomalies: Array.isArray(coolingAnomalies) ? coolingAnomalies : []
+            });
+            if (alerts) {
+                sections.push(alerts);
             }
             return sections;
         }
@@ -3940,6 +4710,65 @@ function exposeLatestJson(payload) {
                 parts.push(`${remainingMinutes}m`);
             }
             return parts.length ? parts.join(' ') : '0m';
+        }
+
+        function buildHeatingDegreeCsv(days) {
+            if (!Array.isArray(days) || !days.length) {
+                return 'Date,HDD,Fires,Weighted Fires,Fires/HDD,Weighted Fires/HDD';
+            }
+            const headers = ['Date', 'HDD', 'Fires', 'Weighted Fires', 'Fires/HDD', 'Weighted Fires/HDD'];
+            const lines = [headers.join(',')];
+            const ordered = days.slice().reverse();
+            ordered.forEach(day => {
+                const row = [
+                    formatDayLabel(day.dayStart),
+                    Number.isFinite(day.hdd) ? day.hdd.toFixed(3) : '',
+                    Number.isFinite(day.fireCount) ? day.fireCount : '',
+                    Number.isFinite(day.weightedFireCount) ? day.weightedFireCount.toFixed(2) : '',
+                    Number.isFinite(day.firesPerHdd) ? day.firesPerHdd.toFixed(3) : '',
+                    Number.isFinite(day.weightedFiresPerHdd) ? day.weightedFiresPerHdd.toFixed(3) : ''
+                ].map(csvEscape).join(',');
+                lines.push(row);
+            });
+            return lines.join('\n');
+        }
+
+        function csvEscape(value) {
+            const stringValue = value === null || value === undefined ? '' : String(value);
+            const safeValue = stringValue.replace(/"/g, '""');
+            return `"${safeValue}"`;
+        }
+
+        function triggerCsvDownload(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename || 'insight.csv';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+        }
+
+        function formatCoolingRate(value) {
+            if (!Number.isFinite(value)) {
+                return 'n/a';
+            }
+            const formatted = formatNumber(value);
+            return `${formatted} /hr`;
+        }
+
+        function formatDayLabel(input) {
+            const date = new Date(input);
+            if (Number.isNaN(date.getTime())) {
+                return 'Day';
+            }
+            return date.toLocaleDateString([], {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+            });
         }
 
 

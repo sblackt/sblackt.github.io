@@ -9,6 +9,17 @@ const firestore = admin.firestore();
 const EVENTS_COLLECTION = 'events';
 const FIRE_JOURNAL_COLLECTION = 'fireJournal';
 const FIRE_JOURNAL_MAX_LIMIT = 200;
+const OUTDOOR_HISTORY_COLLECTION = 'outdoorHistory';
+const OUTDOOR_HISTORY_RETENTION_DAYS = 30;
+const OUTDOOR_HISTORY_MAX_LIMIT = 5000;
+const OUTDOOR_HISTORY_DEFAULT_LIMIT = 1200;
+const OUTDOOR_HISTORY_PURGE_BATCH_SIZE = 500;
+const OUTDOOR_LOG_SCHEDULE = 'every 10 minutes';
+const DEFAULT_OUTDOOR_LOCATION = {
+  latitude: 45.54,
+  longitude: -77.1,
+  timezone: 'America/Toronto'
+};
 
 type EventCategory = 'board-game' | 'hangout' | 'worker-bee' | 'dnd' | 'other';
 
@@ -83,6 +94,14 @@ interface FireJournalRecord {
   detail?: string;
   note?: string;
   loggedAt?: FirebaseFirestore.FieldValue | FirebaseFirestore.Timestamp | null;
+}
+
+interface OutdoorSampleRecord {
+  timestamp: number;
+  temp_out_c: number;
+  fetched_at: number;
+  source: string;
+  wind_kph?: number | null;
 }
 
 const FIRE_SIZE_MAP: Record<string, { id: string; label: string; detail: string }> = {
@@ -450,6 +469,170 @@ export const adafruitHistory = functions.https.onRequest(async (req, res) => {
   }
 });
 
+const getOutdoorLocationConfig = () => {
+  const weatherConfig = functions.config().weather as Record<string, unknown> | undefined;
+  const latitude = Number(weatherConfig?.latitude ?? weatherConfig?.lat);
+  const longitude = Number(weatherConfig?.longitude ?? weatherConfig?.lon);
+  const timezone = typeof weatherConfig?.timezone === 'string'
+    ? weatherConfig?.timezone
+    : DEFAULT_OUTDOOR_LOCATION.timezone;
+  return {
+    latitude: Number.isFinite(latitude) ? latitude : DEFAULT_OUTDOOR_LOCATION.latitude,
+    longitude: Number.isFinite(longitude) ? longitude : DEFAULT_OUTDOOR_LOCATION.longitude,
+    timezone: timezone ?? DEFAULT_OUTDOOR_LOCATION.timezone
+  };
+};
+
+const fetchOutdoorSnapshot = async (): Promise<OutdoorSampleRecord | null> => {
+  const location = getOutdoorLocationConfig();
+  const params = new URLSearchParams({
+    latitude: String(location.latitude),
+    longitude: String(location.longitude),
+    current: 'temperature_2m,windspeed_10m',
+    timezone: location.timezone ?? 'auto'
+  });
+  const url = `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
+  const response = await fetch(url, { cache: 'no-store' });
+  if (!response.ok) {
+    functions.logger.warn('fetchOutdoorSnapshot failed', { status: response.status });
+    return null;
+  }
+  const payload = await response.json() as {
+    current?: { temperature_2m?: number; windspeed_10m?: number; time?: string };
+    current_units?: { temperature_2m?: string; windspeed_10m?: string };
+  };
+  const temperature = Number(payload?.current?.temperature_2m);
+  if (!Number.isFinite(temperature)) {
+    functions.logger.warn('fetchOutdoorSnapshot: missing temperature', { payload });
+    return null;
+  }
+  const measurementTime = payload?.current?.time ? Number(new Date(payload.current.time).getTime()) : Date.now();
+  const timestamp = Number.isFinite(measurementTime) ? measurementTime : Date.now();
+  const windSpeed = Number(payload?.current?.windspeed_10m);
+  return {
+    timestamp,
+    temp_out_c: temperature,
+    fetched_at: Date.now(),
+    wind_kph: Number.isFinite(windSpeed) ? windSpeed : null,
+    source: payload?.current_units?.temperature_2m
+      ? `open-meteo:${payload.current_units.temperature_2m}`
+      : 'open-meteo'
+  };
+};
+
+const saveOutdoorSample = async (sample: OutdoorSampleRecord) => {
+  const docId = String(sample.timestamp);
+  await firestore.collection(OUTDOOR_HISTORY_COLLECTION)
+    .doc(docId)
+    .set(sample, { merge: true });
+};
+
+const pruneOutdoorHistory = async () => {
+  const cutoff = Date.now() - OUTDOOR_HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  const collection = firestore.collection(OUTDOOR_HISTORY_COLLECTION);
+  let removed = 0;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const snapshot = await collection
+      .where('timestamp', '<', cutoff)
+      .orderBy('timestamp', 'asc')
+      .limit(OUTDOOR_HISTORY_PURGE_BATCH_SIZE)
+      .get();
+    if (snapshot.empty) {
+      break;
+    }
+    const batch = firestore.batch();
+    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    removed += snapshot.size;
+    if (snapshot.size < OUTDOOR_HISTORY_PURGE_BATCH_SIZE) {
+      break;
+    }
+  }
+  if (removed > 0) {
+    functions.logger.info('pruneOutdoorHistory removed samples', { removed });
+  }
+};
+
+export const meteoOutdoorHistory = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+
+  const limitParam = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
+  const startParam = typeof req.query.start === 'string' ? Number(new Date(req.query.start).getTime()) : undefined;
+  const endParam = typeof req.query.end === 'string' ? Number(new Date(req.query.end).getTime()) : undefined;
+  const normalizedLimit = Number.isFinite(limitParam) ? Number(limitParam) : undefined;
+  const limit = typeof normalizedLimit === 'number'
+    ? Math.max(1, Math.min(OUTDOOR_HISTORY_MAX_LIMIT, normalizedLimit))
+    : OUTDOOR_HISTORY_DEFAULT_LIMIT;
+
+  try {
+    let query: FirebaseFirestore.Query = firestore.collection(OUTDOOR_HISTORY_COLLECTION);
+    if (Number.isFinite(startParam)) {
+      query = query.where('timestamp', '>=', startParam);
+    }
+    if (Number.isFinite(endParam)) {
+      query = query.where('timestamp', '<=', endParam);
+    }
+    query = query.orderBy('timestamp', 'asc').limit(limit);
+
+    const snapshot = await query.get();
+    const points = snapshot.docs
+      .map((doc) => doc.data() as OutdoorSampleRecord)
+      .filter((entry) => Number.isFinite(entry?.timestamp) && Number.isFinite(entry?.temp_out_c))
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .map((entry) => {
+        const value = Number(entry.temp_out_c);
+        const normalized = Number.isFinite(value) ? Number(value.toFixed(3)) : null;
+        return {
+          timestamp: entry.timestamp,
+          temp_out_c: normalized,
+          value: normalized,
+          source: entry.source,
+          wind_kph: Number.isFinite(entry.wind_kph) ? Number(entry.wind_kph) : undefined
+        };
+      })
+      .filter((entry) => entry.temp_out_c !== null);
+    res.set('Cache-Control', 'public, max-age=60, s-maxage=120');
+    res.status(200).json({
+      count: points.length,
+      newest: points[points.length - 1]?.timestamp ?? null,
+      oldest: points[0]?.timestamp ?? null,
+      points
+    });
+  } catch (error) {
+    functions.logger.error('meteoOutdoorHistory', error);
+    res.status(500).json({ error: (error as Error).message });
+  }
+});
+
+export const logOutdoorTemperature = functions.pubsub
+  .schedule(OUTDOOR_LOG_SCHEDULE)
+  .timeZone(getOutdoorLocationConfig().timezone ?? 'Etc/UTC')
+  .onRun(async () => {
+    try {
+      const sample = await fetchOutdoorSnapshot();
+      if (!sample) {
+        return null;
+      }
+      await saveOutdoorSample(sample);
+      await pruneOutdoorHistory();
+      functions.logger.info('Logged outdoor sample', {
+        timestamp: sample.timestamp,
+        temp_out_c: sample.temp_out_c
+      });
+    } catch (error) {
+      functions.logger.error('logOutdoorTemperature', error);
+    }
+    return null;
+  });
+
 export const fireJournal = functions.https.onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -557,6 +740,7 @@ const serializeFireJournalDoc = (doc: FirebaseFirestore.DocumentSnapshot) => {
     loggedAt: loggedAt ?? data.timestamp
   };
 };
+
 
 const runReminderJob = async () => {
   const now = new Date();
