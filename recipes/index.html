@@ -4704,6 +4704,29 @@ Steps:
     let pendingScrollComponentId = null;
     let isMobileDrawerOpen = false;
 
+    const mergeRecipeCollections = (primary = [], fallback = []) => {
+      const merged = [];
+      const seenIds = new Set();
+
+      primary.forEach((recipe) => {
+        if (!recipe?.id || seenIds.has(recipe.id)) {
+          return;
+        }
+        merged.push(recipe);
+        seenIds.add(recipe.id);
+      });
+
+      fallback.forEach((recipe) => {
+        if (!recipe?.id || seenIds.has(recipe.id)) {
+          return;
+        }
+        merged.push(recipe);
+        seenIds.add(recipe.id);
+      });
+
+      return merged;
+    };
+
     const recipeListEl = document.getElementById('recipeList');
     const recipeDetailsEl = document.getElementById('recipeDetails');
     const recipeSearchEl = document.getElementById('recipeSearch');
@@ -5323,7 +5346,7 @@ Steps:
         .onSnapshot(
           (snapshot) => {
             const docs = snapshot.docs.map((doc) => normalizeRecipe({ id: doc.id, ...doc.data() }));
-            recipes = docs.length ? docs : [...defaultRecipes];
+            recipes = docs.length ? mergeRecipeCollections(docs, defaultRecipes) : [...defaultRecipes];
             const highlightId = pendingRecipeSelectionId;
             pendingRecipeSelectionId = null;
             refreshRecipeViews({ highlightId });
