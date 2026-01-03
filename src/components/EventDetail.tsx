@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Event, AvailabilityResponse, EventCategory } from '../types';
+import { v4 as uuidv4 } from 'uuid';
+import { Event, AvailabilityResponse, EventCategory, TimeSlot } from '../types';
 import { firebaseService } from '../services/firebaseService';
 import { format } from 'date-fns';
 import AvailabilityHeatmap from './AvailabilityHeatmap';
@@ -89,6 +90,11 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const [locationName, setLocationName] = useState(event.location?.name ?? '');
   const [locationLink, setLocationLink] = useState(event.location?.mapUrl ?? '');
   const [savingLocation, setSavingLocation] = useState(false);
+  const [newSlotDate, setNewSlotDate] = useState('');
+  const [newSlotTimeType, setNewSlotTimeType] = useState<'all-day' | 'specific'>('all-day');
+  const [newSlotTimeValue, setNewSlotTimeValue] = useState('18:00');
+  const [addingTimeSlot, setAddingTimeSlot] = useState(false);
+  const [cleaningPastSlots, setCleaningPastSlots] = useState(false);
   const normalizeDetailLinks = (links?: Array<{ label: string; url: string }>) =>
     links && links.length > 0 ? links : [{ label: '', url: '' }];
   const [editingDetails, setEditingDetails] = useState(false);
@@ -100,6 +106,13 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const reactionPickerRef = useRef<HTMLDivElement | null>(null);
   const theme = getEventTypeConfig(event.eventType);
   const reactionEmojis = theme.reactions;
+  const timeTypeRadioName = `time-kind-${event.id}`;
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const todayIso = format(startOfToday, 'yyyy-MM-dd');
+  const pastTimeSlots = event.timeSlots.filter(slot => parseLocalDate(slot.date).getTime() < startOfToday.getTime());
+  const hasPastSlots = pastTimeSlots.length > 0;
+  const canAddSlot = Boolean(newSlotDate && (newSlotTimeType === 'all-day' || newSlotTimeValue));
 
   useEffect(() => {
     // Load existing responses for this event
@@ -151,6 +164,12 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     setLocationName(event.location?.name ?? '');
     setLocationLink(event.location?.mapUrl ?? '');
   }, [event.id, event.location?.name, event.location?.mapUrl]);
+
+  useEffect(() => {
+    setNewSlotDate('');
+    setNewSlotTimeType('all-day');
+    setNewSlotTimeValue('18:00');
+  }, [event.id]);
 
   useEffect(() => {
     if (!editingDetails) {
@@ -485,6 +504,104 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     }
   };
 
+  const handleAddTimeSlotOption = async () => {
+    if (!newSlotDate) {
+      alert('Pick a date to add.');
+      return;
+    }
+
+    const selectedDate = parseLocalDate(newSlotDate);
+    if (selectedDate.getTime() < startOfToday.getTime()) {
+      alert('That date is already in the past.');
+      return;
+    }
+
+    const normalizedTime = newSlotTimeType === 'all-day' ? 'all-day' : newSlotTimeValue;
+    if (newSlotTimeType === 'specific' && !normalizedTime) {
+      alert('Choose a start time.');
+      return;
+    }
+
+    if (newSlotTimeType === 'specific' && !/^\d{2}:\d{2}$/.test(normalizedTime)) {
+      alert('Time should look like 18:30.');
+      return;
+    }
+
+    const duplicateSlot = event.timeSlots.some(
+      slot => slot.date === newSlotDate && slot.time === normalizedTime
+    );
+    if (duplicateSlot) {
+      alert('That date and time option already exists.');
+      return;
+    }
+
+    setAddingTimeSlot(true);
+    try {
+      const newSlot: TimeSlot = {
+        id: uuidv4(),
+        date: newSlotDate,
+        time: normalizedTime,
+        available: [],
+        unavailable: []
+      };
+
+      await firebaseService.updateEvent(event.id, {
+        timeSlots: [...event.timeSlots, newSlot]
+      });
+
+      setNewSlotDate('');
+      setNewSlotTimeType('all-day');
+      setNewSlotTimeValue('18:00');
+    } catch (error) {
+      console.error('Error adding new time slot:', error);
+      alert('Failed to add that date option. Please try again.');
+    } finally {
+      setAddingTimeSlot(false);
+    }
+  };
+
+  const handleRemovePastTimeSlots = async () => {
+    if (!hasPastSlots) {
+      alert('There are no past date options to remove.');
+      return;
+    }
+
+    const upcoming = event.timeSlots.filter(
+      slot => parseLocalDate(slot.date).getTime() >= startOfToday.getTime()
+    );
+
+    if (event.timeSlots.length === pastTimeSlots.length) {
+      alert('Add at least one future date before removing the final option.');
+      return;
+    }
+
+    const shouldRemove = window.confirm(
+      `Remove ${pastTimeSlots.length} past date option${pastTimeSlots.length !== 1 ? 's' : ''}?`
+    );
+    if (!shouldRemove) {
+      return;
+    }
+
+    setCleaningPastSlots(true);
+    try {
+      const updates: Partial<Event> = { timeSlots: upcoming };
+
+      if (
+        event.confirmedTimeSlotId &&
+        !upcoming.some(slot => slot.id === event.confirmedTimeSlotId)
+      ) {
+        updates.confirmedTimeSlotId = null;
+      }
+
+      await firebaseService.updateEvent(event.id, updates);
+    } catch (error) {
+      console.error('Error removing past time slots:', error);
+      alert('Failed to remove the past options. Please try again.');
+    } finally {
+      setCleaningPastSlots(false);
+    }
+  };
+
   const handleConfirmTimeSlot = async (timeSlotId: string | null) => {
     setPlanning(true);
     try {
@@ -527,6 +644,9 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const plannedSlot = event.confirmedTimeSlotId
     ? event.timeSlots.find(slot => slot.id === event.confirmedTimeSlotId)
     : undefined;
+  const upcomingSlots = event.timeSlots.filter(
+    slot => parseLocalDate(slot.date).getTime() >= startOfToday.getTime()
+  );
   const locationDisplayLink = event.location?.name
     ? (event.location.mapUrl || buildMapSearchLink(event.location.name))
     : '';
@@ -539,7 +659,9 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const plannedTimeLabel = plannedSlot
     ? (plannedSlot.time === 'all-day' ? 'All-day hang' : formatSlotTime(plannedSlot.time))
     : '';
-  const timeSlotsToShow = plannedSlot ? [plannedSlot] : event.timeSlots;
+  const timeSlotsToShow = plannedSlot
+    ? [plannedSlot]
+    : (upcomingSlots.length > 0 ? upcomingSlots : event.timeSlots);
 
   // Get unique participants from responses
   const uniqueParticipants = Array.from(new Set(responses.map(r => r.participantName)));
@@ -644,7 +766,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
 
           <div className="event-details-edit-row">
             <div>
-              <p className="event-details-eyebrow">Story & Links</p>
+              <p className="event-details-eyebrow">Story &amp; Links</p>
               <p className="event-details-copy">
                 Keep the description, cover art, and handy links fresh as plans evolve.
               </p>
@@ -1036,6 +1158,89 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
           </div>
         </div>
       )}
+
+      <div className="time-slot-manager">
+        <div className="time-slot-manager__header">
+          <div>
+            <p className="event-details-eyebrow">Open Time Options</p>
+            <p className="event-details-copy">
+              Add fresh dates when plans shift and clear out past options.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="event-details-button"
+            onClick={handleRemovePastTimeSlots}
+            disabled={!hasPastSlots || cleaningPastSlots}
+          >
+            {cleaningPastSlots ? 'Cleaning…' : `Remove past (${pastTimeSlots.length})`}
+          </button>
+        </div>
+        <div className="time-slot-form">
+          <div className="time-slot-date">
+            <label htmlFor="new-slot-date">New date</label>
+            <input
+              id="new-slot-date"
+              type="date"
+              min={todayIso}
+              value={newSlotDate}
+              onChange={(e) => setNewSlotDate(e.target.value)}
+            />
+          </div>
+          <div className="time-slot-type">
+            <label>Time</label>
+            <div className="time-type-options" role="radiogroup" aria-label="Time selection">
+              <label className={`time-type-pill ${newSlotTimeType === 'all-day' ? 'active' : ''}`}>
+                <input
+                  type="radio"
+                  name={timeTypeRadioName}
+                  value="all-day"
+                  checked={newSlotTimeType === 'all-day'}
+                  onChange={() => setNewSlotTimeType('all-day')}
+                />
+                All day
+              </label>
+              <label className={`time-type-pill ${newSlotTimeType === 'specific' ? 'active' : ''}`}>
+                <input
+                  type="radio"
+                  name={timeTypeRadioName}
+                  value="specific"
+                  checked={newSlotTimeType === 'specific'}
+                  onChange={() => setNewSlotTimeType('specific')}
+                />
+                Specific time
+              </label>
+            </div>
+          </div>
+          {newSlotTimeType === 'specific' && (
+            <div className="time-slot-time">
+              <label htmlFor="new-slot-time">Start time</label>
+              <input
+                id="new-slot-time"
+                type="time"
+                value={newSlotTimeValue}
+                onChange={(e) => setNewSlotTimeValue(e.target.value)}
+              />
+            </div>
+          )}
+          <div className="time-slot-actions">
+            <button
+              type="button"
+              className="save-button"
+              onClick={handleAddTimeSlotOption}
+              disabled={addingTimeSlot || !canAddSlot}
+            >
+              {addingTimeSlot ? 'Adding…' : 'Add date option'}
+            </button>
+          </div>
+        </div>
+        {hasPastSlots && (
+          <p className="time-slot-helper">
+            You have {pastTimeSlots.length} past date option{pastTimeSlots.length !== 1 ? 's' : ''}.
+            Clean them up to keep the poll fresh.
+          </p>
+        )}
+      </div>
 
       <div className="participant-input-section">
         <h3>Enter your name to respond:</h3>

@@ -1123,6 +1123,101 @@
   margin: 0 0 16px 0;
 }
 
+.time-slot-manager {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.time-slot-manager__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.time-slot-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.time-slot-form label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.time-slot-form input[type="date"],
+.time-slot-form input[type="time"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 15px;
+}
+
+.time-type-options {
+  display: flex;
+  gap: 10px;
+}
+
+.time-type-pill {
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4b5563;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.time-type-pill input {
+  display: none;
+}
+
+.time-type-pill.active {
+  border-color: var(--accent-color, #667eea);
+  color: var(--accent-color, #667eea);
+  background: var(--accent-bg, #eef2ff);
+}
+
+.time-slot-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.time-slot-helper {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .time-slot-form {
+    grid-template-columns: 1fr;
+  }
+  
+  .time-slot-manager__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 .participants-grid {
   display: flex;
   flex-wrap: wrap;
