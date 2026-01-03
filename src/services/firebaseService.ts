@@ -8,7 +8,8 @@ import {
   onSnapshot, 
   query, 
   where,
-  increment
+  increment,
+  deleteField
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Event, TimeSlot, AvailabilityResponse } from '../types';
@@ -70,8 +71,16 @@ export const firebaseService = {
   // Update an event
   async updateEvent(eventId: string, updates: Partial<Event>): Promise<void> {
     const docRef = doc(db, EVENTS_COLLECTION, eventId);
+    const sanitizedUpdates = Object.entries(updates).reduce<Record<string, unknown>>((acc, [key, value]) => {
+      if (value === undefined) {
+        return acc;
+      }
+      acc[key] = value === null ? deleteField() : value;
+      return acc;
+    }, {});
+
     await updateDoc(docRef, {
-      ...updates,
+      ...sanitizedUpdates,
       updatedAt: new Date().toISOString()
     });
   },
