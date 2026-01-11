@@ -86,6 +86,7 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [imagePreviewError, setImagePreviewError] = useState(false);
   const [eventType, setEventType] = useState(DEFAULT_EVENT_TYPE);
   const [links, setLinks] = useState<Array<{ label: string; url: string }>>([
     { label: '', url: '' }
@@ -356,13 +357,32 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
               type="url"
               id="image-url"
               value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              onChange={(e) => {
+                setImageUrl(e.target.value);
+                setImagePreviewError(false);
+              }}
               placeholder="https://example.com/photo.jpg"
               inputMode="url"
             />
             <p className="form-helper">
               Add a hosted image link to dress up the event card. We&apos;ll use it anywhere the event appears.
             </p>
+            {imageUrl.trim() && (
+              <div className="image-preview" aria-live="polite">
+                {!imagePreviewError ? (
+                  <img
+                    src={imageUrl.trim()}
+                    alt="Event cover preview"
+                    loading="lazy"
+                    onError={() => setImagePreviewError(true)}
+                  />
+                ) : (
+                  <div className="image-preview-error">
+                    Unable to load preview. Double-check the link.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
           <div className="form-group">

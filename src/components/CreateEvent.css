@@ -31,6 +31,28 @@
   font-size: 13px;
 }
 
+.image-preview {
+  margin-top: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.image-preview img {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+}
+
+.image-preview-error {
+  padding: 16px;
+  font-size: 13px;
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
 .event-type-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
