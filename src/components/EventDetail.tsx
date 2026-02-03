@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Event, AvailabilityResponse, EventCategory, TimeSlot } from '../types';
+import { Event, AvailabilityResponse, EventCategory, TimeSlot, AvailabilityPreference } from '../types';
 import { firebaseService } from '../services/firebaseService';
 import { format } from 'date-fns';
 import AvailabilityHeatmap from './AvailabilityHeatmap';
@@ -78,8 +78,8 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const [participantName, setParticipantName] = useState('');
   const [participantNotes, setParticipantNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [selectedDates, setSelectedDates] = useState<string[]>([]);
-  const [pendingChanges, setPendingChanges] = useState<string[]>([]);
+  const [selectedDates, setSelectedDates] = useState<Map<string, AvailabilityPreference | null>>(new Map());
+  const [pendingChanges, setPendingChanges] = useState<Map<string, AvailabilityPreference | null>>(new Map());
   const [savedName, setSavedName] = useState('');
   const [justSaved, setJustSaved] = useState(false);
   const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
@@ -94,6 +94,10 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const [newSlotTimeType, setNewSlotTimeType] = useState<'all-day' | 'specific'>('all-day');
   const [newSlotTimeValue, setNewSlotTimeValue] = useState('18:00');
   const [addingTimeSlot, setAddingTimeSlot] = useState(false);
+  const [openMenuParticipant, setOpenMenuParticipant] = useState<string | null>(null);
+  const [deletingParticipant, setDeletingParticipant] = useState<string | null>(null);
+  const [locationSectionOpen, setLocationSectionOpen] = useState(false);
+  const [addDateSectionOpen, setAddDateSectionOpen] = useState(false);
   const [cleaningPastSlots, setCleaningPastSlots] = useState(false);
   const normalizeDetailLinks = (links?: Array<{ label: string; url: string }>) =>
     links && links.length > 0 ? links : [{ label: '', url: '' }];
@@ -115,23 +119,36 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const canAddSlot = Boolean(newSlotDate && (newSlotTimeType === 'all-day' || newSlotTimeValue));
 
   useEffect(() => {
+    // Helper function to prioritize preferences
+    const getPrefPriority = (pref: AvailabilityPreference | null): number => {
+      if (pref === 'preferred') return 3;
+      if (pref === 'tentative') return 1;
+      if (pref === 'available') return 2;
+      return 0;
+    };
+
     // Load existing responses for this event
     const loadResponses = async () => {
       try {
         const eventResponses = await firebaseService.getEventResponses(event.id);
         setResponses(eventResponses);
-        
+
         // Set selected dates based on current user's responses
         const currentUserName = savedName || participantName.trim();
         if (currentUserName) {
           const userResponses = eventResponses.filter((r: AvailabilityResponse) => r.participantName === currentUserName);
-          const userAvailableDates = new Set<string>();
-          
+          const userAvailableDates = new Map<string, AvailabilityPreference | null>();
+
           userResponses.forEach((response: AvailabilityResponse) => {
             if (response.available) {
               const timeSlot = event.timeSlots.find(slot => slot.id === response.timeSlotId);
               if (timeSlot) {
-                userAvailableDates.add(timeSlot.date);
+                // Store the preference for this date (default to 'available' if no preference specified)
+                const existingPref = userAvailableDates.get(timeSlot.date);
+                // If multiple time slots for same date, prefer the higher priority preference
+                if (!existingPref || (response.preference && getPrefPriority(response.preference) > getPrefPriority(existingPref))) {
+                  userAvailableDates.set(timeSlot.date, response.preference || 'available');
+                }
               }
             }
             // Load the user's notes if they exist
@@ -139,8 +156,8 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
               setParticipantNotes(response.notes);
             }
           });
-          
-          setSelectedDates(Array.from(userAvailableDates));
+
+          setSelectedDates(userAvailableDates);
         }
       } catch (error) {
         console.error('Error loading responses:', error);
@@ -178,6 +195,20 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
       setDetailsLinks(normalizeDetailLinks(event.links));
     }
   }, [editingDetails, event.description, event.imageUrl, event.links]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.participant-menu')) {
+        setOpenMenuParticipant(null);
+      }
+    };
+
+    if (openMenuParticipant) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [openMenuParticipant]);
 
   useEffect(() => {
     if (!actionsMenuOpen && !reactionPickerOpen) {
@@ -223,18 +254,22 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     };
   }, [actionsMenuOpen, reactionPickerOpen]);
 
-  const handleDateToggle = (date: string) => {
+  const handleDateToggle = (date: string, preference: AvailabilityPreference | null = null) => {
     if (!participantName.trim()) {
       alert('Please enter your name first');
       return;
     }
 
-    // Update pending changes (not saved yet)
-    setPendingChanges(prev => 
-      prev.includes(date) 
-        ? prev.filter(d => d !== date)
-        : [...prev, date]
-    );
+    // Update pending changes with the new preference
+    setPendingChanges(prev => {
+      const newMap = new Map(prev);
+      if (preference === null) {
+        newMap.delete(date);
+      } else {
+        newMap.set(date, preference);
+      }
+      return newMap;
+    });
   };
 
   const handleSaveAvailability = async () => {
@@ -246,25 +281,29 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
       return;
     }
 
-    if (pendingChanges.length === 0) {
+    if (pendingChanges.size === 0) {
       alert('No changes to save');
       return;
     }
 
     setLoading(true);
-    
+
     try {
+      // Delete any existing responses for this participant first
+      // This allows users to update their selections
+      await firebaseService.deleteParticipantResponses(event.id, trimmedName);
+
       // Process all pending changes
-      for (const date of pendingChanges) {
+      for (const [date, preference] of Array.from(pendingChanges.entries())) {
         const dateTimeSlots = event.timeSlots.filter(slot => slot.date === date);
-        const isCurrentlyAvailable = selectedDates.includes(date);
-        
-        // Toggle availability for all time slots on this date
+
+        // Submit response for all time slots on this date
         for (const timeSlot of dateTimeSlots) {
           const response: AvailabilityResponse = {
             participantName: trimmedName,
             timeSlotId: timeSlot.id,
-            available: !isCurrentlyAvailable,
+            available: preference !== null, // available if preference is set
+            preference: preference || undefined, // Store the preference level
             eventId: event.id,
             ...(trimmedNotes ? { notes: trimmedNotes } : {})
           };
@@ -272,44 +311,43 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
           await firebaseService.submitResponse(response);
         }
       }
-      
-      // Update local state
+
+      // Update local state - merge pending changes into selected dates
       setSelectedDates(prev => {
-        const newSelected = [...prev];
-        pendingChanges.forEach(date => {
-          if (newSelected.includes(date)) {
-            const index = newSelected.indexOf(date);
-            newSelected.splice(index, 1);
+        const newSelected = new Map(prev);
+        pendingChanges.forEach((preference, date) => {
+          if (preference === null) {
+            newSelected.delete(date);
           } else {
-            newSelected.push(date);
+            newSelected.set(date, preference);
           }
         });
         return newSelected;
       });
-      
+
       // Update responses state
       const newResponses: AvailabilityResponse[] = [];
-      pendingChanges.forEach(date => {
+      pendingChanges.forEach((preference, date) => {
         const dateTimeSlots = event.timeSlots.filter(slot => slot.date === date);
-        const isCurrentlyAvailable = selectedDates.includes(date);
-        
+
         dateTimeSlots.forEach(timeSlot => {
           newResponses.push({
             participantName: trimmedName,
             timeSlotId: timeSlot.id,
-            available: !isCurrentlyAvailable,
+            available: preference !== null,
+            preference: preference || undefined,
             eventId: event.id,
             ...(trimmedNotes ? { notes: trimmedNotes } : {})
           });
         });
       });
-      
+
       setResponses(prev => [
-        ...prev.filter(r => !(r.participantName === trimmedName && 
-          pendingChanges.some(date => event.timeSlots.filter(slot => slot.date === date).some(slot => slot.id === r.timeSlotId)))),
+        ...prev.filter(r => !(r.participantName === trimmedName &&
+          Array.from(pendingChanges.keys()).some(date => event.timeSlots.filter(slot => slot.date === date).some(slot => slot.id === r.timeSlotId)))),
         ...newResponses
       ]);
-      
+
       // Update the event's participants list if this is a new participant
       if (!event.participants.includes(trimmedName)) {
         try {
@@ -320,9 +358,9 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
           console.error('Error updating participants list:', error);
         }
       }
-      
+
       // Clear pending changes and save name
-      setPendingChanges([]);
+      setPendingChanges(new Map());
       setSavedName(trimmedName);
       setJustSaved(true);
       
@@ -342,6 +380,42 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   };
 
   const closeActionsMenu = () => setActionsMenuOpen(false);
+
+  const handleDeleteParticipant = async (participantNameToDelete: string) => {
+    const confirmDelete = window.confirm(
+      `Delete all responses from "${participantNameToDelete}"? This action cannot be undone.`
+    );
+
+    if (!confirmDelete) {
+      setOpenMenuParticipant(null);
+      return;
+    }
+
+    setDeletingParticipant(participantNameToDelete);
+    setOpenMenuParticipant(null);
+
+    try {
+      // Delete all responses for this participant
+      await firebaseService.deleteParticipantResponses(event.id, participantNameToDelete);
+
+      // Update local state
+      setResponses(prev => prev.filter(r => r.participantName !== participantNameToDelete));
+
+      // Remove from participants list if present
+      if (event.participants.includes(participantNameToDelete)) {
+        await firebaseService.updateEvent(event.id, {
+          participants: event.participants.filter(p => p !== participantNameToDelete)
+        });
+      }
+
+      alert(`Removed all responses from ${participantNameToDelete}`);
+    } catch (error) {
+      console.error('Error deleting participant responses:', error);
+      alert('Failed to delete participant. Please try again.');
+    } finally {
+      setDeletingParticipant(null);
+    }
+  };
 
   const handleCompleteEvent = async () => {
     if (window.confirm('Mark this event as completed?')) {
@@ -635,9 +709,11 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
 
   const getAvailabilityForTimeSlot = (timeSlotId: string) => {
     const slotResponses = responses.filter(r => r.timeSlotId === timeSlotId);
-    const available = slotResponses.filter(r => r.available).map(r => r.participantName);
+    const available = slotResponses
+      .filter(r => r.available)
+      .map(r => ({ name: r.participantName, preference: r.preference || 'available' }));
     const unavailable = slotResponses.filter(r => !r.available).map(r => r.participantName);
-    
+
     return { available, unavailable };
   };
 
@@ -898,52 +974,70 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
           )}
 
           <div className="event-location-card">
-            <div className="event-location-header">
-              <p className="event-location-eyebrow">Meetup spot</p>
-              {!editingLocation && (
-                <button 
-                  type="button" 
-                  className="event-location-button"
-                  onClick={() => setEditingLocation(true)}
-                >
-                  {event.location ? 'Edit location' : 'Add location'}
-                </button>
-              )}
+            <div
+              className="event-location-header collapsible-header"
+              onClick={() => setLocationSectionOpen(!locationSectionOpen)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setLocationSectionOpen(!locationSectionOpen);
+                }
+              }}
+            >
+              <p className="event-location-eyebrow">
+                <span className="collapse-arrow">{locationSectionOpen ? '▼' : '▶'}</span>
+                Meetup spot {event.location && `— ${event.location.name}`}
+              </p>
             </div>
 
-            {event.location ? (
-              <div className="event-location-details">
-                <div className="event-location-name">
-                  <span className="event-location-pin" aria-hidden="true">📍</span>
-                  <span>{event.location.name}</span>
-                </div>
-                <div className="event-location-actions">
-                  {locationDisplayLink && (
-                    <a
-                      className="event-location-button ghost"
-                      href={locationDisplayLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Open map
-                    </a>
-                  )}
+            {locationSectionOpen && (
+              <>
+                {!editingLocation && (
                   <button
                     type="button"
-                    className="event-location-button secondary"
+                    className="event-location-button"
                     onClick={() => setEditingLocation(true)}
                   >
-                    Update
+                    {event.location ? 'Edit location' : 'Add location'}
                   </button>
-                </div>
-              </div>
-            ) : (
-              <div className="event-location-empty">
-                <p>Haven&apos;t picked a venue yet? Once you decide, hit “Add location” to share it.</p>
-              </div>
+                )}
+                {event.location ? (
+                  <div className="event-location-details">
+                    <div className="event-location-name">
+                      <span className="event-location-pin" aria-hidden="true">📍</span>
+                      <span>{event.location.name}</span>
+                    </div>
+                    <div className="event-location-actions">
+                      {locationDisplayLink && (
+                        <a
+                          className="event-location-button ghost"
+                          href={locationDisplayLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Open map
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        className="event-location-button secondary"
+                        onClick={() => setEditingLocation(true)}
+                      >
+                        Update
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="event-location-empty">
+                    <p>Haven&apos;t picked a venue yet? Once you decide, hit "Add location" to share it.</p>
+                  </div>
+                )}
+              </>
             )}
 
-            {editingLocation && (
+            {locationSectionOpen && editingLocation && (
               <div className="event-location-form">
                 <label htmlFor="location-name">Location name or address</label>
                 <input
@@ -1160,138 +1254,168 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
       )}
 
       <div className="time-slot-manager">
-        <div className="time-slot-manager__header">
+        <div
+          className="time-slot-manager__header collapsible-header"
+          onClick={() => setAddDateSectionOpen(!addDateSectionOpen)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setAddDateSectionOpen(!addDateSectionOpen);
+            }
+          }}
+        >
           <div>
-            <p className="event-details-eyebrow">Open Time Options</p>
+            <p className="event-details-eyebrow">
+              <span className="collapse-arrow">{addDateSectionOpen ? '▼' : '▶'}</span>
+              Open Time Options
+            </p>
             <p className="event-details-copy">
               Add fresh dates when plans shift and clear out past options.
             </p>
           </div>
-          <button
-            type="button"
-            className="event-details-button"
-            onClick={handleRemovePastTimeSlots}
-            disabled={!hasPastSlots || cleaningPastSlots}
-          >
-            {cleaningPastSlots ? 'Cleaning…' : `Remove past (${pastTimeSlots.length})`}
-          </button>
-        </div>
-        <div className="time-slot-form">
-          <div className="time-slot-date">
-            <label htmlFor="new-slot-date">New date</label>
-            <input
-              id="new-slot-date"
-              type="date"
-              min={todayIso}
-              value={newSlotDate}
-              onChange={(e) => setNewSlotDate(e.target.value)}
-            />
-          </div>
-          <div className="time-slot-type">
-            <label>Time</label>
-            <div className="time-type-options" role="radiogroup" aria-label="Time selection">
-              <label className={`time-type-pill ${newSlotTimeType === 'all-day' ? 'active' : ''}`}>
-                <input
-                  type="radio"
-                  name={timeTypeRadioName}
-                  value="all-day"
-                  checked={newSlotTimeType === 'all-day'}
-                  onChange={() => setNewSlotTimeType('all-day')}
-                />
-                All day
-              </label>
-              <label className={`time-type-pill ${newSlotTimeType === 'specific' ? 'active' : ''}`}>
-                <input
-                  type="radio"
-                  name={timeTypeRadioName}
-                  value="specific"
-                  checked={newSlotTimeType === 'specific'}
-                  onChange={() => setNewSlotTimeType('specific')}
-                />
-                Specific time
-              </label>
-            </div>
-          </div>
-          {newSlotTimeType === 'specific' && (
-            <div className="time-slot-time">
-              <label htmlFor="new-slot-time">Start time</label>
-              <input
-                id="new-slot-time"
-                type="time"
-                value={newSlotTimeValue}
-                onChange={(e) => setNewSlotTimeValue(e.target.value)}
-              />
-            </div>
-          )}
-          <div className="time-slot-actions">
+          {addDateSectionOpen && (
             <button
               type="button"
-              className="save-button"
-              onClick={handleAddTimeSlotOption}
-              disabled={addingTimeSlot || !canAddSlot}
+              className="event-details-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRemovePastTimeSlots();
+              }}
+              disabled={!hasPastSlots || cleaningPastSlots}
             >
-              {addingTimeSlot ? 'Adding…' : 'Add date option'}
+              {cleaningPastSlots ? 'Cleaning…' : `Remove past (${pastTimeSlots.length})`}
             </button>
-          </div>
+          )}
         </div>
-        {hasPastSlots && (
-          <p className="time-slot-helper">
-            You have {pastTimeSlots.length} past date option{pastTimeSlots.length !== 1 ? 's' : ''}.
-            Clean them up to keep the poll fresh.
-          </p>
+        {addDateSectionOpen && (
+          <>
+            <div className="time-slot-form">
+              <div className="time-slot-date">
+                <label htmlFor="new-slot-date">New date</label>
+                <input
+                  id="new-slot-date"
+                  type="date"
+                  min={todayIso}
+                  value={newSlotDate}
+                  onChange={(e) => setNewSlotDate(e.target.value)}
+                />
+              </div>
+              <div className="time-slot-type">
+                <label>Time</label>
+                <div className="time-type-options" role="radiogroup" aria-label="Time selection">
+                  <label className={`time-type-pill ${newSlotTimeType === 'all-day' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name={timeTypeRadioName}
+                      value="all-day"
+                      checked={newSlotTimeType === 'all-day'}
+                      onChange={() => setNewSlotTimeType('all-day')}
+                    />
+                    All day
+                  </label>
+                  <label className={`time-type-pill ${newSlotTimeType === 'specific' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name={timeTypeRadioName}
+                      value="specific"
+                      checked={newSlotTimeType === 'specific'}
+                      onChange={() => setNewSlotTimeType('specific')}
+                    />
+                    Specific time
+                  </label>
+                </div>
+              </div>
+              {newSlotTimeType === 'specific' && (
+                <div className="time-slot-time">
+                  <label htmlFor="new-slot-time">Start time</label>
+                  <input
+                    id="new-slot-time"
+                    type="time"
+                    value={newSlotTimeValue}
+                    onChange={(e) => setNewSlotTimeValue(e.target.value)}
+                  />
+                </div>
+              )}
+              <div className="time-slot-actions">
+                <button
+                  type="button"
+                  className="save-button"
+                  onClick={handleAddTimeSlotOption}
+                  disabled={addingTimeSlot || !canAddSlot}
+                >
+                  {addingTimeSlot ? 'Adding…' : 'Add date option'}
+                </button>
+              </div>
+            </div>
+            {hasPastSlots && (
+              <p className="time-slot-helper">
+                You have {pastTimeSlots.length} past date option{pastTimeSlots.length !== 1 ? 's' : ''}.
+                Clean them up to keep the poll fresh.
+              </p>
+            )}
+          </>
         )}
       </div>
 
-      <div className="participant-input-section">
-        <h3>Enter your name to respond:</h3>
-        <div className="name-input-row">
-          <input
-            type="text"
-            value={participantName}
-            onChange={(e) => setParticipantName(e.target.value)}
-            placeholder="Your name"
-            className="name-input"
-          />
-          {savedName && (
-            <div className="saved-name-indicator">
-              ✓ Saved as: {savedName}
-            </div>
-          )}
+      <div className="availability-section">
+        <div className="availability-section-header">
+          <h3>Your Availability</h3>
+          <p className="availability-section-description">
+            Enter your name and select which dates work for you
+          </p>
         </div>
-        
-        {participantName.trim() && (
-          <div className="availability-actions">
-            <div className="notes-input-group">
-              <label htmlFor="participant-notes">What will you bring? (optional)</label>
-              <textarea
-                id="participant-notes"
-                value={participantNotes}
-                onChange={(e) => setParticipantNotes(e.target.value)}
-                placeholder="e.g., Snacks, drinks, games, tools, etc."
-                className="notes-input"
-                rows={2}
-              />
-            </div>
-            <p className="instructions">
-              Click on dates below to mark your availability, then click "Save Availability" when done.
-            </p>
-            {pendingChanges.length > 0 && (
-              <div className="pending-changes">
-                <span>Pending changes: {pendingChanges.length} date{pendingChanges.length !== 1 ? 's' : ''}</span>
-                <button 
-                  onClick={handleSaveAvailability}
-                  disabled={loading}
-                  className="save-button"
-                >
-                  {loading ? 'Saving...' : 'Save Availability'}
-                </button>
+
+        <div className="participant-input-section">
+          <div className="name-input-row">
+            <input
+              type="text"
+              value={participantName}
+              onChange={(e) => setParticipantName(e.target.value)}
+              placeholder="Your name"
+              className="name-input"
+            />
+            {savedName && (
+              <div className="saved-name-indicator">
+                ✓ Saved as: {savedName}
               </div>
             )}
           </div>
-        )}
-      </div>
 
-      <AvailabilityHeatmap
+          {participantName.trim() && (
+            <div className="availability-actions">
+              <div className="notes-input-group">
+                <label htmlFor="participant-notes">What will you bring? (optional)</label>
+                <textarea
+                  id="participant-notes"
+                  value={participantNotes}
+                  onChange={(e) => setParticipantNotes(e.target.value)}
+                  placeholder="e.g., Snacks, drinks, games, tools, etc."
+                  className="notes-input"
+                  rows={2}
+                />
+              </div>
+              <p className="instructions">
+                Click on dates below to mark your availability, then click "Save Availability" when done.
+              </p>
+              {pendingChanges.size > 0 && (
+                <div className="pending-changes">
+                  <span>Pending changes: {pendingChanges.size} date{pendingChanges.size !== 1 ? 's' : ''}</span>
+                  <button
+                    onClick={handleSaveAvailability}
+                    disabled={loading}
+                    className="save-button"
+                  >
+                    {loading ? 'Saving...' : 'Save Availability'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <AvailabilityHeatmap
         timeSlots={timeSlotsToShow}
         responses={responses}
         participantName={participantName}
@@ -1300,6 +1424,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
         pendingChanges={pendingChanges}
         theme={theme}
       />
+      </div>
 
       {uniqueParticipants.length > 0 && (
         <div className="availability-details">
@@ -1341,18 +1466,34 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
                   {available.length > 0 && (
                     <div className="available-participants">
                       <span className="available-label">Available:</span>
-                      {available.map((name, index) => (
-                        <span key={name} className="participant-name available">
-                          {name}{index < available.length - 1 ? ', ' : ''}
-                        </span>
-                      ))}
+                      {available.map(({ name, preference }, index) => {
+                        let icon = '';
+                        let prefClass = 'available';
+
+                        if (preference === 'tentative') {
+                          icon = '? ';
+                          prefClass = 'tentative';
+                        } else if (preference === 'preferred') {
+                          icon = '★ ';
+                          prefClass = 'preferred';
+                        }
+
+                        return (
+                          <React.Fragment key={`${name}-${index}`}>
+                            <span className={`participant-name ${prefClass}`}>
+                              {icon}{name}
+                            </span>
+                            {index < available.length - 1 && ', '}
+                          </React.Fragment>
+                        );
+                      })}
                     </div>
                   )}
                   {unavailable.length > 0 && (
                     <div className="unavailable-participants">
                       <span className="unavailable-label">Not Available:</span>
                       {unavailable.map((name, index) => (
-                        <span key={name} className="participant-name unavailable">
+                        <span key={`${name}-${index}`} className="participant-name unavailable">
                           {name}{index < unavailable.length - 1 ? ', ' : ''}
                         </span>
                       ))}
@@ -1376,15 +1517,44 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
           {uniqueParticipants.map((participant) => {
             // Find the participant's notes from their responses
             const participantResponse = responses.find(r => r.participantName === participant && r.notes);
+            const isDeleting = deletingParticipant === participant;
+            const isMenuOpen = openMenuParticipant === participant;
+
             return (
               <div key={participant} className="participant-card">
-                <span className="participant-tag">
-                  {participant}
-                </span>
+                <div className="participant-card-header">
+                  <span className="participant-tag">
+                    {participant}
+                  </span>
+                  <div className="participant-menu">
+                    <button
+                      className="participant-menu-button"
+                      onClick={() => setOpenMenuParticipant(isMenuOpen ? null : participant)}
+                      disabled={isDeleting}
+                      aria-label="Participant options"
+                    >
+                      ⋮
+                    </button>
+                    {isMenuOpen && (
+                      <div className="participant-menu-dropdown">
+                        <button
+                          className="participant-menu-item delete"
+                          onClick={() => handleDeleteParticipant(participant)}
+                          disabled={isDeleting}
+                        >
+                          🗑️ Delete Responses
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 {participantResponse?.notes && (
                   <div className="participant-notes">
                     <span className="notes-label">Bringing:</span> {participantResponse.notes}
                   </div>
+                )}
+                {isDeleting && (
+                  <div className="participant-deleting">Deleting...</div>
                 )}
               </div>
             );

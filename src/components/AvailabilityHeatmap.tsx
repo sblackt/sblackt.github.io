@@ -1,6 +1,6 @@
 import React from 'react';
 import { format } from 'date-fns';
-import { AvailabilityResponse } from '../types';
+import { AvailabilityResponse, AvailabilityPreference } from '../types';
 import { parseLocalDate } from '../utils/dateUtils';
 import { EventTypeConfig } from '../constants/eventTypes';
 import './AvailabilityHeatmap.css';
@@ -15,9 +15,9 @@ interface AvailabilityHeatmapProps {
   }>;
   responses: AvailabilityResponse[];
   participantName: string;
-  onDateToggle: (date: string) => void;
-  selectedDates: string[];
-  pendingChanges: string[];
+  onDateToggle: (date: string, preference?: AvailabilityPreference | null) => void;
+  selectedDates: Map<string, AvailabilityPreference | null>; // Changed to Map with preference
+  pendingChanges: Map<string, AvailabilityPreference | null>; // Changed to Map with preference
   theme?: EventTypeConfig;
 }
 
@@ -32,14 +32,14 @@ const AvailabilityHeatmap: React.FC<AvailabilityHeatmapProps> = ({
 }) => {
   // Group responses by date to calculate availability
   const datesMap = new Map<string, string[]>();
-  
+
   // Initialize all dates from time slots
   timeSlots.forEach(slot => {
     if (!datesMap.has(slot.date)) {
       datesMap.set(slot.date, []);
     }
   });
-  
+
   // Add responses to the dates map
   responses.forEach(response => {
     if (response.available) {
@@ -58,8 +58,8 @@ const AvailabilityHeatmap: React.FC<AvailabilityHeatmapProps> = ({
   const dateAvailability = Array.from(datesMap.entries()).map(([date, participants]) => ({
     date,
     availableCount: participants.length,
-    isSelected: selectedDates.includes(date),
-    isPending: pendingChanges.includes(date)
+    userPreference: selectedDates.get(date) || null,
+    pendingPreference: pendingChanges.get(date)
   }));
 
   // Sort dates chronologically
@@ -105,9 +105,32 @@ const AvailabilityHeatmap: React.FC<AvailabilityHeatmapProps> = ({
   };
 
   const handleDateClick = (date: string) => {
-    if (participantName.trim()) {
-      onDateToggle(date);
+    if (!participantName.trim()) {
+      return;
     }
+
+    // Determine current state (pending takes priority, then saved, then null)
+    const savedPref = selectedDates.get(date);
+    const pendingPref = pendingChanges.get(date);
+
+    // If there's a pending change, cycle from that
+    // Otherwise, cycle from the saved preference
+    const currentPref = pendingPref !== undefined ? pendingPref : savedPref;
+
+    let nextPref: AvailabilityPreference | null = null;
+
+    // Cycle through: null -> available -> tentative -> preferred -> null
+    if (!currentPref) {
+      nextPref = 'available';
+    } else if (currentPref === 'available') {
+      nextPref = 'tentative';
+    } else if (currentPref === 'tentative') {
+      nextPref = 'preferred';
+    } else {
+      nextPref = null; // Back to unselected
+    }
+
+    onDateToggle(date, nextPref);
   };
 
   return (
@@ -131,19 +154,56 @@ const AvailabilityHeatmap: React.FC<AvailabilityHeatmapProps> = ({
       </div>
 
       <div className="heatmap-grid">
-        {dateAvailability.map(({ date, availableCount, isSelected, isPending }) => {
+        {dateAvailability.map(({ date, availableCount, userPreference, pendingPreference }) => {
           const palette = getHeatMapColors(availableCount);
           const selectedBg = rgba(strongAccent, 0.85);
           const selectedBorder = strongAccent;
           const selectedText = '#ffffff';
+
+          // Determine the current preference (pending takes precedence)
+          const currentPref = pendingPreference ?? userPreference;
+          const isPending = pendingPreference !== undefined;
+          const isSelected = currentPref !== null;
+
+          // Define preference-specific styling
+          let prefBorder = `1px solid ${palette.chipBorder}`;
+          let prefIndicator = null;
+
+          if (isPending) {
+            prefBorder = '3px solid #eab308';
+          } else if (currentPref) {
+            prefBorder = `3px solid ${selectedBorder}`;
+          }
+
+          // Set indicator based on preference (show preference even when pending)
+          if (currentPref === 'available') {
+            prefIndicator = (
+              <div className={`selected-indicator available-indicator ${isPending ? 'pending-badge' : ''}`}>
+                Available{isPending ? ' (pending)' : ''}
+              </div>
+            );
+          } else if (currentPref === 'tentative') {
+            prefIndicator = (
+              <div className={`selected-indicator tentative-indicator ${isPending ? 'pending-badge' : ''}`}>
+                ~ Tentative{isPending ? ' (pending)' : ''}
+              </div>
+            );
+          } else if (currentPref === 'preferred') {
+            prefIndicator = (
+              <div className={`selected-indicator preferred-indicator ${isPending ? 'pending-badge' : ''}`}>
+                ★ Preferred{isPending ? ' (pending)' : ''}
+              </div>
+            );
+          }
+
           return (
             <button
               key={date}
-              className={`heatmap-date ${isSelected ? 'selected' : ''} ${isPending ? 'pending' : ''}`}
+              className={`heatmap-date ${isSelected ? 'selected' : ''} ${isPending ? 'pending' : ''} ${currentPref ? `preference-${currentPref}` : ''}`}
               style={{
                 backgroundColor: palette.bg,
                 color: palette.text,
-                border: isPending ? '3px solid #eab308' : isSelected ? `3px solid ${selectedBorder}` : `1px solid ${palette.chipBorder}`,
+                border: prefBorder,
                 // CSS variable to keep nested elements in sync
                 ['--heatmap-chip-bg' as string]: palette.chipBg,
                 ['--heatmap-chip-border' as string]: palette.chipBorder,
@@ -164,30 +224,34 @@ const AvailabilityHeatmap: React.FC<AvailabilityHeatmapProps> = ({
               <div className="availability-count">
                 {availableCount} available
               </div>
-              {isPending && (
-                <div className="pending-indicator">
-                  ⏳ Pending
-                </div>
-              )}
-              {isSelected && !isPending && (
-                <div className="selected-indicator">
-                  ✓ You're available
-                </div>
-              )}
+              {prefIndicator}
             </button>
           );
         })}
       </div>
 
-      {selectedDates.length > 0 && (
+      {selectedDates.size > 0 && (
         <div className="your-selections">
-          <h4>Your Selections ({selectedDates.length})</h4>
+          <h4>Your Selections ({selectedDates.size})</h4>
           <div className="selected-dates">
-            {selectedDates.map(date => (
-              <span key={date} className="selected-date-tag">
-                {format(parseLocalDate(date), 'MMM d')}
-              </span>
-            ))}
+            {Array.from(selectedDates.entries()).map(([date, preference]) => {
+              let icon = '';
+              let className = 'selected-date-tag';
+
+              if (preference === 'tentative') {
+                icon = '~ ';
+                className += ' tentative';
+              } else if (preference === 'preferred') {
+                icon = '★ ';
+                className += ' preferred';
+              }
+
+              return (
+                <span key={date} className={className}>
+                  {icon}{format(parseLocalDate(date), 'MMM d')}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}

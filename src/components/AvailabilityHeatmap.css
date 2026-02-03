@@ -144,13 +144,43 @@
   position: absolute;
   top: -8px;
   right: -8px;
-  background: #3b82f6;
   color: white;
   font-size: 10px;
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 12px;
+}
+
+/* Available state - blue */
+.available-indicator {
+  background: #3b82f6;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+/* Tentative state - amber/orange */
+.tentative-indicator {
+  background: #f59e0b;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+
+/* Preferred state - green with star */
+.preferred-indicator {
+  background: #10b981;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+/* Pending state with preference */
+.selected-indicator.pending-badge {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .pending-indicator {
@@ -169,6 +199,22 @@
 .heatmap-date.pending {
   box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3);
   border-color: #eab308;
+}
+
+/* Preference-specific styling for date cards */
+.heatmap-date.preference-available:not(.pending) {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.heatmap-date.preference-tentative:not(.pending) {
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+.heatmap-date.preference-preferred:not(.pending) {
+  border-color: #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
 }
 
 .your-selections {
@@ -198,6 +244,16 @@
   font-size: 12px;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+}
+
+.selected-date-tag.tentative {
+  background: #f59e0b;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+}
+
+.selected-date-tag.preferred {
+  background: #10b981;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
 }
 
 @media (max-width: 768px) {

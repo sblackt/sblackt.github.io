@@ -107,6 +107,7 @@ service cloud.firestore {
         'participantName',
         'timeSlotId',
         'available',
+        'preference',
         'eventId',
         'notes',
         'timestamp'
@@ -115,8 +116,14 @@ service cloud.firestore {
       nonEmptyString(data.timeSlotId, 128) &&
       nonEmptyString(data.eventId, 128) &&
       data.available is bool &&
+      optionalPreference(data, 'preference') &&
       optionalString(data, 'notes', 1000) &&
       optionalString(data, 'timestamp', 64);
+    }
+
+    function optionalPreference(data, field) {
+      return !(field in data) ||
+        (data[field] is string && data[field] in ['available', 'tentative', 'preferred']);
     }
 
     match /secretSanta/{documentId} {

@@ -37,10 +37,13 @@ export interface Event {
   location?: EventLocation | null;
 }
 
+export type AvailabilityPreference = 'available' | 'tentative' | 'preferred';
+
 export interface AvailabilityResponse {
   participantName: string;
   timeSlotId: string;
   available: boolean;
+  preference?: AvailabilityPreference; // Optional preference level
   eventId: string;
   notes?: string;
   timestamp?: string;

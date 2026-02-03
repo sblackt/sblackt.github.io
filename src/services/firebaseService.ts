@@ -1,15 +1,16 @@
-import { 
-  collection, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  getDoc, 
-  getDocs, 
-  onSnapshot, 
-  query, 
+import {
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  query,
   where,
   increment,
-  deleteField
+  deleteField,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Event, TimeSlot, AvailabilityResponse } from '../types';
@@ -129,6 +130,29 @@ export const firebaseService = {
     };
 
     await addDoc(collection(db, RESPONSES_COLLECTION), payload);
+  },
+
+  // Delete all responses for a participant in an event
+  async deleteParticipantResponses(eventId: string, participantName: string): Promise<void> {
+    const q = query(
+      collection(db, RESPONSES_COLLECTION),
+      where('eventId', '==', eventId),
+      where('participantName', '==', participantName)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return;
+    }
+
+    // Use batch delete for efficiency
+    const batch = writeBatch(db);
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
   },
 
   // Get responses for an event
