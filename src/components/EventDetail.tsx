@@ -1386,12 +1386,12 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
           {participantName.trim() && (
             <div className="availability-actions">
               <div className="notes-input-group">
-                <label htmlFor="participant-notes">What will you bring? (optional)</label>
+                <label htmlFor="participant-notes">Comments (optional)</label>
                 <textarea
                   id="participant-notes"
                   value={participantNotes}
                   onChange={(e) => setParticipantNotes(e.target.value)}
-                  placeholder="e.g., Snacks, drinks, games, tools, etc."
+                  placeholder="Add any notes or comments..."
                   className="notes-input"
                   rows={2}
                 />
@@ -1550,7 +1550,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
                 </div>
                 {participantResponse?.notes && (
                   <div className="participant-notes">
-                    <span className="notes-label">Bringing:</span> {participantResponse.notes}
+                    <span className="notes-label">Comments:</span> {participantResponse.notes}
                   </div>
                 )}
                 {isDeleting && (
