@@ -310,13 +310,14 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
       for (const [date, preference] of Array.from(pendingChanges.entries())) {
         const dateTimeSlots = event.timeSlots.filter(slot => slot.date === date);
 
-        // Only submit new responses if preference is not null
-        if (preference !== null) {
+        // Only submit new responses if preference is not null and not unavailable
+        // If unavailable, we just delete (already done above) and don't save anything
+        if (preference !== null && preference !== 'unavailable') {
           for (const timeSlot of dateTimeSlots) {
             const response: AvailabilityResponse = {
               participantName: trimmedName,
               timeSlotId: timeSlot.id,
-              available: preference !== 'unavailable', // False if unavailable, true otherwise
+              available: true,
               preference: preference, // Store the preference level
               eventId: event.id,
               ...(trimmedNotes ? { notes: trimmedNotes } : {})
@@ -345,12 +346,13 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
       pendingChanges.forEach((preference, date) => {
         const dateTimeSlots = event.timeSlots.filter(slot => slot.date === date);
 
-        if (preference !== null) {
+        // Only add responses if not null and not unavailable
+        if (preference !== null && preference !== 'unavailable') {
           dateTimeSlots.forEach(timeSlot => {
             newResponses.push({
               participantName: trimmedName,
               timeSlotId: timeSlot.id,
-              available: preference !== 'unavailable', // False if unavailable, true otherwise
+              available: true,
               preference: preference,
               eventId: event.id,
               ...(trimmedNotes ? { notes: trimmedNotes } : {})

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Studies - Stephen White</title>
+    <meta name="description" content="Leadership case studies showcasing design systems, steady leadership, and cognitive flexibility in product design.">
+    <link rel="stylesheet" href="fonts/fonts.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Skip Link -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Hamburger Menu Button (Mobile) -->
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+    </button>
+
+    <!-- Navigation -->
+    <nav class="navigation" id="navigation">
+        <a href="index.html" class="nav-link">home</a>
+        <a href="about.html" class="nav-link">about</a>
+        <a href="case-studies.html" class="nav-link">case studies</a>
+        <a href="writing.html" class="nav-link">writing</a>
+        <a href="contact.html" class="nav-link">contact</a>
+        <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">
+            <span class="theme-icon">🌙</span>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- Main Content -->
+    <main id="main" class="leadership-page">
+        <div class="leadership-header">
+            <div class="gradient-circle-left"></div>
+            <h1 class="leadership-title">Case Studies</h1>
+            <p class="leadership-subtitle">Leadership portfolio showcasing impact and methodology</p>
+        </div>
+
+        <!-- Mobile Dropdown -->
+        <div class="case-study-dropdown-container">
+            <select class="case-study-dropdown" id="caseStudyDropdown" aria-label="Filter case studies">
+                <option value="design-system">Design System</option>
+                <option value="cognitive-flexibility">Cognitive Flexibility</option>
+                <option value="steady-leadership">Steady Leadership</option>
+            </select>
+            <span class="dropdown-arrow">▼</span>
+        </div>
+
+        <!-- Desktop Tabs -->
+        <div class="folder-tabs">
+            <button class="folder-tab active" data-filter="design-system">
+                <span class="tab-label">Design System</span>
+            </button>
+            <button class="folder-tab" data-filter="cognitive-flexibility">
+                <span class="tab-label">Cognitive Flexibility</span>
+            </button>
+            <button class="folder-tab" data-filter="steady-leadership">
+                <span class="tab-label">Steady Leadership</span>
+            </button>
+        </div>
+
+        <div class="case-studies-container">
+            <article class="case-study-card" data-tags="design-system">
+                <div class="case-study-meta">
+                    <span class="study-category">Leadership × Design</span>
+                </div>
+
+                <h2 class="case-study-title">Design Systems: How One Designer Built What Engineering Couldn't</h2>
+
+                <div class="case-study-body">
+                        <section class="case-study-section">
+                        <h3>The Problem</h3>
+                    <p>We were modernizing legacy UIs with a small design team and no front-end resources. New interfaces are daunting and visible—sales wants demo-ready visuals, developers want plug-and-play components, clients don't want workflow disruption.</p>
+                    <p>We knew legacy workflows don't get better in a new skin. And accessibility had to be step one, or it wouldn't happen at all.</p>
+                    <p>Without a living design system, every component meant 2-3 clarification questions per user story, retrofitted accessibility, and inconsistent quality across teams.</p>
+                    <p>Everyone loved the idea of coded component libraries so devs didn't have to guess. But there were no developers available to build it. So the idea sat.</p>
+                </section>
+
+                    <section class="case-study-section">
+                    <h3>The Leadership Decision</h3>
+                    <p>During a team meeting, one of the designers asked: "Could I just make it myself?"</p>
+                    <p>I had two choices: protect them from scope creep and keep waiting, or trust the team to reorganize and let someone own something big.</p>
+                    <p>I chose the second:</p>
+                    <ul>
+                        <li>Let the team talk through how to redistribute work</li>
+                        <li>Got budget for Claude Code and Vercel (positioned as an AI-forward experiment)</li>
+                        <li>Set boundaries: couldn't break stride with business as usual</li>
+                        <li>Stepped back once the framework was set</li>
+                    </ul>
+                </section>
+
+                    <section class="case-study-section">
+                    <h3>What We Built</h3>
+                    <p>Using Figma libraries and Claude Code, we built a functional living design system with:</p>
+                    <ul>
+                        <li>Every UI component in code</li>
+                        <li>Accessibility baked in: ARIA tags, semantic HTML, WCAG compliance</li>
+                        <li>Dev niceties: props, variants, color pickers, multi-language support</li>
+                    </ul>
+
+                    <figure class="case-study-figure">
+                        <img src="images/system_Badge.png" alt="Design system badge component showing visual design with multiple variants and states" class="case-study-image">
+                        <figcaption class="case-study-caption">Component design in Figma with all variants and states documented</figcaption>
+                    </figure>
+
+                    <figure class="case-study-figure">
+                        <img src="images/system_Badgecode.png" alt="Live coded badge component with interactive props, variants, and customization options" class="case-study-image">
+                        <figcaption class="case-study-caption">The same component live in code with full interactivity and developer controls</figcaption>
+                    </figure>
+                </section>
+
+                    <section class="case-study-section">
+                    <h3>The Impact</h3>
+                    <p><strong>Eliminated friction:</strong></p>
+                    <ul>
+                        <li>Design-dev questions dropped from 2-3 per story to zero</li>
+                        <li>3 out of 4 dev teams now use system components as default</li>
+                        <li>PMs saw value in fewer refinement questions</li>
+                    </ul>
+                    <p><strong>Accessibility by default:</strong></p>
+                    <ul>
+                        <li>Pre-system: inconsistent, retrofitted</li>
+                        <li>Post-system: WCAG-compliant out of the box</li>
+                        <li>QA proactively started adding accessibility to test criteria—first time ever—because the system made it achievable</li>
+                    </ul>
+                    <p><strong>Strategic positioning:</strong></p>
+                    <ul>
+                        <li>Executives noticed the clever use of Claude, GitHub, Vercel</li>
+                        <li>Team became seen as AI-forward</li>
+                        <li>Other dev teams requested their own systems</li>
+                    </ul>
+                </section>
+
+                        <section class="case-study-section">
+                        <h3>What This Proves</h3>
+                        <p>Design systems aren't outlandish ideas. But building one with limited resources while not breaking stride needed collaboration, trust, and creativity.</p>
+                        <p>This worked because I trusted the team to solve their capacity problem, removed blockers instead of micromanaging, and made accessibility non-negotiable from day one.</p>
+                        <p>If a team member asks to be responsible for something big, I always say yes and support them to succeed.</p>
+                    </section>
+                </div>
+
+                <div class="case-study-corner"></div>
+            </article>
+
+            <article class="case-study-card" data-tags="cognitive-flexibility">
+                <div class="case-study-meta">
+                    <span class="study-category">Leadership × Design</span>
+                </div>
+
+                <h2 class="case-study-title">Multiple Ways: Designing for Users Who Don't Agree</h2>
+
+                <div class="case-study-body">
+                    <section class="case-study-section">
+                        <h3>The Problem</h3>
+                        <p>Enterprise software lives in a world where users fundamentally disagree about how things should work.</p>
+                        <p>Legacy users have decades-old workflows. They know the system inside and out, have workarounds, sometimes even custom development. They're fast, efficient, and deeply resistant to change.</p>
+                        <p>New users need modern, intuitive interfaces. But updating the UI without angering legacy users is a minefield — and there's a technical challenge too: bubble-bloat. Older UIs were tight and unadorned. Adding modern design standards — generous padding, corner radii, larger fonts, shadows — can turn one compact page into four sprawling screens.</p>
+                        <p>The question: How do you update the UI for users with a decade in the game, make it genuinely better, and not ruin their lives?</p>
+                    </section>
+
+                    <section class="case-study-section">
+                        <h3>The Approach: Start With What Users Actually Do</h3>
+                        <p>We talked to users, watched them configure and navigate, and used tracking data to see what actually gets used.</p>
+                        <p>What we discovered: users skipped entire sections and tabs, homing in on the exact field they needed. Everything else? Rarely touched.</p>
+                        <p>The opportunity was clear — bring what users need to the forefront. Architect pages according to real behavior, not a scattered group of potentially useful fields.</p>
+                    </section>
+
+                    <section class="case-study-section">
+                        <h3>The Consumer Challenge: Sock, Sock, Shoe, Shoe?</h3>
+                        <p>The same "multiple ways" problem appeared in consumer ticketing.</p>
+                        <p>Users buying tickets need to make lots of decisions — checking dates, texting a friend, scoping out parking, finding accessible seats — all during a timed checkout. Recipe for frustration.</p>
+                        <p>Starting with seat selection, we looked at how users choose seats and price types. Most venues offer at least Adult, Senior, and Child pricing. So you select a location, pick a price type, then continue.</p>
+                        <p>But as a client put it: Do you go sock, sock, shoe, shoe — or sock, shoe, sock, shoe?</p>
+                        <p>One sounds wrong to most people. But we're not putting on shoes — we're buying tickets. User testing revealed two completely valid workflows:</p>
+                        <ul>
+                            <li>Some users chose all locations first, then assigned price types</li>
+                            <li>Others completed one full seat (location + price type) before moving to the next</li>
+                        </ul>
+                        <p>Two completely different mental models. Both correct.</p>
+                    </section>
+
+                    <section class="case-study-section">
+                        <h3>The Solution: Do Both</h3>
+                        <p>The challenge I gave the designer: "Do both."</p>
+                        <p>Orlando took the direction and designed a way to support both workflows simultaneously — intuitive and mobile-first. Users could select multiple seats then assign price types in bulk (sock, sock, shoe, shoe), or complete one seat fully before moving to the next (sock, shoe, sock, shoe). The system supported both without forcing one or making the other feel wrong.</p>
+
+                        <figure class="case-study-figure">
+                            <img src="images/Price_Choice.png" alt="Mobile seat selection interface showing dual workflow support - users can select multiple seats then assign price types, or complete one seat at a time" class="case-study-image">
+                            <figcaption class="case-study-caption">The price selection interface supporting both mental models simultaneously</figcaption>
+                        </figure>
+                    </section>
+
+                    <section class="case-study-section">
+                        <h3>The Broader Lesson</h3>
+                        <p>The best solutions don't force users into one "correct" workflow. When users fundamentally disagree about how something should work, the answer isn't to pick a side, create separate modes that fragment the experience, or default to legacy and ignore modern needs. The answer is to design systems flexible enough to support multiple mental models simultaneously.</p>
+                        <p>This requires deep understanding of actual behavior — not assumed workflows — and a willingness to challenge "one right way" thinking. It applies beyond seat selection: in enterprise UI, it means reorganizing around real usage patterns, honoring power users' muscle memory while making things discoverable for beginners, and making change incremental rather than disruptive.</p>
+                        <p>The ultimate goal: build systems that adapt to users, not users who adapt to systems.</p>
+                    </section>
+
+                    <section class="case-study-section">
+                        <h3>Impact</h3>
+                        <ul>
+                            <li>Seat selection supported two completely different mental models without sacrificing simplicity</li>
+                            <li>Legacy enterprise users maintained efficiency while new users found interfaces more approachable</li>
+                            <li>Reduced checkout abandonment by removing forced workflows</li>
+                            <li>Proved that "intuitive" doesn't mean "one way only"</li>
+                        </ul>
+                    </section>
+                </div>
+
+                <div class="case-study-corner"></div>
+            </article>
+
+            <article class="case-study-card" data-tags="steady-leadership">
+                <div class="case-study-meta">
+                    <span class="study-category">Leadership × People</span>
+                </div>
+
+                <h2 class="case-study-title">Revolving Bosses, Zero Problems: How to Build Team Stability in Chaos</h2>
+
+                <div class="case-study-body">
+                    <section class="case-study-section">
+                        <h3>The Problem</h3>
+                        <p>Growth companies are exciting—fast-paced, high-stakes arenas where change is the mantra.</p>
+                        <p>They also come with challenges.</p>
+                        <p>Over 7 years, I've had 9 different bosses, two CEOs, and countless executives move through the org.</p>
+                        <p>This kind of change breeds uncertainty and shifting priorities that can cripple teams with fear and distraction.</p>
+                        <p>I've seen the burnout firsthand. The resentment. The good people who leave because they can't take one more reorganization.</p>
+                        <p>So the question is: how do you maintain a strong team of contributors and achieve 100% positive engagement scores every single quarter through all of that?</p>
+                        <p>It's not magic.</p>
+                        <p>It's people.</p>
+                    </section>
+
+                    <section class="case-study-section">
+                        <h3>What I Did Differently</h3>
+                        <p>Most leaders try to shield their teams from organizational chaos. They absorb the uncertainty, filter the messaging, and hope stability at the top eventually trickles down.</p>
+                        <p><strong>I did the opposite.</strong></p>
+                        <p>I gave my team context and accountability—then stepped back.</p>
+                        <p>Here's what that looked like in practice:</p>
+                        <p><strong>Context without sugarcoating:</strong></p>
+                        <p>When leadership changed, I didn't pretend everything was fine. I told the team what was happening, what it meant for our work, and what we could control vs. what we couldn't.</p>
+                        <p>Uncertainty is worse than bad news. People can handle change if they understand it.</p>
+                        <p><strong>Distributed ownership, not delegation:</strong></p>
+                        <p>I didn't assign tasks—I assigned outcomes. Designers owned their domains completely. They decided how to solve problems, defended their decisions in stakeholder conversations, and presented their own work.</p>
+                        <p>When they did something well, it was all theirs. They got to be proud.</p>
+                        <p><strong>Pushed them into the room:</strong></p>
+                        <p>No more "I'll handle the stakeholders." My team ran high-stakes conversations with product, engineering, and executives directly.</p>
+                        <p>They learned to shape product strategy, not just execute it. They became leaders in their own sphere.</p>
+                        <p><strong>Made their contribution visible:</strong></p>
+                        <p>When someone solved a hard problem, I made sure people knew. Not in a performative "shout-out" way—by putting their name on the work and letting them own the outcome in front of the org.</p>
+                        <p>People need to understand they're good at something and that others appreciate them personally. That's gold for morale and productivity.</p>
+                    </section>
+
+                    <section class="case-study-section">
+                        <h3>The Results</h3>
+                        <p><strong>Team stability through organizational chaos:</strong></p>
+                        <ul>
+                            <li>100% positive engagement scores every single quarter for 7 years</li>
+                            <li>Low voluntary turnover despite 9 leadership changes</li>
+                            <li>Team continuity while other functions churned</li>
+                        </ul>
+                        <p><strong>Designers who became leaders:</strong></p>
+                        <ul>
+                            <li>Multiple team members became de facto leaders within their teams.</li>
+                            <li>Designers routinely led cross-functional initiatives without me in the room</li>
+                            <li>High-quality output maintained through constant org restructuring</li>
+                        </ul>
+                        <p><strong>Sustained performance, not burnout:</strong></p>
+                        <p>So many designers on my team go the extra mile—not because of quarterly revenue goals, not because of peppy huddle speeches.</p>
+                        <p>Because they know they're making a difference.</p>
+                        <p>While the winds shifted around the ship and the waves moved in, everyone knew exactly what they were supposed to do to keep the ship alive.</p>
+                        <p>Because they knew the ship. And they knew their role.</p>
+                        <p>They could do it better than anyone else—and they knew that.</p>
+                    </section>
+
+                    <section class="case-study-section">
+                        <h3>What This Proves About Leadership</h3>
+                        <p>I strongly believe most people care about their work, their workplace, and want their contribution to be high quality and meaningful.</p>
+                        <p>The question is whether you create the conditions for that to happen.</p>
+                        <p><strong>Transparency builds trust. Ownership builds confidence. Confidence builds leaders.</strong></p>
+                        <p>It's a wonderful feeling to watch people nod and get to work, knowing they're excited to do the best they can—and love every minute of it.</p>
+                        <p>Even when everything around them is changing.</p>
+                    </section>
+                </div>
+
+                <div class="case-study-corner"></div>
+            </article>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing - Stephen White</title>
+    <meta name="description" content="Articles and writing by Stephen White on product design, accessibility, and leadership.">
+    <link rel="stylesheet" href="fonts/fonts.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Skip Link -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Hamburger Menu Button (Mobile) -->
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+    </button>
+
+    <!-- Navigation -->
+    <nav class="navigation" id="navigation">
+        <a href="index.html" class="nav-link">home</a>
+        <a href="about.html" class="nav-link">about</a>
+        <a href="case-studies.html" class="nav-link">case studies</a>
+        <a href="writing.html" class="nav-link">writing</a>
+        <a href="contact.html" class="nav-link">contact</a>
+        <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">
+            <span class="theme-icon">🌙</span>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- Main Content -->
+    <main id="main" class="writing-page">
+        <div class="writing-header">
+            <h1 class="writing-title">Writing</h1>
+            <p class="writing-subtitle">Thoughts on design, AI, and the future of interfaces</p>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="writing-sidebar">
+            <nav class="sidebar-nav">
+                <h3 class="sidebar-title">Articles</h3>
+                <ul class="sidebar-list">
+                    <li><a href="#remote-innovation" class="sidebar-link">Remote Work Didn't Kill Innovation. We Did.</a></li>
+                    <li><a href="#ai-accessibility" class="sidebar-link">AI-ccessibility: The Problem WCAG Couldn't Solve</a></li>
+                    <li><a href="#interface-questions" class="sidebar-link">The Interface Won't Die—It'll Just Stop Asking Questions</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <div class="articles-container">
+            <article id="remote-innovation" class="article-card">
+                <div class="article-meta">
+                    <time class="article-date">February 2026</time>
+                    <span class="article-tag">Remote Work</span>
+                    <span class="article-tag">Innovation</span>
+                </div>
+
+                <h2 class="article-title">Remote Work Didn't Kill Innovation. We Did.</h2>
+
+                <div class="article-content">
+                    <p class="article-text">I've worked remotely since 2020. The transition was smoother than most — half my team already worked remotely on occasion, my boss was fully remote, and we had the infrastructure in place. Over the following years, we leaned into it. We experimented with remote events, huddles, and online rituals to keep teams connected. Some of it worked, some didn't, but the overall impression is that we've built a connected, efficient, and thriving remote culture.</p>
+
+                    <p class="article-text">But a <em>connected</em> culture and an <em>innovative</em> culture aren't the same thing.</p>
+
+                    <p class="article-text">The familiar criticisms of remote work go beyond connection and empathy. The deeper problem is that spontaneous collaboration disappears. Everything becomes a scheduled meeting. Calendars fill up. And somewhere along the way, we lose the space for <em>"hey, what if..."</em> and <em>"you know, I had an idea..."</em> — the moments that actually catalyze innovation.</p>
+
+                    <p class="article-text">So is in-person work more innovative by nature? I don't think so.</p>
+
+                    <p class="article-text">I just came off a week-long AI innovation lab in Toronto, and I saw real collaboration and innovation first-hand. It was certainly different from our usual video calls — people stepping on each other to speak one at a time, the odd camera off, everyone multitasking themselves into oblivion. But what I took away wasn't that remote work kills innovation. It's that our <em>expectations</em> around remote work do.</p>
+
+                    <p class="article-text article-callout"><em>Remote work has done an invisible job of turning everyone into subcontractors at their own company.</em></p>
+
+                    <p class="article-text">It's become easier to follow rules than to make them — or break them. The default mode is execution, not exploration.</p>
+
+                    <p class="article-text">I believe my team is an exception to this, and I think there are a few reasons why. First, we're designers. Innovation is baked into the role — we never left the playing field. Second, we're collaborative-software-first. We work in Figma, where every design is shared and every cursor is visible. We can see each other working and jump into conversation at any time, just like sitting next to someone. Third — and most importantly — we have space to innovate because leadership creates it. At the innovation lab, the mandate was simple: innovate. That single permission allowed everyone to drop their firefighting priorities and think as creatively and ambitiously as possible for an entire week. And magic happened.</p>
+
+                    <p class="article-text">The problem, of course, is that it was one week. Everyone is back to squashing bugs and triaging feature requests. But what was gained isn't lost. The muscle is clearly there — we all saw it. And I don't think being together in a building was the magic ingredient. It was collaboration-first structure, a mandate to create, and permission to forget the usual.</p>
+
+                    <p class="article-text"><strong>We can build just as innovative a workplace remotely as we can in person. But we have to be far more intentional about creating the space and setting the boundaries to do it.</strong></p>
+
+                    <p class="article-text">In-person work comes with some of that implied. Remote work doesn't. That gap requires deliberate design.</p>
+
+                    <p class="article-text">If we don't create these spaces in remote tech — real, recurring, protected spaces for exploration — we'll lose our innovative edge and drift into assembly-line product development. The kind that slowly stagnates everything those early, ambitious creators built.</p>
+
+                    <p class="article-text article-conclusion"><strong>The creators are still here. We just need to give them permission to create again.</strong></p>
+                </div>
+            </article>
+
+            <article id="ai-accessibility" class="article-card">
+                <div class="article-meta">
+                    <time class="article-date">January 2025</time>
+                    <span class="article-tag">Accessibility</span>
+                </div>
+
+                <h2 class="article-title">AI-ccessibility: The Problem WCAG Couldn't Solve</h2>
+
+                <div class="article-content">
+                    <p class="article-text">I've spent the last 7 years meticulously testing interfaces with screen readers and assistive devices, ensuring WCAG compliance—but also that real users who are blind or don't have hands can navigate ecommerce checkout flows and other involved tasks.</p>
+
+                    <p class="article-text">The tools and standards like ARIA are incredible.</p>
+
+                    <p class="article-text">But they never quite nailed the entire experience.</p>
+
+                    <p class="article-text">The goal was always to make the experience as close to identical for sighted and blind users as possible.</p>
+
+                    <p class="article-text"><strong>Some tasks are just inherently visual.</strong></p>
+
+                    <p class="article-text">Take choosing a seat at a venue.</p>
+
+                    <p class="article-text">Writing an appropriate description for each seat—plus nice-to-know details like "how far away is the bathroom?"—was a pipe dream for small teams with good intentions.</p>
+
+                    <p class="article-text">We did our best. We followed the standards. We tested rigorously.</p>
+
+                    <p class="article-text">But we were still asking blind users to navigate a fundamentally visual problem through workarounds.</p>
+
+                    <p class="article-text article-callout"><em>Enter the new world order.</em></p>
+
+                    <p class="article-text">Natural language models can understand more context and language than I would have believed possible 7 years ago.</p>
+
+                    <p class="article-text">I see this as the dawn of a new age in accessibility work.</p>
+
+                    <p class="article-text">Chatbots that function inside software are a boon to any user who struggles with traditional interfaces and hardware.</p>
+
+                    <p class="article-text">Voice assistants were atrocious just a few years ago—nothing but frustrating corrections and marveling at how dumb the "smart" world was.</p>
+
+                    <p class="article-text">Times are changing.</p>
+
+                    <p class="article-text">Users have already started buying things directly through AI chat interfaces, and it's only going to get better and easier.</p>
+
+                    <p class="article-text"><strong>Here's what changes:</strong></p>
+
+                    <p class="article-text">Instead of a blind user navigating a seat map through ARIA labels, they ask:</p>
+
+                    <p class="article-text">"I need an aisle seat near the front, close to accessible bathrooms."</p>
+
+                    <p class="article-text">The AI understands the request, knows the venue layout, considers accessibility needs, and offers options with context a screen reader never could.</p>
+
+                    <p class="article-text"><strong>That's not a workaround. That's an actually equivalent experience.</strong></p>
+
+                    <p class="article-text">There's reason to be careful with this behavior—AI isn't perfect, trust takes time, and we can't abandon the standards that got us here.</p>
+
+                    <p class="article-text">But I see no reason to think we won't all be doing this soon, wondering how we ever went without it.</p>
+
+                    <p class="article-text article-conclusion"><strong>After 7 years of trying to make visual interfaces accessible through technical compliance, I'm excited to finally, confidently provide an interface I would consider as accessible as possible. Not because it follows WCAG to the letter. Because it meets users where they are and solves their actual problems.</strong></p>
+
+                    <p class="article-text">Come what may—I'm here for it.</p>
+                </div>
+            </article>
+
+            <article id="interface-questions" class="article-card">
+                <div class="article-meta">
+                    <time class="article-date">January 2025</time>
+                    <span class="article-tag">AI & Design</span>
+                </div>
+
+                <h2 class="article-title">The Interface Won't Die—It'll Just Stop Asking Questions</h2>
+
+                <div class="article-content">
+                    <p class="article-text">With AI coming for all our hard-won prototypical user behaviors, what's the future of interface design?</p>
+
+                    <p class="article-text">Tough question. We haven't seen AI meaningfully cross into most everyday products yet. Chatbots exist—occasionally helpful—but our main interfaces are still the same. Forms get filled, buttons get clicked, toggles get… toggled.</p>
+
+                    <p class="article-text">But once AI like Claude and MCP can access most products that exist today, what's a lowly interface to do? Our beloved drop-shadowed, expertly-radiused combo boxes are going to miss the sweet touch of a mouse cursor as a more powerful force rips through configuration with cat-like reflexes.</p>
+
+                    <p class="article-text">If you've spent a decade figuring these problems out—like me—hefty change feels imminent.</p>
+
+                    <p class="article-text">Users don't need form fields anymore. They can just ask in their native language for a task to be completed, and it becomes completed. So what will they need, these people I've spent my career asking questions to so I can architect screens to make their lives better?</p>
+
+                    <p class="article-text">We probably don't quite know yet. Some people like talking directly to AI. Some are still chatting on a desktop in full screen. But we can assume a couple of things.</p>
+
+                    <p class="article-text"><strong>Here's my hypothesis on the future of UI in the Age of AI:</strong></p>
+
+                    <p class="article-text article-callout"><em>Interfaces won't disappear. They'll just stop asking questions.</em></p>
+
+                    <p class="article-text">Before, we had configuration screens where users input language, toggle toggles, spend time setting things up, then check it themselves before clicking submit or save.</p>
+
+                    <p class="article-text">My guess? We can drastically change this to be only about confirmation—more informative than interactive.</p>
+
+                    <p class="article-text">Think about it:</p>
+
+                    <ul class="article-list">
+                        <li>Users need to know what's happening (the state of the machine—is it executing? What task?)</li>
+                        <li>Users need to confirm or double-check work (especially at first, trust won't cut it)</li>
+                        <li>Users need context for what just happened and what's next</li>
+                    </ul>
+
+                    <p class="article-text">Claude plays with this already—"ruminating, concocting, etc." But as AI gets trusted with more complex tasks, I think users will want something more specific. Coding agents like Claude Code show this with task lists and execution plans. Perfect.</p>
+
+                    <p class="article-text">So what does this look like?</p>
+
+                    <p class="article-text">Instead of "fill out this form," the interface becomes:</p>
+
+                    <ul class="article-list">
+                        <li>Here's what's happening right now</li>
+                        <li>Here's what I just did—is this correct?</li>
+                        <li>Here's your history of actions</li>
+                        <li>Here's what's scheduled</li>
+                        <li>Here's what I suggest you do next</li>
+                    </ul>
+
+                    <p class="article-text">Imagine showing up to work with everything you need to do waiting for approval or edit. You click "accept" a few times and move on.</p>
+
+                    <p class="article-text">The interface becomes a dashboard of confirmation instead of a maze of input fields.</p>
+
+                    <p class="article-text">Designers who spent years perfecting form validation? That skill doesn't disappear—it transforms into designing clarity, trust, and verification flows.</p>
+
+                    <p class="article-text article-conclusion"><strong>The question isn't whether UI survives AI. It's whether we're ready to design interfaces that inform instead of interrogate.</strong></p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <script src="shared.js"></script>
+</body>
+</html>
