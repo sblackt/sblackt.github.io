@@ -1254,10 +1254,14 @@
 }
 
 @media (max-width: 768px) {
+  .time-slot-manager {
+    padding: 16px;
+  }
+
   .time-slot-form {
     grid-template-columns: 1fr;
   }
-  
+
   .time-slot-manager__header {
     flex-direction: column;
     align-items: flex-start;
@@ -1419,18 +1423,26 @@
   .event-header {
     flex-direction: column;
     align-items: stretch;
+    padding: 16px;
+    padding-right: 16px;
   }
-  
+
+  .availability-section,
+  .availability-details,
+  .participants-list {
+    padding: 16px;
+  }
+
   .event-actions {
     justify-content: flex-start;
   }
-  
+
   .event-title-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .event-date {
     font-size: 14px;
   }

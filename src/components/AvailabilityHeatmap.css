@@ -169,6 +169,12 @@
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
 }
 
+/* Unavailable state - red/gray */
+.unavailable-indicator {
+  background: #ef4444;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
 /* Pending state with preference */
 .selected-indicator.pending-badge {
   animation: pulse 2s ease-in-out infinite;
@@ -217,6 +223,11 @@
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
 }
 
+.heatmap-date.preference-unavailable:not(.pending) {
+  border-color: #ef4444;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
 .your-selections {
   margin-top: 20px;
   padding-top: 20px;
@@ -254,6 +265,11 @@
 .selected-date-tag.preferred {
   background: #10b981;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.selected-date-tag.unavailable {
+  background: #ef4444;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
 }
 
 @media (max-width: 768px) {

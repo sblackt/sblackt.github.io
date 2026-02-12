@@ -289,26 +289,41 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     setLoading(true);
 
     try {
-      // Delete any existing responses for this participant first
-      // This allows users to update their selections
-      await firebaseService.deleteParticipantResponses(event.id, trimmedName);
+      // Get the dates that have been changed
+      const changedDates = Array.from(pendingChanges.keys());
+
+      // Only delete responses for the specific dates that were changed
+      // This preserves all other existing availability selections
+      for (const date of changedDates) {
+        const dateTimeSlots = event.timeSlots.filter(slot => slot.date === date);
+        const timeSlotIds = dateTimeSlots.map(slot => slot.id);
+
+        // Delete responses for this specific date's time slots
+        await firebaseService.deleteParticipantTimeSlotResponses(
+          event.id,
+          trimmedName,
+          timeSlotIds
+        );
+      }
 
       // Process all pending changes
       for (const [date, preference] of Array.from(pendingChanges.entries())) {
         const dateTimeSlots = event.timeSlots.filter(slot => slot.date === date);
 
-        // Submit response for all time slots on this date
-        for (const timeSlot of dateTimeSlots) {
-          const response: AvailabilityResponse = {
-            participantName: trimmedName,
-            timeSlotId: timeSlot.id,
-            available: preference !== null, // available if preference is set
-            preference: preference || undefined, // Store the preference level
-            eventId: event.id,
-            ...(trimmedNotes ? { notes: trimmedNotes } : {})
-          };
+        // Only submit new responses if preference is not null
+        if (preference !== null) {
+          for (const timeSlot of dateTimeSlots) {
+            const response: AvailabilityResponse = {
+              participantName: trimmedName,
+              timeSlotId: timeSlot.id,
+              available: preference !== 'unavailable', // False if unavailable, true otherwise
+              preference: preference, // Store the preference level
+              eventId: event.id,
+              ...(trimmedNotes ? { notes: trimmedNotes } : {})
+            };
 
-          await firebaseService.submitResponse(response);
+            await firebaseService.submitResponse(response);
+          }
         }
       }
 
@@ -325,21 +340,23 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
         return newSelected;
       });
 
-      // Update responses state
+      // Update responses state - only update responses for changed dates
       const newResponses: AvailabilityResponse[] = [];
       pendingChanges.forEach((preference, date) => {
         const dateTimeSlots = event.timeSlots.filter(slot => slot.date === date);
 
-        dateTimeSlots.forEach(timeSlot => {
-          newResponses.push({
-            participantName: trimmedName,
-            timeSlotId: timeSlot.id,
-            available: preference !== null,
-            preference: preference || undefined,
-            eventId: event.id,
-            ...(trimmedNotes ? { notes: trimmedNotes } : {})
+        if (preference !== null) {
+          dateTimeSlots.forEach(timeSlot => {
+            newResponses.push({
+              participantName: trimmedName,
+              timeSlotId: timeSlot.id,
+              available: preference !== 'unavailable', // False if unavailable, true otherwise
+              preference: preference,
+              eventId: event.id,
+              ...(trimmedNotes ? { notes: trimmedNotes } : {})
+            });
           });
-        });
+        }
       });
 
       setResponses(prev => [
@@ -363,13 +380,13 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
       setPendingChanges(new Map());
       setSavedName(trimmedName);
       setJustSaved(true);
-      
+
       // Reset the justSaved flag after a short delay
       setTimeout(() => setJustSaved(false), 2000);
-      
+
       // Don't call onEventUpdated here as it can cause re-renders
       // The real-time listener will handle updates
-      
+
       alert('Your availability has been saved!');
     } catch (error) {
       console.error('Error saving availability:', error);

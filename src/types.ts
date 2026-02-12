@@ -37,7 +37,7 @@ export interface Event {
   location?: EventLocation | null;
 }
 
-export type AvailabilityPreference = 'available' | 'tentative' | 'preferred';
+export type AvailabilityPreference = 'available' | 'tentative' | 'preferred' | 'unavailable';
 
 export interface AvailabilityResponse {
   participantName: string;

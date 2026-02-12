@@ -155,6 +155,36 @@ export const firebaseService = {
     await batch.commit();
   },
 
+  // Delete responses for a participant for specific time slots only
+  async deleteParticipantTimeSlotResponses(
+    eventId: string,
+    participantName: string,
+    timeSlotIds: string[]
+  ): Promise<void> {
+    const q = query(
+      collection(db, RESPONSES_COLLECTION),
+      where('eventId', '==', eventId),
+      where('participantName', '==', participantName)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return;
+    }
+
+    // Filter to only delete responses for the specified time slots
+    const batch = writeBatch(db);
+    snapshot.docs.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (timeSlotIds.includes(data.timeSlotId)) {
+        batch.delete(docSnap.ref);
+      }
+    });
+
+    await batch.commit();
+  },
+
   // Get responses for an event
   async getEventResponses(eventId: string): Promise<AvailabilityResponse[]> {
     const q = query(

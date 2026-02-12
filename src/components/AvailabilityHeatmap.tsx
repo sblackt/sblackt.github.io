@@ -117,20 +117,22 @@ const AvailabilityHeatmap: React.FC<AvailabilityHeatmapProps> = ({
     // Otherwise, cycle from the saved preference
     const currentPref = pendingPref !== undefined ? pendingPref : savedPref;
 
-    let nextPref: AvailabilityPreference | null = null;
+    let nextPref: AvailabilityPreference | null | 'unavailable' = null;
 
-    // Cycle through: null -> available -> tentative -> preferred -> null
+    // Cycle through: null -> available -> tentative -> preferred -> unavailable -> null
     if (!currentPref) {
       nextPref = 'available';
     } else if (currentPref === 'available') {
       nextPref = 'tentative';
     } else if (currentPref === 'tentative') {
       nextPref = 'preferred';
+    } else if (currentPref === 'preferred') {
+      nextPref = 'unavailable' as any; // Mark as unavailable
     } else {
       nextPref = null; // Back to unselected
     }
 
-    onDateToggle(date, nextPref);
+    onDateToggle(date, nextPref as AvailabilityPreference | null);
   };
 
   return (
@@ -194,6 +196,12 @@ const AvailabilityHeatmap: React.FC<AvailabilityHeatmapProps> = ({
                 ★ Preferred{isPending ? ' (pending)' : ''}
               </div>
             );
+          } else if ((currentPref as any) === 'unavailable') {
+            prefIndicator = (
+              <div className={`selected-indicator unavailable-indicator ${isPending ? 'pending-badge' : ''}`}>
+                ✕ Unavailable{isPending ? ' (pending)' : ''}
+              </div>
+            );
           }
 
           return (
@@ -244,6 +252,9 @@ const AvailabilityHeatmap: React.FC<AvailabilityHeatmapProps> = ({
               } else if (preference === 'preferred') {
                 icon = '★ ';
                 className += ' preferred';
+              } else if ((preference as any) === 'unavailable') {
+                icon = '✕ ';
+                className += ' unavailable';
               }
 
               return (
