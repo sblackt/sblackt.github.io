@@ -36,6 +36,7 @@ interface EventLocation {
 
 interface PlannerEvent {
   title: string;
+  createdAt?: string;
   description?: string;
   imageUrl?: string;
   eventType?: EventCategory;
@@ -47,6 +48,11 @@ interface PlannerEvent {
   };
   remindersSent?: Record<string, string>;
   location?: EventLocation | null;
+  interestedCount?: number;
+  availabilityReminders?: {
+    lastSentAt?: string;
+    reminderCount?: number;
+  };
 }
 
 const EVENT_TYPE_MAP: Record<EventCategory, {
@@ -888,3 +894,157 @@ export const onEventPlanned = functions.firestore
       functions.logger.error('Failed to send planning announcement', { eventId: context.params.eventId, error });
     }
   });
+
+const AVAILABILITY_FIRST_REMINDER_DAYS = 5;
+const AVAILABILITY_SUBSEQUENT_INTERVAL_DAYS = 2;
+const RESPONSES_COLLECTION = 'responses';
+
+const sendAvailabilityReminder = async (params: {
+  event: PlannerEvent;
+  eventId: string;
+  interestedCount: number;
+  respondedCount: number;
+}) => {
+  const { event, eventId, interestedCount, respondedCount } = params;
+  const webhookUrl = getDiscordWebhookUrl(event.eventType);
+  if (!webhookUrl) {
+    functions.logger.warn('Skipping availability reminder — discord.webhook_url not set.');
+    return;
+  }
+
+  const theme = getEventTypeConfig(event.eventType);
+  const shareLink = buildShareLink(eventId);
+  const missingCount = interestedCount - respondedCount;
+
+  const payload = {
+    username: 'Meeple Planner',
+    embeds: [
+      {
+        title: `📋 Availability check: ${event.title}`,
+        description: [
+          `**${missingCount}** of **${interestedCount}** interested ${missingCount === 1 ? 'person hasn\'t' : 'people haven\'t'} added their availability yet.`,
+          `${respondedCount} ${respondedCount === 1 ? 'person has' : 'people have'} responded so far.`,
+          '',
+          `[Add your availability](${shareLink})`
+        ].join('\n'),
+        url: buildAppEventLink(eventId),
+        color: theme.embedColor,
+        footer: { text: 'Shared via Meeple Planner' }
+      }
+    ],
+    content: `📋 **${event.title}** — ${missingCount} of ${interestedCount} interested people still need to add availability.\n${shareLink}`
+  };
+
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Discord webhook failed: ${response.status} ${body}`);
+  }
+};
+
+const runAvailabilityReminderJob = async () => {
+  const now = new Date();
+
+  try {
+    const snapshot = await firestore.collection(EVENTS_COLLECTION)
+      .where('isActive', '==', true)
+      .get();
+
+    const tasks = snapshot.docs.map(async (doc) => {
+      const event = doc.data() as PlannerEvent;
+      const eventId = doc.id;
+      const interestedCount = event.interestedCount ?? 0;
+
+      if (interestedCount <= 0) return;
+
+      // Skip events that already have a confirmed date — those use the planned-date reminder system
+      if (event.confirmedTimeSlotId) return;
+
+      // Determine if a reminder is due
+      const createdAt = new Date(event.createdAt ?? now.toISOString());
+      const daysSinceCreation = differenceInCalendarDays(now, createdAt);
+
+      const lastSentAt = event.availabilityReminders?.lastSentAt
+        ? new Date(event.availabilityReminders.lastSentAt)
+        : null;
+      const reminderCount = event.availabilityReminders?.reminderCount ?? 0;
+
+      let shouldSend = false;
+
+      if (reminderCount === 0) {
+        // First reminder after 5 days
+        shouldSend = daysSinceCreation >= AVAILABILITY_FIRST_REMINDER_DAYS;
+      } else if (lastSentAt) {
+        // Subsequent reminders every 2 days
+        const daysSinceLastReminder = differenceInCalendarDays(now, lastSentAt);
+        shouldSend = daysSinceLastReminder >= AVAILABILITY_SUBSEQUENT_INTERVAL_DAYS;
+      }
+
+      if (!shouldSend) return;
+
+      // Count unique respondents from the responses collection
+      const responsesSnapshot = await firestore.collection(RESPONSES_COLLECTION)
+        .where('eventId', '==', eventId)
+        .get();
+
+      const uniqueRespondents = new Set(
+        responsesSnapshot.docs
+          .map((r) => (r.data() as { participantName?: string }).participantName)
+          .filter(Boolean)
+      );
+      const respondedCount = uniqueRespondents.size;
+      const missingCount = interestedCount - respondedCount;
+
+      if (missingCount <= 0) return;
+
+      try {
+        await sendAvailabilityReminder({ event, eventId, interestedCount, respondedCount });
+
+        await doc.ref.set({
+          availabilityReminders: {
+            lastSentAt: now.toISOString(),
+            reminderCount: reminderCount + 1
+          }
+        }, { merge: true });
+
+        functions.logger.info('Sent availability reminder', { eventId, missingCount, interestedCount, respondedCount });
+      } catch (error) {
+        functions.logger.error('Failed to send availability reminder', { eventId, error });
+      }
+    });
+
+    await Promise.all(tasks);
+  } catch (error) {
+    functions.logger.error('runAvailabilityReminderJob', error);
+    throw error;
+  }
+};
+
+export const triggerAvailabilityReminders = functions.https.onRequest(async (req, res) => {
+  const expectedToken = getReminderToken();
+  if (!expectedToken) {
+    res.status(500).send('Reminder token not configured');
+    return;
+  }
+
+  const tokenFromQuery = typeof req.query.token === 'string' ? req.query.token : undefined;
+  const tokenFromHeader = req.header('x-reminder-token');
+  const providedToken = tokenFromQuery ?? tokenFromHeader;
+
+  if (providedToken !== expectedToken) {
+    res.status(403).send('Invalid token');
+    return;
+  }
+
+  try {
+    await runAvailabilityReminderJob();
+    res.status(200).send('Availability reminders processed');
+  } catch (error) {
+    res.status(500).send('Availability reminder job failed');
+  }
+});

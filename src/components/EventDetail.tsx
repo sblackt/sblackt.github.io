@@ -99,6 +99,16 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const [locationSectionOpen, setLocationSectionOpen] = useState(false);
   const [addDateSectionOpen, setAddDateSectionOpen] = useState(false);
   const [cleaningPastSlots, setCleaningPastSlots] = useState(false);
+  const [hasExpressedInterest, setHasExpressedInterest] = useState(() => {
+    try {
+      const stored = localStorage.getItem(`interest-${event.id}`);
+      return stored === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [editingInterest, setEditingInterest] = useState(false);
+  const [interestInput, setInterestInput] = useState('');
   const normalizeDetailLinks = (links?: Array<{ label: string; url: string }>) =>
     links && links.length > 0 ? links : [{ label: '', url: '' }];
   const [editingDetails, setEditingDetails] = useState(false);
@@ -253,6 +263,36 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
       document.removeEventListener('keydown', handleDocumentKeyDown);
     };
   }, [actionsMenuOpen, reactionPickerOpen]);
+
+  const handleExpressInterest = async () => {
+    if (hasExpressedInterest) return;
+    try {
+      await firebaseService.addInterest(event.id);
+      setHasExpressedInterest(true);
+      try {
+        localStorage.setItem(`interest-${event.id}`, 'true');
+      } catch { /* localStorage unavailable */ }
+    } catch (error) {
+      console.error('Error expressing interest:', error);
+      alert('Failed to register interest. Please try again.');
+    }
+  };
+
+  const handleSetInterestCount = async () => {
+    const value = Number(interestInput);
+    if (!Number.isFinite(value) || value < 0) {
+      alert('Please enter a valid number (0 or higher).');
+      return;
+    }
+    try {
+      await firebaseService.setInterestedCount(event.id, value);
+      setEditingInterest(false);
+      setInterestInput('');
+    } catch (error) {
+      console.error('Error setting interest count:', error);
+      alert('Failed to update interest count. Please try again.');
+    }
+  };
 
   const handleDateToggle = (date: string, preference: AvailabilityPreference | null = null) => {
     if (!participantName.trim()) {
@@ -834,7 +874,6 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
               <span className="event-type-label">{theme.label}</span>
             </div>
             <h1>{event.title}</h1>
-            <span className="event-date">{format(new Date(event.createdAt), 'MMM d, yyyy')}</span>
             {plannedSlot && (
               <span className="planned-badge">
                 Planned: {plannedDateShort}
@@ -858,26 +897,6 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
               )}
             </>
           )}
-
-          <div className="event-details-edit-row">
-            <div>
-              <p className="event-details-eyebrow">Story &amp; Links</p>
-              <p className="event-details-copy">
-                Keep the description, cover art, and handy links fresh as plans evolve.
-              </p>
-            </div>
-            {!editingDetails && (
-              <button
-                type="button"
-                className="event-details-button"
-                onClick={() => setEditingDetails(true)}
-              >
-                {(event.description || event.imageUrl || (event.links?.length ?? 0) > 0)
-                  ? 'Edit details'
-                  : 'Add details'}
-              </button>
-            )}
-          </div>
 
           {editingDetails ? (
             <div className="event-details-editor">
@@ -1118,6 +1137,65 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
             )}
           </div>
 
+          <div className="interest-section">
+            <div className="interest-row">
+              <button
+                type="button"
+                className={`interest-button ${hasExpressedInterest ? 'interested' : ''}`}
+                onClick={() => void handleExpressInterest()}
+                disabled={hasExpressedInterest}
+              >
+                <span aria-hidden="true">{hasExpressedInterest ? '✓' : '✋'}</span>
+                <span>{hasExpressedInterest ? "You're interested" : "I'm Interested"}</span>
+              </button>
+              <span className="interest-count">
+                {event.interestedCount ?? 0} interested
+              </span>
+              {!editingInterest ? (
+                <button
+                  type="button"
+                  className="interest-edit-toggle"
+                  onClick={() => {
+                    setInterestInput(String(event.interestedCount ?? 0));
+                    setEditingInterest(true);
+                  }}
+                  aria-label="Edit interest count"
+                >
+                  ✏️
+                </button>
+              ) : (
+                <div className="interest-edit-inline">
+                  <input
+                    type="number"
+                    min="0"
+                    value={interestInput}
+                    onChange={(e) => setInterestInput(e.target.value)}
+                    className="interest-edit-input"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') void handleSetInterestCount();
+                      if (e.key === 'Escape') setEditingInterest(false);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="interest-edit-save"
+                    onClick={() => void handleSetInterestCount()}
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    className="interest-edit-cancel"
+                    onClick={() => setEditingInterest(false)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="reaction-inline">
             <div className="reaction-summary">
               {hasReactions ? (
@@ -1173,6 +1251,17 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
           </button>
           {actionsMenuOpen && (
             <div className="actions-menu" role="menu">
+              <button
+                type="button"
+                className="actions-menu-item"
+                role="menuitem"
+                onClick={() => {
+                  closeActionsMenu();
+                  setEditingDetails(true);
+                }}
+              >
+                Edit Details
+              </button>
               <button
                 type="button"
                 className="actions-menu-item"

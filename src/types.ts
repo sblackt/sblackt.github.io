@@ -35,6 +35,11 @@ export interface Event {
   };
   remindersSent?: Record<string, string>;
   location?: EventLocation | null;
+  interestedCount?: number;
+  availabilityReminders?: {
+    lastSentAt?: string;
+    reminderCount?: number;
+  };
 }
 
 export type AvailabilityPreference = 'available' | 'tentative' | 'preferred' | 'unavailable';

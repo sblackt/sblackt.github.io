@@ -7,7 +7,7 @@
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
   color: white;
 }
 
@@ -81,54 +81,32 @@
 .events-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 24px;
-  margin-top: 20px;
+  gap: 16px;
+  margin-top: 14px;
 }
 
 .event-card {
   background: var(--card-surface, white);
   background-image: var(--card-pattern, none);
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--accent-bg, rgba(255, 255, 255, 0.2));
-  transition: all 0.3s ease;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: none;
+  transition: all 0.2s ease;
   cursor: pointer;
   position: relative;
-  overflow: hidden;
-}
-
-.event-card::after {
-  content: '';
-  position: absolute;
-  inset: 12px;
-  border: 2px solid var(--accent-color, transparent);
-  border-radius: 12px;
-  opacity: 0.25;
-  pointer-events: none;
-}
-
-.event-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(135deg, var(--accent-color, #667eea) 0%, var(--accent-strong, #764ba2) 100%);
 }
 
 .event-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px var(--accent-bg, transparent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .event-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .event-header-left {
@@ -151,7 +129,7 @@
   font-weight: 700;
   font-size: 13px;
   border: 1px solid var(--accent-color, transparent);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .event-title {
@@ -206,9 +184,9 @@
 }
 
 .event-card-image {
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   border: 1px solid rgba(0, 0, 0, 0.06);
   background: rgba(0, 0, 0, 0.04);
 }
@@ -224,21 +202,21 @@
   color: #6c757d;
   font-size: 14px;
   line-height: 1.5;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .event-location-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: 999px;
   border: 1px dashed var(--accent-color, #d1d5ff);
   background: rgba(0, 0, 0, 0.04);
   color: var(--accent-text, #2d2f55);
   font-weight: 600;
   font-size: 13px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .event-location-pin {
@@ -250,7 +228,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .meta-item {
@@ -297,7 +275,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 10px;
 }
 
 .event-reaction-pill {
@@ -325,16 +303,16 @@
 @media (max-width: 768px) {
   .events-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
   }
 
   .event-list-header {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .event-card {
-    padding: 20px;
+    padding: 14px;
   }
   
   .event-header {

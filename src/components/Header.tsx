@@ -1,6 +1,5 @@
 import React from 'react';
 import './Header.css';
-import meepletower from '../assets/meepletower.png';
 
 interface HeaderProps {
   onBackToList?: () => void;
@@ -8,32 +7,20 @@ interface HeaderProps {
   currentView: 'list' | 'detail' | 'create';
 }
 
-const Header: React.FC<HeaderProps> = ({ onBackToList, onCreateEvent, currentView }) => {
+const Header: React.FC<HeaderProps> = ({ onBackToList, onCreateEvent }) => {
   return (
     <header className="header">
       <div className="header-content">
-        <div className="header-left">
-          <img src={meepletower} alt="Profile" className="profile-image" />
-          {onBackToList && (
-            <button className="back-button" onClick={onBackToList}>
-              ← Back
-            </button>
-          )}
-        </div>
-        
-        <h1 className="app-title">
-          {currentView === 'list' && 'Local Event Planner'}
-          {currentView === 'detail' && 'Event Details'}
-          {currentView === 'create' && 'Create Event'}
-        </h1>
-        
-        <div className="header-right">
-          {onCreateEvent && (
-            <button className="create-button" onClick={onCreateEvent}>
-              + New Event
-            </button>
-          )}
-        </div>
+        {onBackToList && (
+          <button className="back-button" onClick={onBackToList}>
+            ← Back
+          </button>
+        )}
+        {onCreateEvent && (
+          <button className="create-button" onClick={onCreateEvent}>
+            + New Event
+          </button>
+        )}
       </div>
     </header>
   );

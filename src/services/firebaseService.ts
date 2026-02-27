@@ -101,6 +101,24 @@ export const firebaseService = {
     await this.updateEvent(eventId, { isActive: false, isTrashed: true });
   },
 
+  // Increment the interested count for an event
+  async addInterest(eventId: string): Promise<void> {
+    const docRef = doc(db, EVENTS_COLLECTION, eventId);
+    await updateDoc(docRef, {
+      interestedCount: increment(1),
+      updatedAt: new Date().toISOString()
+    });
+  },
+
+  // Set the interested count to an exact value (manual override)
+  async setInterestedCount(eventId: string, count: number): Promise<void> {
+    const docRef = doc(db, EVENTS_COLLECTION, eventId);
+    await updateDoc(docRef, {
+      interestedCount: Math.max(0, Math.round(count)),
+      updatedAt: new Date().toISOString()
+    });
+  },
+
   // Add an emoji reaction to an event
   async addReaction(eventId: string, emoji: string): Promise<void> {
     const docRef = doc(db, EVENTS_COLLECTION, eventId);
