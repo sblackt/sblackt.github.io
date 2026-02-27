@@ -69,7 +69,9 @@ service cloud.firestore {
         'reactions',
         'reminderSettings',
         'remindersSent',
-        'location'
+        'location',
+        'interestedCount',
+        'availabilityReminders'
       ]) &&
       nonEmptyString(data.title, 140) &&
       nonEmptyString(data.createdBy, 80) &&
@@ -91,7 +93,13 @@ service cloud.firestore {
       optionalMap(data, 'reactions') &&
       optionalMap(data, 'reminderSettings') &&
       optionalMap(data, 'remindersSent') &&
-      optionalMap(data, 'location');
+      optionalMap(data, 'location') &&
+      optionalInt(data, 'interestedCount') &&
+      optionalMap(data, 'availabilityReminders');
+    }
+
+    function optionalInt(data, field) {
+      return !(field in data) || data[field] is int;
     }
 
     match /responses/{responseId} {

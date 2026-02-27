@@ -916,23 +916,123 @@ const sendAvailabilityReminder = async (params: {
   const shareLink = buildShareLink(eventId);
   const missingCount = interestedCount - respondedCount;
 
+  const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+  const missing1 = missingCount === 1;
+  const hasnt = missing1 ? "hasn't" : "haven't";
+
+  type CopySet = { title: string; nudge: string; cta: string; fallback: string };
+
+  const flavorVariants: Record<EventCategory, CopySet[]> = {
+    'board-game': [
+      {
+        title: `${theme.icon} Roll call for ${event.title}!`,
+        nudge: `**${missingCount}** of **${interestedCount}** meeples ${hasnt} placed ${missing1 ? "a meeple" : "their meeples"} on the board yet.`,
+        cta: `[Claim your seat at the table](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — ${missingCount} of ${interestedCount} meeples still need to pick their dates!`
+      },
+      {
+        title: `${theme.icon} ${event.title} needs players!`,
+        nudge: `We've got **${respondedCount}** locked in, but **${missingCount}** more ${missing1 ? "player is" : "players are"} still shuffling through the rule book.`,
+        cta: `[Join the game](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — ${missingCount} more ${missing1 ? "player" : "players"} still need to pick dates!`
+      },
+      {
+        title: `${theme.icon} Don't let ${event.title} gather dust!`,
+        nudge: `**${missingCount}** of **${interestedCount}** interested ${missing1 ? "player" : "players"} still ${hasnt} picked a date. The box is open, the table is set...`,
+        cta: `[Take your turn](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — ${missingCount} ${missing1 ? "player" : "players"} still need to commit!`
+      }
+    ],
+    dnd: [
+      {
+        title: `${theme.icon} The party needs you — ${event.title}`,
+        nudge: `**${missingCount}** of **${interestedCount}** adventurers ${hasnt} checked in with the quest board yet.`,
+        cta: `[Report to the quest board](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — ${missingCount} of ${interestedCount} adventurers haven't reported in!`
+      },
+      {
+        title: `${theme.icon} Roll for initiative — ${event.title}`,
+        nudge: `**${missingCount}** of **${interestedCount}** party members ${missing1 ? "is" : "are"} still lost in the tavern. The DM is waiting.`,
+        cta: `[Answer the call to adventure](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — ${missingCount} party ${missing1 ? "member" : "members"} still MIA!`
+      },
+      {
+        title: `${theme.icon} A quest awaits — ${event.title}`,
+        nudge: `The dungeon won't clear itself. **${missingCount}** of **${interestedCount}** heroes ${hasnt} committed to the mission yet.`,
+        cta: `[Pledge your sword](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — ${missingCount} ${missing1 ? "hero" : "heroes"} still haven't pledged!`
+      }
+    ],
+    hangout: [
+      {
+        title: `${theme.icon} Vibe check: ${event.title}`,
+        nudge: `**${missingCount}** of **${interestedCount}** ${missing1 ? "person" : "people"} said they're down but ${hasnt} picked dates yet.`,
+        cta: `[Lock in your dates](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — ${missingCount} of ${interestedCount} people still need to add their availability!`
+      },
+      {
+        title: `${theme.icon} ${event.title} won't plan itself!`,
+        nudge: `**${missingCount}** of **${interestedCount}** interested ${missing1 ? "person is" : "people are"} ghosting the calendar. Don't be that person.`,
+        cta: `[Drop your dates](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — ${missingCount} ${missing1 ? "person" : "people"} still need to weigh in!`
+      },
+      {
+        title: `${theme.icon} Still waiting on some folks — ${event.title}`,
+        nudge: `**${respondedCount}** ${missing1 ? "person is" : "people are"} ready to go, but **${missingCount}** more ${hasnt} chimed in yet.`,
+        cta: `[Add your availability](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — waiting on ${missingCount} more ${missing1 ? "person" : "people"}!`
+      }
+    ],
+    'worker-bee': [
+      {
+        title: `${theme.icon} Crew check: ${event.title}`,
+        nudge: `**${missingCount}** of **${interestedCount}** volunteers ${hasnt} signed up for a shift yet.`,
+        cta: `[Sign up for a shift](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — ${missingCount} of ${interestedCount} volunteers still need to pick their dates!`
+      },
+      {
+        title: `${theme.icon} Hands needed — ${event.title}`,
+        nudge: `We've got **${respondedCount}** on the crew, but **${missingCount}** more ${missing1 ? "person" : "people"} said they'd pitch in and ${hasnt} picked a time.`,
+        cta: `[Grab a time slot](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — ${missingCount} more ${missing1 ? "volunteer" : "volunteers"} needed!`
+      }
+    ],
+    other: [
+      {
+        title: `${theme.icon} Availability check: ${event.title}`,
+        nudge: `**${missingCount}** of **${interestedCount}** interested ${missing1 ? "person" : "people"} ${hasnt} added their availability yet.`,
+        cta: `[Add your availability](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — ${missingCount} of ${interestedCount} people still need to add availability.`
+      },
+      {
+        title: `${theme.icon} ${event.title} — who's in?`,
+        nudge: `**${respondedCount}** down so far, but **${missingCount}** more ${missing1 ? "person" : "people"} ${hasnt} weighed in yet.`,
+        cta: `[Add your dates](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — still waiting on ${missingCount} ${missing1 ? "person" : "people"}!`
+      }
+    ]
+  };
+
+  const variants = flavorVariants[event.eventType ?? 'other'] ?? flavorVariants.other;
+  const copy = pick(variants);
+
   const payload = {
     username: 'Meeple Planner',
     embeds: [
       {
-        title: `📋 Availability check: ${event.title}`,
+        title: copy.title,
         description: [
-          `**${missingCount}** of **${interestedCount}** interested ${missingCount === 1 ? 'person hasn\'t' : 'people haven\'t'} added their availability yet.`,
-          `${respondedCount} ${respondedCount === 1 ? 'person has' : 'people have'} responded so far.`,
+          copy.nudge,
+          `${respondedCount} ${respondedCount === 1 ? 'person has' : 'people have'} already ${pick(['locked in', 'committed', 'signed up', 'thrown their hat in'])}.`,
           '',
-          `[Add your availability](${shareLink})`
+          copy.cta
         ].join('\n'),
         url: buildAppEventLink(eventId),
         color: theme.embedColor,
         footer: { text: 'Shared via Meeple Planner' }
       }
     ],
-    content: `📋 **${event.title}** — ${missingCount} of ${interestedCount} interested people still need to add availability.\n${shareLink}`
+    content: `${copy.fallback}\n${shareLink}`
   };
 
   const response = await fetch(webhookUrl, {
@@ -1024,6 +1124,13 @@ const runAvailabilityReminderJob = async () => {
     throw error;
   }
 };
+
+export const checkAvailabilityReminders = functions.pubsub
+  .schedule('every day 10:00')
+  .timeZone('America/Toronto')
+  .onRun(async () => {
+    await runAvailabilityReminderJob();
+  });
 
 export const triggerAvailabilityReminders = functions.https.onRequest(async (req, res) => {
   const expectedToken = getReminderToken();
