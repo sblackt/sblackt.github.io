@@ -1375,7 +1375,7 @@ Steps:
           {
             id: 'weeknight-pho-broth',
             name: 'Quick Pho Broth',
-            kind: 'broth',
+            kind: 'soup',
             ingredients: [
               {
                 section: 'Broth Base',
@@ -1384,8 +1384,8 @@ Steps:
                     name: 'Beef bones (marrow/knuckle)',
                     amount: 2,
                     unit: 'lbs',
-                    prep: '',
-                    notes: 'Oxtail optional',
+                    prep: 'parboiled: cover with cold water, boil 5 min, drain and rinse',
+                    notes: 'Oxtail optional; parboiling removes impurities for a cleaner, clearer broth.',
                     optional: false,
                     substitutions: [
                       {
@@ -1400,7 +1400,7 @@ Steps:
                     amount: 3,
                     unit: 'L',
                     prep: '',
-                    notes: '',
+                    notes: 'Filtered water gives a cleaner, clearer broth.',
                     optional: false,
                     substitutions: []
                   },
@@ -1409,7 +1409,7 @@ Steps:
                     amount: 1,
                     unit: 'whole',
                     prep: 'halved, charred',
-                    notes: '',
+                    notes: 'Charring adds sweet smokiness and depth to the broth.',
                     optional: false,
                     substitutions: []
                   },
@@ -1418,7 +1418,7 @@ Steps:
                     amount: 4,
                     unit: 'inch',
                     prep: 'halved, charred',
-                    notes: '',
+                    notes: 'Charring mellows the sharpness and adds warm depth.',
                     optional: false,
                     substitutions: []
                   },
@@ -1427,7 +1427,7 @@ Steps:
                     amount: 4,
                     unit: 'cloves',
                     prep: 'lightly charred',
-                    notes: '',
+                    notes: 'Adds gentle sweetness; omit for a more classic pho profile.',
                     optional: true,
                     substitutions: []
                   },
@@ -1479,8 +1479,8 @@ Steps:
                     name: 'Star anise',
                     amount: 3,
                     unit: 'pods',
-                    prep: '',
-                    notes: '',
+                    prep: 'dry-toasted in a skillet until fragrant',
+                    notes: 'Central to pho\'s distinctive floral, anise aroma; do not skip.',
                     optional: false,
                     substitutions: []
                   },
@@ -1488,8 +1488,8 @@ Steps:
                     name: 'Cinnamon stick',
                     amount: 1,
                     unit: 'stick',
-                    prep: '',
-                    notes: '',
+                    prep: 'dry-toasted in a skillet until fragrant',
+                    notes: 'Adds warm sweetness; cassia cinnamon is more traditional but Ceylon works too.',
                     optional: false,
                     substitutions: []
                   },
@@ -1497,8 +1497,8 @@ Steps:
                     name: 'Cloves',
                     amount: 4,
                     unit: 'whole',
-                    prep: '',
-                    notes: '',
+                    prep: 'dry-toasted in a skillet until fragrant',
+                    notes: 'Use exactly 4; more can quickly overpower the broth.',
                     optional: false,
                     substitutions: []
                   },
@@ -1506,8 +1506,8 @@ Steps:
                     name: 'Coriander seed',
                     amount: 1,
                     unit: 'tsp',
-                    prep: '',
-                    notes: '',
+                    prep: 'dry-toasted in a skillet until fragrant',
+                    notes: 'Adds a subtle citrusy, floral note to the spice blend.',
                     optional: false,
                     substitutions: []
                   },
@@ -1515,8 +1515,8 @@ Steps:
                     name: 'Fennel seed',
                     amount: 0.5,
                     unit: 'tsp',
-                    prep: '',
-                    notes: '',
+                    prep: 'added in the last 15 seconds of toasting',
+                    notes: 'Mild anise-adjacent note that brightens the spice blend slightly.',
                     optional: true,
                     substitutions: []
                   }
@@ -1526,27 +1526,49 @@ Steps:
             steps: [
               {
                 order: 1,
-                title: 'Char Aromatics',
+                title: 'Parboil the bones (stovetop only)',
                 instructions: [
-                  'Place onion and ginger cut-side down in a hot pan until deeply charred.',
-                  'Lightly char garlic near the end.'
+                  'Place the beef bones in a large pot and cover with cold water.',
+                  'Bring to a full boil over high heat and boil vigorously for 5 minutes; the water will turn grey and foamy.',
+                  'Drain completely, then rinse each bone under cold running water to remove all grey residue and impurities.',
+                  'Clean the pot before continuing. (For Instant Pot, skip this step — pressure cooking compensates.)'
                 ]
               },
               {
                 order: 2,
-                title: 'Make the Broth',
+                title: 'Char Aromatics',
                 instructions: [
-                  'Combine bones, charred aromatics, spices, water, fish sauce, sugar, and salt.',
-                  'Instant Pot: pressure cook 45 minutes, natural release 10 minutes.',
-                  'Stovetop: simmer 90 minutes after briefly parboiling the bones.'
+                  'Place the onion halves and ginger, cut-side down, in a hot dry skillet or directly over a gas flame.',
+                  'Char until deeply blackened in spots, about 3–5 minutes. No oil needed.',
+                  'Lightly char the garlic cloves in the same pan for the last 1–2 minutes.',
+                  'Set all charred aromatics aside.'
                 ]
               },
               {
                 order: 3,
+                title: 'Toast the spices',
+                instructions: [
+                  'In the same dry skillet over medium heat, add the star anise, cinnamon stick, cloves, and coriander seed.',
+                  'Toast, shaking the pan often, for 30–60 seconds until fragrant and lightly darkened. Do not scorch.',
+                  'Add the fennel seed (if using) for the last 15 seconds, then immediately transfer all spices to a bowl or spice bag.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Make the Broth',
+                instructions: [
+                  'Combine the rinsed bones, charred aromatics, and toasted spices in a large pot with the water, fish sauce, sugar, and salt.',
+                  'Instant Pot: secure the lid, set to High Pressure for 45 minutes, then allow 10 minutes natural release before opening.',
+                  'Stovetop: bring to a gentle simmer over medium heat, skimming any remaining foam from the surface in the first 10 minutes, then simmer uncovered or partially covered for 90 minutes.'
+                ]
+              },
+              {
+                order: 5,
                 title: 'Strain & Season',
                 instructions: [
-                  'Strain broth and remove solids.',
-                  'Season with additional fish sauce, salt, and a small amount of sugar or maple syrup until bright and balanced.'
+                  'Pour the broth through a fine mesh strainer into a clean pot, discarding bones, spent aromatics, and spices.',
+                  'Taste the strained broth. Season with additional fish sauce for saltiness, a small pinch of sugar or a drizzle of maple syrup for balance, and salt as needed.',
+                  'The broth should taste bright, fragrant, and well-seasoned on its own; it will be diluted slightly when served over noodles.'
                 ]
               }
             ]
@@ -1583,8 +1605,8 @@ Steps:
                     name: 'Rice noodles',
                     amount: 400,
                     unit: 'g',
-                    prep: '',
-                    notes: '',
+                    prep: 'soaked in boiling water 5–8 min until just pliable, drained; or cook fresh 1–2 min in boiling water',
+                    notes: 'Use flat bánh phở style noodles, about 3–5 mm wide, for authentic texture.',
                     optional: false,
                     substitutions: []
                   },
@@ -1665,7 +1687,7 @@ Steps:
                     amount: null,
                     unit: '',
                     prep: '',
-                    notes: '',
+                    notes: 'Classic table condiment for pho; drizzle into broth or use as a dipping sauce for the beef.',
                     optional: true,
                     substitutions: []
                   }
@@ -1701,23 +1723,25 @@ Steps:
         workflow: [
           {
             order: 1,
-            label: 'Char aromatics',
+            label: 'Parboil bones + char aromatics',
             items: [
-              { component: 'weeknight-pho-broth', step: 1 }
+              { component: 'weeknight-pho-broth', step: 1 },
+              { component: 'weeknight-pho-broth', step: 2 }
             ]
           },
           {
             order: 2,
-            label: 'Cook broth',
+            label: 'Toast spices + build broth',
             items: [
-              { component: 'weeknight-pho-broth', step: 2 }
+              { component: 'weeknight-pho-broth', step: 3 },
+              { component: 'weeknight-pho-broth', step: 4 }
             ]
           },
           {
             order: 3,
             label: 'Strain & season',
             items: [
-              { component: 'weeknight-pho-broth', step: 3 }
+              { component: 'weeknight-pho-broth', step: 5 }
             ]
           },
           {
@@ -1764,7 +1788,7 @@ Steps:
         },
         components: [
           {
-            id: 'dosa_batter',
+            id: 'dosa-batter',
             name: 'Red Lentil & Rice Dosa Batter',
             kind: 'main',
             ingredients: [
@@ -1830,7 +1854,7 @@ Steps:
                     name: 'Fenugreek seeds',
                     amount: 0.5,
                     unit: 'tsp',
-                    prep: '',
+                    prep: 'added to the rice soak water, not separately',
                     notes: 'Helps fermentation and adds classic dosa flavour.',
                     optional: false,
                     substitutions: [
@@ -1882,6 +1906,35 @@ Steps:
                     prep: '',
                     notes: 'Use as needed while grinding and to thin the batter to a heavy-cream consistency before cooking.',
                     optional: false,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'For cooking',
+                items: [
+                  {
+                    name: 'Oil or ghee',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'Drizzle around edges and on top of each dosa while it cooks; ghee adds classic flavour, neutral oil keeps it vegan.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Refined coconut oil',
+                        ratio: '1:1',
+                        notes: 'Neutral-flavoured and has a high smoke point; good for cast iron.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Onion half',
+                    amount: 0.5,
+                    unit: 'small',
+                    prep: 'cut flat-side down',
+                    notes: 'Rub the cut face over the pan between dosas to season the surface evenly and prevent sticking.',
+                    optional: true,
                     substitutions: []
                   }
                 ]
@@ -1961,7 +2014,7 @@ Steps:
             ]
           },
           {
-            id: 'potato_masala',
+            id: 'potato-masala',
             name: 'Potato Masala (Dosa Filling)',
             kind: 'filling',
             ingredients: [
@@ -1988,7 +2041,7 @@ Steps:
                     amount: 1,
                     unit: 'small',
                     prep: 'thinly sliced',
-                    notes: '',
+                    notes: 'Thinly sliced gives better texture in the filling than diced.',
                     optional: false,
                     substitutions: [
                       {
@@ -2180,7 +2233,7 @@ Steps:
                     amount: 1,
                     unit: 'small',
                     prep: 'chopped',
-                    notes: '',
+                    notes: 'Adds body and sweetness to the sambar base.',
                     optional: false,
                     substitutions: []
                   },
@@ -2189,7 +2242,7 @@ Steps:
                     amount: 2,
                     unit: 'medium',
                     prep: 'chopped',
-                    notes: '',
+                    notes: 'Provides acidity and body; add an extra tomato for a tangier sambar.',
                     optional: false,
                     substitutions: []
                   },
@@ -2218,7 +2271,7 @@ Steps:
                     amount: 0.5,
                     unit: 'tsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Gives sambar its characteristic golden-orange colour.',
                     optional: false,
                     substitutions: []
                   },
@@ -2227,7 +2280,7 @@ Steps:
                     amount: 0.5,
                     unit: 'tsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Core sambar spice; pairs with coriander for the classic flavour.',
                     optional: false,
                     substitutions: []
                   },
@@ -2236,7 +2289,7 @@ Steps:
                     amount: 0.5,
                     unit: 'tsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Adds a citrusy, herbal note that balances the earthiness of the dal.',
                     optional: false,
                     substitutions: []
                   },
@@ -2277,7 +2330,7 @@ Steps:
                     amount: 1,
                     unit: 'tbsp',
                     prep: '',
-                    notes: 'Use neutral oil or ghee for extra richness.',
+                    notes: 'Use neutral oil for a lighter sambar or ghee for richer, more traditional flavour.',
                     optional: false,
                     substitutions: []
                   },
@@ -2295,7 +2348,7 @@ Steps:
                     amount: 0.5,
                     unit: 'tsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Fry until they begin to sizzle and pop for best aroma.',
                     optional: true,
                     substitutions: []
                   },
@@ -2385,7 +2438,7 @@ Steps:
             ]
           },
           {
-            id: 'coconut_chutney',
+            id: 'coconut-chutney',
             name: 'Coconut Chutney (Dried Coconut & Cashew Version)',
             kind: 'condiment',
             ingredients: [
@@ -2451,7 +2504,7 @@ Steps:
                     amount: 1,
                     unit: 'tsp',
                     prep: 'chopped',
-                    notes: '',
+                    notes: 'Adds a subtle fresh heat; use a scant teaspoon for a milder chutney.',
                     optional: true,
                     substitutions: []
                   },
@@ -2531,7 +2584,7 @@ Steps:
             ]
           },
           {
-            id: 'red_chutney',
+            id: 'red-chutney',
             name: 'Tomato Red Chutney',
             kind: 'condiment',
             ingredients: [
@@ -2543,7 +2596,7 @@ Steps:
                     amount: 1,
                     unit: 'small',
                     prep: 'chopped',
-                    notes: '',
+                    notes: 'Cooked down with the tomatoes to build a sweet, savoury base.',
                     optional: false,
                     substitutions: []
                   },
@@ -2552,7 +2605,7 @@ Steps:
                     amount: 2,
                     unit: 'medium',
                     prep: 'chopped',
-                    notes: '',
+                    notes: 'Roma or plum tomatoes give a thicker, less watery chutney.',
                     optional: false,
                     substitutions: []
                   },
@@ -2576,7 +2629,7 @@ Steps:
                     amount: 2,
                     unit: 'clove',
                     prep: 'peeled',
-                    notes: '',
+                    notes: 'Adds punch to the chutney base; fry until lightly golden for a mellower flavour.',
                     optional: false,
                     substitutions: []
                   },
@@ -2585,7 +2638,7 @@ Steps:
                     amount: 1,
                     unit: 'tbsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Any neutral oil works; a small drizzle of sesame oil adds depth if desired.',
                     optional: false,
                     substitutions: []
                   },
@@ -2658,24 +2711,24 @@ Steps:
             order: 1,
             label: 'Day-before prep: soak rice and lentils for dosa',
             items: [
-              { component: 'dosa_batter', step: 1 }
+              { component: 'dosa-batter', step: 1 }
             ]
           },
           {
             order: 2,
             label: 'Grind dosa batter and start fermentation',
             items: [
-              { component: 'dosa_batter', step: 2 },
-              { component: 'dosa_batter', step: 3 },
-              { component: 'dosa_batter', step: 4 },
-              { component: 'dosa_batter', step: 5 }
+              { component: 'dosa-batter', step: 2 },
+              { component: 'dosa-batter', step: 3 },
+              { component: 'dosa-batter', step: 4 },
+              { component: 'dosa-batter', step: 5 }
             ]
           },
           {
             order: 3,
             label: 'On the day: cook and prepare potato masala and sambar base',
             items: [
-              { component: 'potato_masala', step: 1 },
+              { component: 'potato-masala', step: 1 },
               { component: 'sambar', step: 1 },
               { component: 'sambar', step: 2 }
             ]
@@ -2693,34 +2746,34 @@ Steps:
             order: 5,
             label: 'Make chutneys while dosa batter finishes fermenting or warms up',
             items: [
-              { component: 'coconut_chutney', step: 1 },
-              { component: 'coconut_chutney', step: 2 },
-              { component: 'red_chutney', step: 1 },
-              { component: 'red_chutney', step: 2 }
+              { component: 'coconut-chutney', step: 1 },
+              { component: 'coconut-chutney', step: 2 },
+              { component: 'red-chutney', step: 1 },
+              { component: 'red-chutney', step: 2 }
             ]
           },
           {
             order: 6,
             label: 'Temper coconut chutney just before serving and finish potato masala',
             items: [
-              { component: 'coconut_chutney', step: 3 },
-              { component: 'potato_masala', step: 2 },
-              { component: 'potato_masala', step: 3 },
-              { component: 'potato_masala', step: 4 }
+              { component: 'coconut-chutney', step: 3 },
+              { component: 'potato-masala', step: 2 },
+              { component: 'potato-masala', step: 3 },
+              { component: 'potato-masala', step: 4 }
             ]
           },
           {
             order: 7,
             label: 'Adjust and prepare dosa batter for cooking',
             items: [
-              { component: 'dosa_batter', step: 6 }
+              { component: 'dosa-batter', step: 6 }
             ]
           },
           {
             order: 8,
             label: 'Cook dosa and serve with masala, chutneys, and sambar',
             items: [
-              { component: 'dosa_batter', step: 7 }
+              { component: 'dosa-batter', step: 7 }
             ]
           }
         ],
@@ -2753,7 +2806,7 @@ Steps:
         },
         components: [
           {
-            id: 'chili_stovetop',
+            id: 'chili-stovetop',
             name: 'Dried-Chile Beef & Black Bean Chili (Stovetop Method)',
             kind: 'main',
             ingredients: [
@@ -3208,7 +3261,7 @@ Steps:
             ]
           },
           {
-            id: 'chili_pressure_cooker',
+            id: 'chili-pressure-cooker',
             name: 'Dried-Chile Beef & Black Bean Chili (Pressure Cooker Method)',
             kind: 'main',
             ingredients: [
@@ -3250,7 +3303,7 @@ Steps:
                     amount: 2,
                     unit: 'tbsp',
                     prep: '',
-                    notes: '',
+                    notes: 'For searing the meat and sautéing vegetables on Sauté mode.',
                     optional: false,
                     substitutions: []
                   },
@@ -3259,7 +3312,7 @@ Steps:
                     amount: 1,
                     unit: 'medium',
                     prep: 'finely diced',
-                    notes: '',
+                    notes: 'Builds sweetness and forms the aromatic base.',
                     optional: false,
                     substitutions: []
                   },
@@ -3268,7 +3321,7 @@ Steps:
                     amount: 2,
                     unit: 'medium',
                     prep: 'finely diced',
-                    notes: '',
+                    notes: 'Adds sweetness and body; helps balance heat and bitterness from the dried chiles.',
                     optional: false,
                     substitutions: []
                   },
@@ -3277,7 +3330,7 @@ Steps:
                     amount: 4,
                     unit: 'cloves',
                     prep: 'minced',
-                    notes: '',
+                    notes: 'Minced for even distribution throughout the chili; adjust to taste.',
                     optional: false,
                     substitutions: []
                   },
@@ -3286,7 +3339,7 @@ Steps:
                     amount: 2,
                     unit: 'whole',
                     prep: 'stems and most seeds removed',
-                    notes: '',
+                    notes: 'Provides deep, fruity, mild heat; the backbone of the chili paste.',
                     optional: false,
                     substitutions: []
                   },
@@ -3295,7 +3348,7 @@ Steps:
                     amount: 2,
                     unit: 'whole',
                     prep: 'stems and most seeds removed',
-                    notes: '',
+                    notes: 'Adds bright red colour and gentle heat to the paste.',
                     optional: false,
                     substitutions: []
                   },
@@ -3313,7 +3366,7 @@ Steps:
                     amount: 1,
                     unit: 'whole',
                     prep: 'seeded for mild, finely diced',
-                    notes: '',
+                    notes: 'Keep the seeds for more heat; seeding gives a mild fresh pepper note.',
                     optional: false,
                     substitutions: []
                   },
@@ -3322,7 +3375,7 @@ Steps:
                     amount: 1,
                     unit: 'whole',
                     prep: 'seeded for mild, finely diced',
-                    notes: '',
+                    notes: 'Similar to jalapeño but sweeter and brighter; adds colour and fruity heat.',
                     optional: false,
                     substitutions: []
                   },
@@ -3367,7 +3420,7 @@ Steps:
                     amount: 796,
                     unit: 'ml',
                     prep: '',
-                    notes: '',
+                    notes: 'Standard 28 oz / 796 ml can; provides body and acidity.',
                     optional: false,
                     substitutions: []
                   },
@@ -3376,7 +3429,7 @@ Steps:
                     amount: 1,
                     unit: 'tbsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Adds umami depth; stir in with the liquids before pressure cooking.',
                     optional: true,
                     substitutions: []
                   },
@@ -3385,7 +3438,7 @@ Steps:
                     amount: 15,
                     unit: 'g',
                     prep: 'chopped',
-                    notes: '',
+                    notes: 'About 1 square or 1 heaping tbsp; deepens colour and flavour without tasting like dessert.',
                     optional: false,
                     substitutions: []
                   },
@@ -3403,7 +3456,7 @@ Steps:
                     amount: 1,
                     unit: 'tbsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Core chili flavour; use a full tablespoon for bold, earthy depth.',
                     optional: false,
                     substitutions: []
                   },
@@ -3412,7 +3465,7 @@ Steps:
                     amount: 1,
                     unit: 'tsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Adds smokiness; especially helpful in the pressure cooker to compensate for less browning.',
                     optional: false,
                     substitutions: []
                   },
@@ -3421,7 +3474,7 @@ Steps:
                     amount: 1,
                     unit: 'tsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Adds a subtle citrusy note that brightens the spice mix.',
                     optional: true,
                     substitutions: []
                   },
@@ -3430,7 +3483,7 @@ Steps:
                     amount: 1,
                     unit: 'tsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Mexican oregano preferred; adds a slightly citrusy, floral note distinct from Italian oregano.',
                     optional: false,
                     substitutions: []
                   },
@@ -3439,7 +3492,7 @@ Steps:
                     amount: 0.25,
                     unit: 'tsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Tiny amount for warmth; should not be identifiable in the finished chili.',
                     optional: true,
                     substitutions: []
                   },
@@ -3552,31 +3605,31 @@ Steps:
             label: 'Stovetop workflow',
             items: [
               {
-                component: 'chili_stovetop',
+                component: 'chili-stovetop',
                 step: 1
               },
               {
-                component: 'chili_stovetop',
+                component: 'chili-stovetop',
                 step: 2
               },
               {
-                component: 'chili_stovetop',
+                component: 'chili-stovetop',
                 step: 3
               },
               {
-                component: 'chili_stovetop',
+                component: 'chili-stovetop',
                 step: 4
               },
               {
-                component: 'chili_stovetop',
+                component: 'chili-stovetop',
                 step: 5
               },
               {
-                component: 'chili_stovetop',
+                component: 'chili-stovetop',
                 step: 6
               },
               {
-                component: 'chili_stovetop',
+                component: 'chili-stovetop',
                 step: 7
               }
             ]
@@ -3586,31 +3639,31 @@ Steps:
             label: 'Pressure cooker workflow',
             items: [
               {
-                component: 'chili_pressure_cooker',
+                component: 'chili-pressure-cooker',
                 step: 1
               },
               {
-                component: 'chili_pressure_cooker',
+                component: 'chili-pressure-cooker',
                 step: 2
               },
               {
-                component: 'chili_pressure_cooker',
+                component: 'chili-pressure-cooker',
                 step: 3
               },
               {
-                component: 'chili_pressure_cooker',
+                component: 'chili-pressure-cooker',
                 step: 4
               },
               {
-                component: 'chili_pressure_cooker',
+                component: 'chili-pressure-cooker',
                 step: 5
               },
               {
-                component: 'chili_pressure_cooker',
+                component: 'chili-pressure-cooker',
                 step: 6
               },
               {
-                component: 'chili_pressure_cooker',
+                component: 'chili-pressure-cooker',
                 step: 7
               }
             ]
@@ -3645,9 +3698,9 @@ Steps:
         },
         components: [
           {
-            id: 'pate_main',
+            id: 'pate-main',
             name: 'Sortilège Chicken Liver Pâté',
-            kind: 'core',
+            kind: 'main',
             ingredients: [
               {
                 section: 'Livers & aromatics',
@@ -3946,24 +3999,24 @@ Steps:
             order: 1,
             label: 'Prep livers and aromatics',
             items: [
-              { component: 'pate_main', step: 1 },
-              { component: 'pate_main', step: 2 }
+              { component: 'pate-main', step: 1 },
+              { component: 'pate-main', step: 2 }
             ]
           },
           {
             order: 2,
             label: 'Cook livers and build flavour',
             items: [
-              { component: 'pate_main', step: 3 },
-              { component: 'pate_main', step: 4 }
+              { component: 'pate-main', step: 3 },
+              { component: 'pate-main', step: 4 }
             ]
           },
           {
             order: 3,
             label: 'Blend, portion, and chill',
             items: [
-              { component: 'pate_main', step: 5 },
-              { component: 'pate_main', step: 6 }
+              { component: 'pate-main', step: 5 },
+              { component: 'pate-main', step: 6 }
             ]
           }
         ],
@@ -3996,7 +4049,7 @@ Steps:
         },
         components: [
           {
-            id: 'curry_paste',
+            id: 'curry-paste',
             name: 'From-scratch khao soi curry paste',
             kind: 'paste',
             ingredients: [
@@ -4008,7 +4061,7 @@ Steps:
                     amount: 4,
                     unit: 'clove',
                     prep: 'peeled',
-                    notes: '',
+                    notes: 'Peeled before blending; 4 cloves gives a robust but not overpowering paste.',
                     optional: false,
                     substitutions: []
                   },
@@ -4017,7 +4070,7 @@ Steps:
                     amount: 1,
                     unit: 'small',
                     prep: 'peeled and roughly chopped',
-                    notes: '',
+                    notes: 'Adds mild sweetness and body to the paste base.',
                     optional: false,
                     substitutions: []
                   },
@@ -4026,7 +4079,7 @@ Steps:
                     amount: 1,
                     unit: 'tbsp',
                     prep: 'peeled and chopped',
-                    notes: '',
+                    notes: 'Adds brightness and fresh heat to the paste.',
                     optional: false,
                     substitutions: []
                   },
@@ -4065,7 +4118,7 @@ Steps:
                     amount: 1,
                     unit: 'tsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Adds warmth and complexity; use a mild or medium variety.',
                     optional: false,
                     substitutions: []
                   },
@@ -4074,7 +4127,7 @@ Steps:
                     amount: 1,
                     unit: 'tsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Adds citrusy, earthy notes that round out the paste.',
                     optional: false,
                     substitutions: []
                   },
@@ -4083,7 +4136,7 @@ Steps:
                     amount: 0.25,
                     unit: 'tsp',
                     prep: '',
-                    notes: '',
+                    notes: 'Very small amount; adds a warm aromatic note typical of Northern Thai curries.',
                     optional: false,
                     substitutions: []
                   },
@@ -4146,7 +4199,7 @@ Steps:
             ]
           },
           {
-            id: 'soup_base_and_chicken',
+            id: 'soup-base-and-chicken',
             name: 'Khao soi coconut curry broth with chicken and kale',
             kind: 'soup',
             ingredients: [
@@ -4343,7 +4396,7 @@ Steps:
             ]
           },
           {
-            id: 'fresh_egg_noodles',
+            id: 'fresh-egg-noodles',
             name: 'Homemade alkaline egg noodles (pasta machine #4)',
             kind: 'noodles',
             ingredients: [
@@ -4460,7 +4513,7 @@ Steps:
             ]
           },
           {
-            id: 'crispy_noodle_nests',
+            id: 'crispy-noodle-nests',
             name: 'Crispy egg noodle nests',
             kind: 'topping',
             ingredients: [
@@ -4519,7 +4572,7 @@ Steps:
             ]
           },
           {
-            id: 'noodles_and_assembly',
+            id: 'noodles-and-assembly',
             name: 'Boiled noodles, garnishes, and final assembly',
             kind: 'assembly',
             ingredients: [
@@ -4651,38 +4704,38 @@ Steps:
             order: 1,
             label: 'Make curry paste and noodle dough',
             items: [
-              { component: 'curry_paste', step: 1 },
-              { component: 'curry_paste', step: 2 },
-              { component: 'fresh_egg_noodles', step: 1 }
+              { component: 'curry-paste', step: 1 },
+              { component: 'curry-paste', step: 2 },
+              { component: 'fresh-egg-noodles', step: 1 }
             ]
           },
           {
             order: 2,
             label: 'Roll noodles and start broth',
             items: [
-              { component: 'fresh_egg_noodles', step: 2 },
-              { component: 'fresh_egg_noodles', step: 3 },
-              { component: 'soup_base_and_chicken', step: 1 },
-              { component: 'soup_base_and_chicken', step: 2 }
+              { component: 'fresh-egg-noodles', step: 2 },
+              { component: 'fresh-egg-noodles', step: 3 },
+              { component: 'soup-base-and-chicken', step: 1 },
+              { component: 'soup-base-and-chicken', step: 2 }
             ]
           },
           {
             order: 3,
             label: 'Finish broth and prepare crispy nests',
             items: [
-              { component: 'soup_base_and_chicken', step: 3 },
-              { component: 'crispy_noodle_nests', step: 1 },
-              { component: 'crispy_noodle_nests', step: 2 },
-              { component: 'crispy_noodle_nests', step: 3 }
+              { component: 'soup-base-and-chicken', step: 3 },
+              { component: 'crispy-noodle-nests', step: 1 },
+              { component: 'crispy-noodle-nests', step: 2 },
+              { component: 'crispy-noodle-nests', step: 3 }
             ]
           },
           {
             order: 4,
             label: 'Boil noodles, wilt kale, and assemble',
             items: [
-              { component: 'soup_base_and_chicken', step: 4 },
-              { component: 'noodles_and_assembly', step: 1 },
-              { component: 'noodles_and_assembly', step: 2 }
+              { component: 'soup-base-and-chicken', step: 4 },
+              { component: 'noodles-and-assembly', step: 1 },
+              { component: 'noodles-and-assembly', step: 2 }
             ]
           }
         ],
