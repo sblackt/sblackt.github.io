@@ -813,9 +813,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <main>
@@ -889,25 +886,6 @@ Steps:
   </main>
 
   <script>
-    const firebaseConfig = {
-      apiKey: 'AIzaSyD3giFeU-zkVUx36U4D2YGAM-_vtP15aho',
-      authDomain: 'the-meeple-planner.firebaseapp.com',
-      projectId: 'the-meeple-planner',
-      storageBucket: 'the-meeple-planner.firebasestorage.app',
-      messagingSenderId: '435277919251',
-      appId: '1:435277919251:web:4cfb2ec26e5c55a5007be6',
-      measurementId: 'G-9VPCFFFP7T'
-    };
-    const appCheckSiteKey = '6LfFryQsAAAAADqdLut-1om_HfsZYq1zYno5HRiq';
-    const trustedAppCheckHosts = ['stevemwhite.com', 'www.stevemwhite.com'];
-    const shouldUseAppCheckDebugToken =
-      typeof window !== 'undefined' && !trustedAppCheckHosts.includes(window.location.hostname);
-
-    let firebaseApp = null;
-    let firestore = null;
-    let recipesUnsubscribe = null;
-    let pendingRecipeSelectionId = null;
-
     const defaultRecipes = [
       {
         id: 'roasted-musquee-dhiver-bonfire-soup',
@@ -4693,6 +4671,1117 @@ Steps:
           less_bright: 'Reduce lime juice in the broth to 1 tbsp and let diners adjust individually with lime wedges.',
           spicier: 'Increase dried chilies or chili flakes in the paste, add more paste to the broth, and serve with a bold chili oil or crisp for extra heat.'
         }
+      },
+
+      // ── RECIPE 1: La Bûche de Noël ──────────────────────────────────────────
+      {
+        id: 'buche-de-noel-low-sugar',
+        name: 'La Bûche de Noël (Adult, Low-Sugar, Cocoa-Dusted)',
+        version: 1,
+        servings: { count: 8, note: 'serves 6–8' },
+        metadata: {
+          style: 'French holiday bûche with bitter cocoa finish and barely-sweet crème légère',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: ''
+        },
+        components: [
+          {
+            id: 'sponge',
+            name: 'Chocolate Sponge Cake',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Ingredients',
+                items: [
+                  { name: 'eggs', amount: 4, unit: 'large', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'granulated sugar', amount: 0.5, unit: 'cup', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'all-purpose flour', amount: 0.5, unit: 'cup', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'unsweetened cocoa powder', amount: 0.25, unit: 'cup', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: 1, unit: 'pinch', prep: '', notes: '', optional: false, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Step 1', instructions: ['Preheat oven to 350°F (175°C). Line a 10×15-inch jelly-roll pan with parchment and lightly grease. Sift together flour, cocoa powder, and salt; set aside.'] },
+              { order: 2, title: 'Step 2', instructions: ['In a stand mixer or with a hand mixer, beat eggs and sugar on high speed for 5–7 minutes until pale, thick, and ribboned — mixture should hold a trail for a few seconds.'] },
+              { order: 3, title: 'Step 3', instructions: ['Gently fold in the sifted dry ingredients in two additions using a wide spatula, taking care not to deflate the batter. Spread evenly in the prepared pan.'] },
+              { order: 4, title: 'Step 4', instructions: ['Bake for 10–12 minutes until the cake springs back when lightly pressed and has just pulled from the edges. Immediately turn out onto a cocoa-dusted kitchen towel, peel off parchment, and roll the cake up loosely in the towel from the short end. Cool completely.'] }
+            ]
+          },
+          {
+            id: 'creme_legere',
+            name: 'Vanilla Crème Légère (Low Sugar)',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Ingredients',
+                items: [
+                  { name: 'whole milk', amount: 1.33, unit: 'cups', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'vanilla bean', amount: 0.5, unit: 'bean', prep: 'split and scraped', notes: '', optional: false, substitutions: [] },
+                  { name: 'granulated sugar', amount: 3, unit: 'tablespoons', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'cornstarch', amount: 2, unit: 'tablespoons', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'kosher salt', amount: 1, unit: 'pinch', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'egg yolks', amount: 3, unit: 'large', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'butter', amount: 1, unit: 'tablespoon', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'whipping cream', amount: 1, unit: 'cup', prep: 'softly whipped', notes: '', optional: false, substitutions: [] },
+                  { name: 'brandy or cognac', amount: 0.5, unit: 'teaspoon', prep: '', notes: '', optional: true, substitutions: [] },
+                  { name: 'espresso powder', amount: 0.25, unit: 'teaspoon', prep: '', notes: '', optional: true, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Step 1', instructions: ['Split the vanilla bean and scrape seeds into the milk. Heat milk in a saucepan over medium heat until steaming. Meanwhile, whisk yolks, sugar, cornstarch, and salt in a bowl until smooth and pale.'] },
+              { order: 2, title: 'Step 2', instructions: ['Slowly pour the hot milk into the yolk mixture while whisking constantly to temper. Return everything to the saucepan and cook over medium heat, stirring constantly, until the pastry cream thickens and large bubbles pop — about 2 minutes.'] },
+              { order: 3, title: 'Step 3', instructions: ['Remove from heat, stir in butter (and optional brandy or espresso powder). Strain through a fine sieve if desired. Press plastic wrap directly onto the surface and refrigerate until completely cold, at least 2 hours.'] },
+              { order: 4, title: 'Step 4', instructions: ['Once chilled, fold the softly whipped cream into the pastry cream in two additions until smooth and light.'] }
+            ]
+          },
+          {
+            id: 'exterior_finish',
+            name: 'Brandy–Coffee Cocoa Finish',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Ingredients',
+                items: [
+                  { name: 'strong coffee or espresso', amount: 3, unit: 'tablespoons', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'brandy', amount: 1, unit: 'tablespoon', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'unsweetened cocoa powder', amount: null, unit: null, prep: '', notes: 'as needed for dusting', optional: false, substitutions: [] },
+                  { name: 'flaky salt', amount: 1, unit: 'pinch', prep: '', notes: '', optional: false, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Step 1', instructions: ['Stir together coffee and brandy to make the wash. Unroll the cooled sponge, spread crème légère evenly leaving a 1-inch border. Re-roll firmly but gently. Wrap tightly and refrigerate at least 1 hour.'] },
+              { order: 2, title: 'Step 2', instructions: ['Before serving, brush the exterior lightly with the coffee–brandy wash. Dust generously with unsweetened cocoa powder. Use a fork or offset spatula to draw log-bark lines along the roll. Finish with a pinch of flaky salt.'] },
+              { order: 3, title: 'Step 3', instructions: ['Rest at room temperature 10–15 minutes before slicing. Use a warm sharp knife, wiping between cuts.'] }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Prepare Crème Légère Base',
+            items: [
+              { component: 'creme_legere', step: 1 },
+              { component: 'creme_legere', step: 2 },
+              { component: 'creme_legere', step: 3 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Bake and Roll Sponge',
+            items: [
+              { component: 'sponge', step: 1 },
+              { component: 'sponge', step: 2 },
+              { component: 'sponge', step: 3 },
+              { component: 'sponge', step: 4 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'Finish Crème Légère',
+            items: [
+              { component: 'creme_legere', step: 4 }
+            ]
+          },
+          {
+            order: 4,
+            label: 'Assemble and Chill',
+            items: [
+              { component: 'exterior_finish', step: 1 }
+            ]
+          },
+          {
+            order: 5,
+            label: 'Exterior Finish',
+            items: [
+              { component: 'exterior_finish', step: 2 }
+            ]
+          },
+          {
+            order: 6,
+            label: 'Serve',
+            items: [
+              { component: 'exterior_finish', step: 3 }
+            ]
+          }
+        ],
+        substitution_summary: {}
+      },
+
+      // ── RECIPE 2: Classic French Crêpes ─────────────────────────────────────
+      {
+        id: 'classic-french-crepes',
+        name: 'Classic French Crêpes',
+        version: 1,
+        servings: { count: 12, note: 'makes about 12 crêpes' },
+        metadata: {
+          style: 'Thin, buttery French crêpes — sweet or savoury',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: ''
+        },
+        components: [
+          {
+            id: 'classic-french-crepes-component-1',
+            name: 'Classic French Crêpes',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'base',
+                items: [
+                  { name: 'all-purpose flour', amount: 1, unit: 'cup', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'eggs', amount: 2, unit: 'large', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'milk', amount: 1.25, unit: 'cups', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'butter', amount: 2, unit: 'tablespoons', prep: '', notes: 'melted, plus more for pan', optional: false, substitutions: [] },
+                  { name: 'salt', amount: 0.25, unit: 'teaspoon', prep: '', notes: '', optional: false, substitutions: [] }
+                ]
+              },
+              {
+                section: 'optional_sweet',
+                items: [
+                  { name: 'sugar', amount: 1, unit: 'tablespoon', prep: '', notes: '', optional: true, substitutions: [] },
+                  { name: 'vanilla extract', amount: 0.5, unit: 'teaspoon', prep: '', notes: '', optional: true, substitutions: [] }
+                ]
+              },
+              {
+                section: 'optional_flavoring',
+                items: [
+                  { name: 'brandy or rum', amount: 1, unit: 'teaspoon', prep: '', notes: 'optional but traditional', optional: true, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Mix dry ingredients', instructions: ['Whisk flour and salt together in a bowl.'] },
+              { order: 2, title: 'Add eggs', instructions: ['Add eggs and whisk until a thick, smooth paste forms.'] },
+              { order: 3, title: 'Incorporate milk', instructions: ['Slowly whisk in milk until the batter is smooth and very thin, similar to heavy cream.'] },
+              { order: 4, title: 'Finish batter', instructions: ['Whisk in melted butter and any optional sugar, vanilla, or alcohol.'] },
+              { order: 5, title: 'Rest batter', instructions: ['Let batter rest for 20–30 minutes to relax gluten and improve texture.'] },
+              { order: 6, title: 'Heat pan', instructions: ['Heat pan over medium heat and lightly butter.'] },
+              { order: 7, title: 'Cook crêpes', instructions: ['Pour about 1/4 cup batter into pan, swirl to coat thinly. Cook 30–45 seconds until edges lift, flip, then cook 15–20 seconds more.'] },
+              { order: 8, title: 'Stack and serve', instructions: ['Transfer to a plate, stack crêpes, and repeat until batter is finished.'] }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Preparation',
+            items: [
+              { component: 'classic-french-crepes-component-1', step: 1 },
+              { component: 'classic-french-crepes-component-1', step: 2 },
+              { component: 'classic-french-crepes-component-1', step: 3 },
+              { component: 'classic-french-crepes-component-1', step: 4 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Resting',
+            items: [
+              { component: 'classic-french-crepes-component-1', step: 5 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'Cooking',
+            items: [
+              { component: 'classic-french-crepes-component-1', step: 6 },
+              { component: 'classic-french-crepes-component-1', step: 7 }
+            ]
+          },
+          {
+            order: 4,
+            label: 'Serving',
+            items: [
+              { component: 'classic-french-crepes-component-1', step: 8 }
+            ]
+          }
+        ],
+        substitution_summary: {}
+      },
+
+      // ── RECIPE 3: Crispy-Edge Fresh Pasta Lasagna ────────────────────────────
+      {
+        id: 'crispy-edge-fresh-pasta-lasagna',
+        name: 'Crispy-Edge Fresh Pasta Lasagna with Pork, Beef & Fennel',
+        version: 1,
+        servings: { count: 6, note: 'serves 6' },
+        metadata: {
+          style: 'Rustic Italian-style lasagna with fresh pasta sheets, pork-beef fennel ragù, ricotta layer, and béchamel',
+          diet: {
+            vegetarian: false,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: ''
+        },
+        components: [
+          {
+            id: 'lasagna-main',
+            name: 'Crispy-Edge Fresh Pasta Lasagna',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'fresh_pasta',
+                items: [
+                  { name: 'fresh pasta sheets', amount: null, unit: null, prep: '', notes: '500–600g', optional: false, substitutions: [] }
+                ]
+              },
+              {
+                section: 'meat_ragu',
+                items: [
+                  { name: 'ground pork', amount: 450, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'ground beef', amount: 450, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'olive oil', amount: 2, unit: 'tbsp', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'onion', amount: 1, unit: 'large', prep: 'finely diced', notes: '', optional: false, substitutions: [] },
+                  { name: 'fennel seeds', amount: 2, unit: 'tsp', prep: 'lightly crushed', notes: '', optional: false, substitutions: [] },
+                  { name: 'tomato paste', amount: 2, unit: 'tbsp', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'crushed tomatoes', amount: 800, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'black pepper', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'chili flakes', amount: null, unit: null, prep: '', notes: 'optional, to taste', optional: true, substitutions: [] }
+                ]
+              },
+              {
+                section: 'ricotta_layer',
+                items: [
+                  { name: 'whole-milk ricotta', amount: 500, unit: 'g', prep: 'well drained', notes: '', optional: false, substitutions: [] },
+                  { name: 'egg', amount: 1, unit: null, prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: 1, unit: 'tsp', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'black pepper', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'nutmeg', amount: 1, unit: 'pinch', prep: '', notes: 'optional', optional: true, substitutions: [] }
+                ]
+              },
+              {
+                section: 'bechamel',
+                items: [
+                  { name: 'butter', amount: 60, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'all-purpose flour', amount: 60, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'whole milk', amount: 750, unit: 'ml', prep: 'warm', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: 1.5, unit: 'tsp', prep: '', notes: 'or to taste', optional: false, substitutions: [] },
+                  { name: 'white pepper', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'Parmigiano-Reggiano', amount: 30, unit: 'g', prep: 'grated', notes: 'optional', optional: true, substitutions: [] }
+                ]
+              },
+              {
+                section: 'cheese',
+                items: [
+                  { name: 'Parmigiano-Reggiano', amount: null, unit: null, prep: 'finely grated', notes: '150–200g', optional: false, substitutions: [] }
+                ]
+              },
+              {
+                section: 'pan_prep',
+                items: [
+                  { name: 'butter or olive oil', amount: null, unit: null, prep: '', notes: 'for greasing pan', optional: false, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Make the ragù', instructions: ['Heat olive oil in a large heavy pan over medium-high. Brown pork and beef in batches, breaking up well. Drain excess fat if needed. Add onion and cook until soft, 5–7 min. Stir in fennel seeds and tomato paste, cook 2 min. Add crushed tomatoes. Simmer uncovered 30–40 min until thick and reduced. Season well with salt, pepper, and chili flakes if using.'] },
+              { order: 2, title: 'Make the ricotta mix', instructions: ['Drain ricotta through a fine sieve or cheesecloth for at least 30 min. Mix with egg, salt, pepper, and nutmeg. Set aside.'] },
+              { order: 3, title: 'Make the béchamel', instructions: ['Melt butter in a saucepan over medium heat. Whisk in flour and cook 1–2 min. Gradually add warm milk, whisking constantly to avoid lumps. Cook, stirring, until thick enough to coat the back of a spoon — about 8–10 min. Season with salt and white pepper. Stir in parmesan if using.'] },
+              { order: 4, title: 'Preheat and prep pan', instructions: ['Preheat oven to 400°F (200°C). Grease a 9×13-inch (23×33cm) baking dish. Spread a thin layer of béchamel on the bottom.'] },
+              { order: 5, title: 'Layer', instructions: ['Layer: pasta sheet → thin ragù → ricotta dollops → béchamel → parmesan. Repeat, finishing with a final pasta sheet topped with béchamel and a generous layer of parmesan. Press edges down firmly. Bias cheese toward the edges for maximum crisp.'] },
+              { order: 6, title: 'Bake', instructions: ['Cover tightly with foil and bake 25 min. Uncover and bake a further 20–25 min until the top is deeply golden and edges are crispy. For shatteringly crisp edges, switch to broil for the last 3–4 min, watching carefully.'] },
+              { order: 7, title: 'Rest and slice', instructions: ['Rest uncovered for 15 min before cutting — this is critical for clean slices. Slice from corners outward.'] }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Prep Components',
+            items: [
+              { component: 'lasagna-main', step: 2 },
+              { component: 'lasagna-main', step: 1 },
+              { component: 'lasagna-main', step: 3 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Assemble Lasagna',
+            items: [
+              { component: 'lasagna-main', step: 4 },
+              { component: 'lasagna-main', step: 5 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'Bake for Structure',
+            items: [
+              { component: 'lasagna-main', step: 6 }
+            ]
+          },
+          {
+            order: 4,
+            label: 'Rest & Crisp',
+            items: [
+              { component: 'lasagna-main', step: 7 }
+            ]
+          }
+        ],
+        substitution_summary: {}
+      },
+
+      // ── RECIPE 4: Crispy-Edge White Lasagna ──────────────────────────────────
+      {
+        id: 'crispy-edge-white-lasagna',
+        name: 'Crispy-Edge White Lasagna with Fresh Pasta, Ricotta, Béchamel & Pork-Beef Fennel',
+        version: 1,
+        servings: { count: 6, note: 'serves 6' },
+        metadata: {
+          style: 'White lasagna — no tomato, rich béchamel and ricotta, crispy parchmented edges',
+          diet: {
+            vegetarian: false,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: ''
+        },
+        components: [
+          {
+            id: 'crispy-edge-white-lasagna-component-1',
+            name: 'Crispy-Edge White Lasagna with Fresh Pasta, Ricotta, Béchamel, and Pork-Beef Fennel',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Ingredients',
+                items: [
+                  { name: '00 flour', amount: 300, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'eggs', amount: 3, unit: 'large', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: 2, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'ground pork', amount: 400, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'ground beef', amount: 300, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'olive oil', amount: 1, unit: 'tbsp', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'fennel seed', amount: 2, unit: 'tsp', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'onion', amount: 1, unit: 'small', prep: 'finely chopped', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'black pepper', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'whole-milk ricotta', amount: 500, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'egg (for ricotta)', amount: 1, unit: 'large', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'nutmeg', amount: 1, unit: 'pinch', prep: '', notes: '', optional: true, substitutions: [] },
+                  { name: 'butter', amount: 70, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'all-purpose flour', amount: 70, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'whole milk', amount: 800, unit: 'ml', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'Parmigiano-Reggiano', amount: 140, unit: 'g', prep: 'finely grated', notes: '', optional: false, substitutions: [] },
+                  { name: 'butter or olive oil', amount: null, unit: null, prep: '', notes: 'for pan', optional: false, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Make the pasta', instructions: ['Combine flour and salt, add eggs, mix until shaggy, knead 8–10 minutes until smooth. Wrap and rest 30 minutes.'] },
+              { order: 2, title: 'Roll pasta', instructions: ['Roll pasta thin (setting 6–7 on a machine). Cut into lasagna sheets and keep covered.'] },
+              { order: 3, title: 'Brown the meat', instructions: ['Heat olive oil in a wide pan over medium-high heat. Add pork and beef and brown aggressively until deeply colored and dry.'] },
+              { order: 4, title: 'Add aromatics', instructions: ['Add fennel seed and onion. Cook until onion is soft and all moisture has evaporated. Season with salt and pepper. Set aside.'] },
+              { order: 5, title: 'Prepare ricotta', instructions: ['Drain ricotta in a sieve 30–60 minutes. Mix with egg, salt, pepper, and nutmeg until thick and spreadable.'] },
+              { order: 6, title: 'Make béchamel', instructions: ['Melt butter, whisk in flour and cook 2–3 minutes. Gradually whisk in milk and simmer until thick enough to coat a spoon. Season with salt and nutmeg.'] },
+              { order: 7, title: 'Preheat and prep pan', instructions: ['Heat oven to 375°F (190°C). Butter or oil pan, especially corners.'] },
+              { order: 8, title: 'Base layer', instructions: ['Spread a very thin swipe of béchamel on the bottom of the pan.'] },
+              { order: 9, title: 'Layer', instructions: ['Add pasta, meat, ricotta, light béchamel, Parmigiano. Repeat 3–4 times, keeping béchamel lighter at the edges.'] },
+              { order: 10, title: 'Top layer', instructions: ['Top with pasta, very light béchamel, heavy Parmigiano, and a few exposed pasta corners.'] },
+              { order: 11, title: 'Covered bake', instructions: ['Cover and bake 30–35 minutes.'] },
+              { order: 12, title: 'Uncover and crisp', instructions: ['Uncover, raise oven to 425°F (220°C), and bake 20–30 minutes until edges are deeply browned and bubbling.'] },
+              { order: 13, title: 'Rest', instructions: ['Rest uncovered 20–30 minutes before cutting.'] }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Make and rest pasta dough',
+            items: [
+              { component: 'crispy-edge-white-lasagna-component-1', step: 1 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Brown meat mixture',
+            items: [
+              { component: 'crispy-edge-white-lasagna-component-1', step: 3 },
+              { component: 'crispy-edge-white-lasagna-component-1', step: 4 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'Drain and mix ricotta',
+            items: [
+              { component: 'crispy-edge-white-lasagna-component-1', step: 5 }
+            ]
+          },
+          {
+            order: 4,
+            label: 'Prepare béchamel',
+            items: [
+              { component: 'crispy-edge-white-lasagna-component-1', step: 6 }
+            ]
+          },
+          {
+            order: 5,
+            label: 'Roll pasta and assemble',
+            items: [
+              { component: 'crispy-edge-white-lasagna-component-1', step: 2 },
+              { component: 'crispy-edge-white-lasagna-component-1', step: 7 },
+              { component: 'crispy-edge-white-lasagna-component-1', step: 8 },
+              { component: 'crispy-edge-white-lasagna-component-1', step: 9 },
+              { component: 'crispy-edge-white-lasagna-component-1', step: 10 }
+            ]
+          },
+          {
+            order: 6,
+            label: 'Bake, uncover, and rest',
+            items: [
+              { component: 'crispy-edge-white-lasagna-component-1', step: 11 },
+              { component: 'crispy-edge-white-lasagna-component-1', step: 12 },
+              { component: 'crispy-edge-white-lasagna-component-1', step: 13 }
+            ]
+          }
+        ],
+        substitution_summary: {}
+      },
+
+      // ── RECIPE 5: Onionless Spaghetti with Fennel Meatballs ─────────────────
+      {
+        id: 'onionless-spaghetti-fennel-meatballs',
+        name: 'Onionless Spaghetti with Fennel Meatballs and Tomato-Cream Sauce',
+        version: 1,
+        servings: { count: 4, note: 'serves 3–4' },
+        metadata: {
+          style: 'Onion-free pasta — for sensitive stomachs — with fennel-forward meatballs and a silky tomato cream sauce',
+          diet: {
+            vegetarian: false,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: ''
+        },
+        components: [
+          {
+            id: 'fennel_meatballs',
+            name: 'Fennel Meatballs',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Ingredients',
+                items: [
+                  { name: 'ground meat (beef/pork blend)', amount: 500, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'fennel seeds', amount: 1, unit: 'tsp', prep: 'lightly crushed', notes: '', optional: false, substitutions: [] },
+                  { name: 'garlic', amount: 2, unit: 'cloves', prep: 'finely grated', notes: '', optional: false, substitutions: [] },
+                  { name: 'fresh breadcrumbs', amount: 0.5, unit: 'cup', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'milk', amount: 0.25, unit: 'cup', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'egg', amount: 1, unit: 'large', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'Parmigiano-Reggiano', amount: 0.25, unit: 'cup', prep: 'grated', notes: '', optional: false, substitutions: [] },
+                  { name: 'parsley or basil', amount: 2, unit: 'tbsp', prep: 'chopped', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: 0.5, unit: 'tsp', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'black pepper', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'olive oil', amount: null, unit: null, prep: '', notes: 'for frying', optional: false, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Step 1', instructions: ['Soak breadcrumbs in milk for 1–2 minutes to form a panade.'] },
+              { order: 2, title: 'Step 2', instructions: ['Gently mix all ingredients together until just combined.'] },
+              { order: 3, title: 'Step 3', instructions: ['Roll into golf-ball-sized meatballs.'] },
+              { order: 4, title: 'Step 4', instructions: ['Brown meatballs in olive oil over medium heat until well coloured.'] },
+              { order: 5, title: 'Step 5', instructions: ['Remove from pan and set aside (they will finish cooking in the sauce).'] }
+            ]
+          },
+          {
+            id: 'tomato_cream_sauce',
+            name: 'Onionless Tomato–Cream Sauce (from Frozen Tomatoes)',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Ingredients',
+                items: [
+                  { name: 'frozen tomatoes', amount: 1.5, unit: 'kg', prep: 'peeled', notes: '', optional: false, substitutions: [] },
+                  { name: 'olive oil', amount: 4, unit: 'tbsp', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'garlic', amount: 3, unit: 'cloves', prep: 'smashed', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'basil stems', amount: null, unit: null, prep: '', notes: 'from 1 bunch', optional: false, substitutions: [] },
+                  { name: 'basil leaves', amount: null, unit: null, prep: 'torn', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: '10% cream', amount: 0.5, unit: 'cup', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'butter', amount: 1, unit: 'tbsp', prep: '', notes: 'optional', optional: true, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Step 1', instructions: ['Peel frozen tomatoes under warm water; rough-chop.'] },
+              { order: 2, title: 'Step 2', instructions: ['Warm olive oil gently and add garlic; infuse without browning.'] },
+              { order: 3, title: 'Step 3', instructions: ['Add tomatoes, salt, and basil stems.'] },
+              { order: 4, title: 'Step 4', instructions: ['Simmer uncovered 30–45 minutes until reduced and spoon-coating.'] },
+              { order: 5, title: 'Step 5', instructions: ['Remove garlic and basil stems.'] },
+              { order: 6, title: 'Step 6', instructions: ['Lower heat and slowly stir in cream.'] },
+              { order: 7, title: 'Step 7', instructions: ['Simmer gently 10–12 minutes, stirring occasionally.'] },
+              { order: 8, title: 'Step 8', instructions: ['Add butter if using, then tear in basil leaves.'] },
+              { order: 9, title: 'Step 9', instructions: ['Taste and adjust salt.'] }
+            ]
+          },
+          {
+            id: 'homemade_spaghetti',
+            name: 'Homemade Spaghetti',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Ingredients',
+                items: [
+                  { name: '00 flour (or all-purpose)', amount: 200, unit: 'g', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'eggs', amount: 2, unit: 'large', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: 1, unit: 'pinch', prep: '', notes: '', optional: false, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Step 1', instructions: ['Make a well with flour; add eggs and salt.'] },
+              { order: 2, title: 'Step 2', instructions: ['Mix and knead until smooth and elastic (8–10 minutes).'] },
+              { order: 3, title: 'Step 3', instructions: ['Cover and rest dough for 30 minutes.'] },
+              { order: 4, title: 'Step 4', instructions: ['Roll dough thin and cut into spaghetti.'] },
+              { order: 5, title: 'Step 5', instructions: ['Cook in heavily salted water for 2–3 minutes.'] }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Make pasta dough',
+            items: [
+              { component: 'homemade_spaghetti', step: 1 },
+              { component: 'homemade_spaghetti', step: 2 },
+              { component: 'homemade_spaghetti', step: 3 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Start tomato sauce',
+            items: [
+              { component: 'tomato_cream_sauce', step: 1 },
+              { component: 'tomato_cream_sauce', step: 2 },
+              { component: 'tomato_cream_sauce', step: 3 },
+              { component: 'tomato_cream_sauce', step: 4 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'Make and brown meatballs',
+            items: [
+              { component: 'fennel_meatballs', step: 1 },
+              { component: 'fennel_meatballs', step: 2 },
+              { component: 'fennel_meatballs', step: 3 },
+              { component: 'fennel_meatballs', step: 4 },
+              { component: 'fennel_meatballs', step: 5 }
+            ]
+          },
+          {
+            order: 4,
+            label: 'Finish sauce and cook pasta',
+            items: [
+              { component: 'tomato_cream_sauce', step: 5 },
+              { component: 'tomato_cream_sauce', step: 6 },
+              { component: 'tomato_cream_sauce', step: 7 },
+              { component: 'tomato_cream_sauce', step: 8 },
+              { component: 'tomato_cream_sauce', step: 9 },
+              { component: 'homemade_spaghetti', step: 4 },
+              { component: 'homemade_spaghetti', step: 5 }
+            ]
+          }
+        ],
+        substitution_summary: {}
+      },
+
+      // ── RECIPE 6: Savory Crêpes with Spinach & Cheddar Béchamel ─────────────
+      {
+        id: 'savory-crepes-spinach-cheddar',
+        name: 'Savory Crêpes with Spinach & Cheddar Béchamel',
+        version: 1,
+        servings: { count: 4, note: 'serves 4 (2–3 crêpes each)' },
+        metadata: {
+          style: 'French savory crêpes filled with wilted spinach and sharp cheddar béchamel',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: ''
+        },
+        components: [
+          {
+            id: 'crepes',
+            name: 'Savory Crêpes',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Ingredients',
+                items: [
+                  { name: 'all-purpose flour', amount: 1, unit: 'cup', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'eggs', amount: 2, unit: 'large', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'milk', amount: 1.25, unit: 'cups', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: 0.5, unit: 'tsp', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'butter or neutral oil', amount: 1, unit: 'tbsp', prep: 'melted', notes: '', optional: false, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Step 1', instructions: ['Whisk or blend all ingredients until smooth and lump-free.'] },
+              { order: 2, title: 'Step 2', instructions: ['Rest batter for 20–30 minutes.'] },
+              { order: 3, title: 'Step 3', instructions: ['Heat a lightly buttered nonstick pan over medium heat.'] },
+              { order: 4, title: 'Step 4', instructions: ['Pour a thin layer of batter, swirling to coat the pan.'] },
+              { order: 5, title: 'Step 5', instructions: ['Cook until just set and lightly golden, flip briefly, then remove.'] },
+              { order: 6, title: 'Step 6', instructions: ['Stack cooked crêpes and keep covered.'] }
+            ]
+          },
+          {
+            id: 'spinach_filling',
+            name: 'Spinach Filling',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Ingredients',
+                items: [
+                  { name: 'fresh spinach (or frozen, squeezed dry)', amount: 1, unit: 'lb', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'butter', amount: 1, unit: 'tbsp', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'black pepper', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'nutmeg', amount: 1, unit: 'pinch', prep: '', notes: '', optional: true, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Step 1', instructions: ['Melt butter in a wide pan over medium heat.'] },
+              { order: 2, title: 'Step 2', instructions: ['Add spinach and cook until fully wilted.'] },
+              { order: 3, title: 'Step 3', instructions: ['Continue cooking until all moisture has evaporated.'] },
+              { order: 4, title: 'Step 4', instructions: ['Season lightly with salt, pepper, and nutmeg if using.'] },
+              { order: 5, title: 'Step 5', instructions: ['Remove from heat and let cool slightly.'] }
+            ]
+          },
+          {
+            id: 'cheddar_bechamel',
+            name: 'Light Cheddar Béchamel',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Ingredients',
+                items: [
+                  { name: 'butter', amount: 2, unit: 'tbsp', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'all-purpose flour', amount: 2, unit: 'tbsp', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'milk', amount: 1.5, unit: 'cups', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'mild or medium cheddar', amount: 0.75, unit: 'cup', prep: 'finely grated', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'white or black pepper', amount: null, unit: null, prep: '', notes: 'to taste', optional: false, substitutions: [] },
+                  { name: 'nutmeg', amount: 1, unit: 'pinch', prep: '', notes: '', optional: true, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Step 1', instructions: ['Melt butter in a saucepan over medium-low heat.'] },
+              { order: 2, title: 'Step 2', instructions: ['Whisk in flour and cook 1–2 minutes without browning.'] },
+              { order: 3, title: 'Step 3', instructions: ['Gradually whisk in milk until smooth.'] },
+              { order: 4, title: 'Step 4', instructions: ['Simmer gently until sauce lightly coats a spoon.'] },
+              { order: 5, title: 'Step 5', instructions: ['Remove from heat and stir in cheddar until melted.'] },
+              { order: 6, title: 'Step 6', instructions: ['Season lightly with salt, pepper, and nutmeg if using.'] }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Make crêpe batter and rest',
+            items: [
+              { component: 'crepes', step: 1 },
+              { component: 'crepes', step: 2 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Wilt spinach filling',
+            items: [
+              { component: 'spinach_filling', step: 1 },
+              { component: 'spinach_filling', step: 2 },
+              { component: 'spinach_filling', step: 3 },
+              { component: 'spinach_filling', step: 4 },
+              { component: 'spinach_filling', step: 5 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'Cook crêpes',
+            items: [
+              { component: 'crepes', step: 3 },
+              { component: 'crepes', step: 4 },
+              { component: 'crepes', step: 5 },
+              { component: 'crepes', step: 6 }
+            ]
+          },
+          {
+            order: 4,
+            label: 'Make cheddar béchamel and assemble',
+            items: [
+              { component: 'cheddar_bechamel', step: 1 },
+              { component: 'cheddar_bechamel', step: 2 },
+              { component: 'cheddar_bechamel', step: 3 },
+              { component: 'cheddar_bechamel', step: 4 },
+              { component: 'cheddar_bechamel', step: 5 },
+              { component: 'cheddar_bechamel', step: 6 }
+            ]
+          }
+        ],
+        substitution_summary: {}
+      },
+
+      // ── RECIPE 7: Soffritto Umami Paste ──────────────────────────────────────
+      {
+        id: 'soffritto-umami-paste',
+        name: 'Soffritto Umami Paste',
+        version: 1,
+        servings: { count: 'about 2 cups', note: 'freezes well' },
+        metadata: {
+          style: 'A deeply flavoured cooked vegetable paste spiked with Hatcho miso, soy, and fish sauce — use as a base for braises, soups, and sauces',
+          diet: {
+            vegetarian: false,
+            vegan: false,
+            gluten_free: true,
+            contains_dairy: false,
+            contains_lentils: false
+          },
+          context: ''
+        },
+        components: [
+          {
+            id: 'paste-base',
+            name: 'Soffritto Umami Paste',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'vegetables',
+                items: [
+                  { name: 'onions', amount: 2, unit: 'large', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'carrots', amount: 2, unit: 'medium', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'celery stalks', amount: 2, unit: null, prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'garlic cloves', amount: 6, unit: null, prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'parsley', amount: 1, unit: 'small bunch', prep: '', notes: 'stems and leaves', optional: false, substitutions: [] }
+                ]
+              },
+              {
+                section: 'umami_and_seasoning',
+                items: [
+                  { name: 'Hatcho miso (unpasteurized)', amount: null, unit: null, prep: '', notes: '2–3 tablespoons', optional: false, substitutions: [] },
+                  { name: 'soy sauce', amount: 1, unit: 'tablespoon', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'fish sauce', amount: 1, unit: 'tablespoon', prep: '', notes: 'optional', optional: true, substitutions: [] },
+                  { name: 'tomato paste', amount: 1, unit: 'tablespoon', prep: '', notes: '', optional: false, substitutions: [] },
+                  { name: 'salt', amount: null, unit: null, prep: '', notes: '2–3 tablespoons', optional: false, substitutions: [] }
+                ]
+              },
+              {
+                section: 'optional_boosters',
+                items: [
+                  { name: 'mushrooms (fresh or rehydrated dried)', amount: 1, unit: 'cup', prep: '', notes: '', optional: true, substitutions: [] },
+                  { name: 'smoked paprika', amount: 1, unit: 'teaspoon', prep: '', notes: '', optional: true, substitutions: [] },
+                  { name: 'chicken scraps or roast drippings', amount: null, unit: null, prep: '', notes: 'up to 1 cup', optional: true, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              { order: 1, title: 'Step 1', instructions: ['Roughly chop all vegetables.'] },
+              { order: 2, title: 'Step 2', instructions: ['Add vegetables and salt to a food processor. Blend until a thick paste forms.'] },
+              { order: 3, title: 'Step 3', instructions: ['Transfer paste to a saucepan and cook over medium-low heat for 15–20 minutes, stirring occasionally, until raw vegetable aromas are gone.'] },
+              { order: 4, title: 'Step 4', instructions: ['Remove from heat and allow to cool for about 10 minutes.'] },
+              { order: 5, title: 'Step 5', instructions: ['Stir in Hatcho miso, soy sauce, tomato paste, and fish sauce (do not cook the miso).'] },
+              { order: 6, title: 'Step 6', instructions: ['Cool completely and transfer to clean jars or containers.'] },
+              { order: 7, title: 'Step 7', instructions: ['Refrigerate or freeze for long-term storage.'] }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Cook and Store',
+            items: [
+              { component: 'paste-base', step: 1 },
+              { component: 'paste-base', step: 2 },
+              { component: 'paste-base', step: 3 },
+              { component: 'paste-base', step: 4 },
+              { component: 'paste-base', step: 5 },
+              { component: 'paste-base', step: 6 },
+              { component: 'paste-base', step: 7 }
+            ]
+          }
+        ],
+        substitution_summary: {}
+      },
+      {
+        id: 'einkorn-pancakes-mango-banana',
+        name: 'Einkorn Pancakes with Mango Banana Topping',
+        version: 1,
+        servings: {
+          count: 4,
+          note: 'Makes 10–12 medium pancakes; scale batter by 1.5x for larger groups.'
+        },
+        metadata: {
+          style: 'Fluffy ancient grain pancakes with a warm tropical fruit topping',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: 'Einkorn flour gives these pancakes a nutty, wholesome flavour and a tender crumb. The batter needs a short rest as einkorn absorbs liquid more slowly than modern wheat. The mango banana topping brings tropical brightness with very little added sugar needed.'
+        },
+        components: [
+          {
+            id: 'einkorn-pancake-batter',
+            name: 'Einkorn Pancake Batter',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Dry ingredients',
+                items: [
+                  {
+                    name: 'Einkorn flour (all-purpose or whole grain)',
+                    amount: 1.5,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'All-purpose einkorn gives lighter pancakes; whole grain adds more flavour and a heartier texture. Do not substitute 1:1 with modern wheat flour without adjusting liquid — einkorn absorbs more.',
+                    optional: false,
+                    substitutions: [
+                      { name: 'Whole wheat flour', ratio: '1:1 by weight', notes: 'Denser result; increase buttermilk by 2 tbsp to compensate.' },
+                      { name: 'Spelt flour', ratio: '1:1', notes: 'Closest modern alternative; similar nutty flavour and slightly better gluten structure.' }
+                    ]
+                  },
+                  { name: 'Baking powder', amount: 2, unit: 'tsp', prep: '', notes: 'Double-acting baking powder gives a reliable rise; check it is fresh for best results.', optional: false, substitutions: [] },
+                  { name: 'Baking soda', amount: 0.25, unit: 'tsp', prep: '', notes: 'Reacts with the acidity in buttermilk for extra lift and a slightly tangy flavour.', optional: false, substitutions: [] },
+                  { name: 'Salt', amount: 0.5, unit: 'tsp', prep: '', notes: 'Enhances all the flavours; do not skip.', optional: false, substitutions: [] },
+                  {
+                    name: 'Ground cardamom',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adds a warm, floral note that pairs beautifully with the mango and banana topping.',
+                    optional: true,
+                    substitutions: [{ name: 'Ground cinnamon', ratio: '1:1', notes: 'More familiar spice profile; also pairs well with the fruit topping.' }]
+                  }
+                ]
+              },
+              {
+                section: 'Wet ingredients',
+                items: [
+                  {
+                    name: 'Large eggs',
+                    amount: 2,
+                    unit: 'egg',
+                    prep: 'room temperature',
+                    notes: 'Room temperature eggs blend more evenly into the batter.',
+                    optional: false,
+                    substitutions: [{ name: 'Flax egg', ratio: '1 tbsp ground flax + 3 tbsp water per egg; rest 5 min before using', notes: 'Makes pancakes vegan; slightly denser texture but still holds together well.' }]
+                  },
+                  {
+                    name: 'Buttermilk',
+                    amount: 1.25,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Einkorn absorbs liquid more slowly than modern wheat; the batter will visibly thicken during the resting period. This is expected and normal.',
+                    optional: false,
+                    substitutions: [
+                      { name: 'Milk + lemon juice', ratio: '1.25 cups milk + 1 tbsp lemon juice; stir and rest 5 min', notes: 'Quick buttermilk substitute; the curdled milk reacts with baking soda for lift.' },
+                      { name: 'Oat milk or other plant milk + lemon juice', ratio: '1.25 cups plant milk + 1 tbsp lemon juice', notes: 'For dairy-free; the acidity still helps with rise even without dairy protein.' }
+                    ]
+                  },
+                  {
+                    name: 'Unsalted butter',
+                    amount: 3,
+                    unit: 'tbsp',
+                    prep: 'melted and cooled slightly',
+                    notes: 'Brown the butter first for a deeper, nutty flavour that complements the einkorn. Let it cool so it does not scramble the eggs.',
+                    optional: false,
+                    substitutions: [{ name: 'Neutral oil', ratio: '1:1', notes: 'Use for dairy-free; refined coconut oil adds a subtle tropical note that works well with the topping.' }]
+                  },
+                  {
+                    name: 'Maple syrup',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Just enough in the batter to balance flavour; the topping provides most of the sweetness.',
+                    optional: false,
+                    substitutions: [
+                      { name: 'Honey', ratio: '1:1', notes: 'Not vegan; adds a floral note.' },
+                      { name: 'Cane sugar', ratio: '1 tbsp', notes: 'Add to the dry ingredients instead of the wet.' }
+                    ]
+                  },
+                  { name: 'Vanilla extract', amount: 1, unit: 'tsp', prep: '', notes: 'Rounds out the flavour of the batter and bridges with the fruit topping.', optional: true, substitutions: [] }
+                ]
+              },
+              {
+                section: 'For cooking',
+                items: [
+                  {
+                    name: 'Butter or neutral oil',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'Use a very thin layer between batches to prevent sticking; too much fat will make the pancakes greasy and prevent even browning.',
+                    optional: false,
+                    substitutions: [{ name: 'Ghee', ratio: '1:1', notes: 'Higher smoke point; gives a rich, nutty flavour on the crust.' }]
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Whisk dry ingredients',
+                instructions: [
+                  'Combine the einkorn flour, baking powder, baking soda, salt, and cardamom (if using) in a large mixing bowl.',
+                  'Whisk thoroughly for 30 seconds to distribute the leaveners evenly throughout the flour.',
+                  'Make a well in the centre of the dry ingredients to receive the wet mixture.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Mix wet ingredients, combine, and rest',
+                instructions: [
+                  'In a separate bowl, whisk together the eggs, buttermilk, melted butter, maple syrup, and vanilla extract until smooth and well combined.',
+                  'Pour the wet ingredients into the well of the dry ingredients.',
+                  'Fold gently with a spatula just until no dry flour streaks remain. The batter will be lumpy — that is correct. Do not overmix; einkorn gluten is more delicate than modern wheat and overworking the batter will make pancakes tough and flat.',
+                  'Let the batter rest uncovered for 8–10 minutes. Einkorn absorbs liquid more slowly than modern wheat, so the batter will thicken noticeably during the rest. This is normal and expected; do not add more liquid.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Cook the pancakes',
+                instructions: [
+                  'Heat a non-stick or well-seasoned cast iron skillet or griddle over medium heat for 2–3 minutes. The pan is ready when a few drops of water flicked onto the surface sizzle and evaporate immediately.',
+                  'Add a small amount of butter or oil and spread it into a very thin, even film, wiping away any excess with a folded paper towel.',
+                  'Pour about 1/4 cup of batter per pancake onto the pan, spacing them apart. The batter will be thicker than regular pancake batter and may need a gentle nudge to spread slightly.',
+                  'Cook until bubbles form across the surface, the edges look dry and set, and the underside is golden, about 2–3 minutes. Einkorn pancakes take slightly longer on the first side than modern wheat pancakes.',
+                  'Flip gently with a wide spatula and cook for another 1–2 minutes until the underside is evenly golden and the pancake feels set in the centre when lightly pressed.',
+                  'Transfer to a wire rack or oven-safe plate. To keep warm while cooking remaining batches, hold in a 100°C / 200°F oven uncovered so they stay crisp on the outside.',
+                  'Re-grease the pan lightly between each batch.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'mango-banana-topping',
+            name: 'Warm Mango Banana Topping',
+            kind: 'topping',
+            ingredients: [
+              {
+                section: 'Fruit',
+                items: [
+                  {
+                    name: 'Ripe mango',
+                    amount: 1,
+                    unit: 'large',
+                    prep: 'peeled and diced into 1 cm cubes',
+                    notes: 'Alphonso or Ataulfo mangoes are sweetest and most aromatic. Frozen mango works well in off-season.',
+                    optional: false,
+                    substitutions: [
+                      { name: 'Frozen mango chunks', ratio: '1:1 by volume', notes: 'Thaw slightly and drain excess liquid before using.' },
+                      { name: 'Peach or nectarine', ratio: '1:1 by volume', notes: 'Works well in summer when mangoes are not at their peak.' }
+                    ]
+                  },
+                  {
+                    name: 'Ripe bananas',
+                    amount: 2,
+                    unit: 'medium',
+                    prep: 'sliced into 1 cm rounds',
+                    notes: 'The riper and more spotted the banana, the sweeter and more flavourful the topping. Avoid firm, underripe bananas.',
+                    optional: false,
+                    substitutions: [{ name: 'Plantain', ratio: '1:1', notes: 'Use a very ripe yellow plantain; cook 2–3 minutes longer until fully soft and caramelized.' }]
+                  }
+                ]
+              },
+              {
+                section: 'Sauce and seasoning',
+                items: [
+                  {
+                    name: 'Fresh lime juice',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Balances the sweetness of the fruit and keeps the banana from browning. Adjust to taste.',
+                    optional: false,
+                    substitutions: [{ name: 'Lemon juice', ratio: '1:1', notes: 'Slightly less tropical brightness but equally effective for balance.' }]
+                  },
+                  { name: 'Maple syrup', amount: 1, unit: 'tbsp', prep: '', notes: 'Taste the fruit before adding — ripe mango and spotted banana may not need any sweetener at all.', optional: true, substitutions: [{ name: 'Honey', ratio: '1:1', notes: 'Not vegan; adds a floral note that pairs well with the mango.' }] },
+                  { name: 'Vanilla extract', amount: 0.5, unit: 'tsp', prep: '', notes: 'Adds warmth and rounds out the fruit flavours.', optional: true, substitutions: [] },
+                  { name: 'Unsalted butter', amount: 1, unit: 'tbsp', prep: '', notes: 'Creates a light glaze and a gentle caramelized note when the fruit is cooked in it. Skip for dairy-free.', optional: true, substitutions: [{ name: 'Coconut oil', ratio: '1:1', notes: 'Adds a tropical flavour; use refined for a neutral taste.' }] },
+                  { name: 'Salt', amount: null, unit: '', prep: '', notes: 'Just a small pinch; amplifies the sweetness of the fruit.', optional: false, substitutions: [] }
+                ]
+              },
+              {
+                section: 'Optional garnishes',
+                items: [
+                  { name: 'Fresh mint leaves', amount: null, unit: '', prep: 'torn or left whole', notes: 'Adds freshness and visual contrast; pairs especially well with the mango.', optional: true, substitutions: [] },
+                  { name: 'Toasted coconut flakes', amount: null, unit: '', prep: 'lightly toasted in a dry pan until golden', notes: 'Adds a nutty crunch and reinforces the tropical profile.', optional: true, substitutions: [] },
+                  { name: 'Chili flakes or Tajín', amount: null, unit: '', prep: '', notes: 'A tiny pinch over the finished topping adds heat that makes the tropical fruit flavours pop.', optional: true, substitutions: [] }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Prep the fruit',
+                instructions: [
+                  'Peel the mango and cut the flesh away from the pit, then dice into roughly 1 cm cubes.',
+                  'Slice the bananas into 1 cm rounds.',
+                  'Set both aside separately; the banana will be added to the pan first since it takes a moment longer to caramelize.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Warm and glaze the topping',
+                instructions: [
+                  'Heat a small skillet over medium heat and add the butter or coconut oil (if using).',
+                  'Once the butter foams and subsides, add the banana slices in a single layer. Cook without stirring for about 1 minute until lightly golden on the bottom.',
+                  'Flip the banana slices and cook for another 30 seconds.',
+                  'Add the diced mango, lime juice, maple syrup (if using), vanilla, and a pinch of salt. Stir gently and cook for 1–2 minutes until the fruit is warmed through and the juices have reduced into a light, glossy syrup.',
+                  'Remove from heat. Taste and adjust with more lime juice for brightness or maple syrup for sweetness.',
+                  'Spoon generously over the pancakes while still warm. Scatter mint, coconut flakes, or chili if using.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Alternative: fresh uncooked topping',
+                instructions: [
+                  'For a fresh, no-cook version, toss the diced mango and sliced banana together with the lime juice, maple syrup (if using), vanilla, and a pinch of salt.',
+                  'Taste and adjust sweetness and acidity. Let rest for 5 minutes for the flavours to meld, then spoon over the pancakes.',
+                  'This version is best in summer when the fruit is very ripe and sweet.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          { order: 1, label: 'Mix batter and let it rest', items: [{ component: 'einkorn-pancake-batter', step: 1 }, { component: 'einkorn-pancake-batter', step: 2 }] },
+          { order: 2, label: 'Prep and warm the topping while batter rests', items: [{ component: 'mango-banana-topping', step: 1 }, { component: 'mango-banana-topping', step: 2 }] },
+          { order: 3, label: 'Cook pancakes and serve', items: [{ component: 'einkorn-pancake-batter', step: 3 }] }
+        ],
+        substitution_summary: {
+          dairy_free: 'Replace buttermilk with oat milk (or other plant milk) plus 1 tbsp lemon juice. Use neutral oil instead of butter in the batter and for cooking. For the topping, use coconut oil instead of butter.',
+          vegan: 'Follow dairy-free substitutions and replace each egg with a flax egg (1 tbsp ground flax + 3 tbsp water, rested 5 minutes before using). The pancakes will be slightly denser but hold together well.',
+          gluten_free: 'Einkorn is not gluten-free and is not suitable for celiac disease. For a gluten-free version, use a quality 1:1 GF flour blend and add 1 tsp xanthan gum if not already included. Expect a slightly different texture.',
+          extra_rich: 'Brown the butter before adding it to the batter for deep nutty flavour. For the topping, add an extra knob of butter and a small splash of cream or coconut cream to create a richer caramel-like sauce around the fruit.',
+          spicier: 'Add a pinch of cayenne to the dry ingredients for a subtle background heat in the pancakes. Finish the topping with a small pinch of chili flakes or Tajín for a contrast that makes the mango flavour pop.'
+        }
       }
     ];
 
@@ -4703,29 +5792,6 @@ Steps:
     let activeComponentId = null;
     let pendingScrollComponentId = null;
     let isMobileDrawerOpen = false;
-
-    const mergeRecipeCollections = (primary = [], fallback = []) => {
-      const merged = [];
-      const seenIds = new Set();
-
-      primary.forEach((recipe) => {
-        if (!recipe?.id || seenIds.has(recipe.id)) {
-          return;
-        }
-        merged.push(recipe);
-        seenIds.add(recipe.id);
-      });
-
-      fallback.forEach((recipe) => {
-        if (!recipe?.id || seenIds.has(recipe.id)) {
-          return;
-        }
-        merged.push(recipe);
-        seenIds.add(recipe.id);
-      });
-
-      return merged;
-    };
 
     const recipeListEl = document.getElementById('recipeList');
     const recipeDetailsEl = document.getElementById('recipeDetails');
@@ -5336,65 +6402,6 @@ Steps:
       };
     };
 
-    const watchRecipesFromFirestore = () => {
-      if (!firestore || recipesUnsubscribe) {
-        return;
-      }
-      recipesUnsubscribe = firestore
-        .collection('recipes')
-        .orderBy('updatedAt', 'desc')
-        .onSnapshot(
-          (snapshot) => {
-            const docs = snapshot.docs.map((doc) => normalizeRecipe({ id: doc.id, ...doc.data() }));
-            recipes = docs.length ? mergeRecipeCollections(docs, defaultRecipes) : [...defaultRecipes];
-            const highlightId = pendingRecipeSelectionId;
-            pendingRecipeSelectionId = null;
-            refreshRecipeViews({ highlightId });
-            if (highlightId) {
-              selectRecipe(highlightId, { scrollToCard: true, closeDrawer: true });
-            }
-          },
-          (error) => {
-            console.error('Failed to load recipes from Firestore', error);
-            if (!recipes.length) {
-              recipes = [...defaultRecipes];
-              refreshRecipeViews();
-            }
-          }
-        );
-    };
-
-    const initializeFirebase = () => {
-      if (!window.firebase || firestore) {
-        return;
-      }
-      try {
-        firebaseApp = firebase.initializeApp(firebaseConfig);
-        if (typeof firebase.appCheck === 'function') {
-          try {
-            if (shouldUseAppCheckDebugToken && typeof self !== 'undefined') {
-              self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-            }
-            firebase.appCheck().activate(appCheckSiteKey, true);
-          } catch (appCheckError) {
-            console.warn('Firebase App Check initialization failed', appCheckError);
-          }
-        }
-        firestore = firebase.firestore();
-        try {
-          firestore.settings({
-            experimentalAutoDetectLongPolling: true,
-            useFetchStreams: false
-          });
-        } catch (settingsError) {
-          console.warn('Firestore settings could not be applied', settingsError);
-        }
-        watchRecipesFromFirestore();
-      } catch (error) {
-        console.warn('Firebase is not available in this environment.', error);
-      }
-    };
-
     function parseFraction(value) {
       if (!value) return null;
       if (value.includes('/')) {
@@ -5869,34 +6876,16 @@ Steps:
       return buildRecipeFromSmartText(payload, defaults);
     };
 
-    const addRecipeToLibrary = async (recipeInput) => {
+    const addRecipeToLibrary = (recipeInput) => {
       const newRecipe = normalizeRecipe(recipeInput);
-      if (firestore) {
-        try {
-          pendingRecipeSelectionId = newRecipe.id;
-          const timestamp = firebase.firestore.FieldValue.serverTimestamp();
-          await firestore.collection('recipes').doc(newRecipe.id).set(
-            {
-              ...newRecipe,
-              createdAt: newRecipe.createdAt || timestamp,
-              updatedAt: timestamp
-            },
-            { merge: true }
-          );
-        } catch (error) {
-          pendingRecipeSelectionId = null;
-          throw error;
-        }
+      const existingIndex = recipes.findIndex((entry) => entry.id === newRecipe.id);
+      if (existingIndex >= 0) {
+        recipes.splice(existingIndex, 1, newRecipe);
       } else {
-        const existingIndex = recipes.findIndex((entry) => entry.id === newRecipe.id);
-        if (existingIndex >= 0) {
-          recipes.splice(existingIndex, 1, newRecipe);
-        } else {
-          recipes.unshift(newRecipe);
-        }
-        refreshRecipeViews({ highlightId: newRecipe.id });
-        selectRecipe(newRecipe.id, { scrollToCard: true, closeDrawer: true });
+        recipes.unshift(newRecipe);
       }
+      refreshRecipeViews({ highlightId: newRecipe.id });
+      selectRecipe(newRecipe.id, { scrollToCard: true, closeDrawer: true });
       return newRecipe;
     };
 
@@ -6388,7 +7377,6 @@ Steps:
       }
     });
 
-    initializeFirebase();
     refreshRecipeViews();
     setMobileDrawerState(false);
     setCapturePanelState(false);
