@@ -133,10 +133,51 @@
 
     .content-grid {
       display: grid;
-      grid-template-columns: minmax(250px, 320px) 1fr;
+      grid-template-columns: 1fr;
       gap: 1.25rem;
       width: 100%;
       align-items: start;
+    }
+
+    .content-grid.has-active {
+      grid-template-columns: minmax(250px, 320px) 1fr;
+    }
+
+    .content-grid:not(.has-active) .recipe-index-panel {
+      display: none;
+    }
+
+    .recipe-browser {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .recipe-browser-card {
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      background: rgba(255, 255, 255, 0.02);
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .recipe-browser-card:hover {
+      background: var(--panel-highlight);
+      border-color: rgba(246, 162, 58, 0.4);
+    }
+
+    .recipe-browser-card h3 {
+      margin: 0 0 0.35rem;
+      font-size: 1.1rem;
+      line-height: 1.3;
+    }
+
+    .recipe-browser-card .style-tag {
+      margin: 0 0 0.65rem;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      line-height: 1.4;
     }
 
 
@@ -610,7 +651,7 @@
     }
 
     @media (max-width: 960px) {
-      .content-grid {
+      .content-grid.has-active {
         grid-template-columns: 1fr;
       }
 
@@ -7030,23 +7071,37 @@
       `;
     };
 
+    const contentGridEl = document.querySelector('.content-grid');
+
     const updateRecipeActionState = () => {
-      if (!recipeEditButton) return;
       if (activeRecipe) {
-        recipeEditButton.removeAttribute('disabled');
-        recipeEditButton.textContent = `Edit "${activeRecipe.name}"`;
+        contentGridEl?.classList.add('has-active');
       } else {
-        recipeEditButton.setAttribute('disabled', 'true');
-        recipeEditButton.textContent = 'Edit recipe';
+        contentGridEl?.classList.remove('has-active');
       }
     };
 
     const renderRecipeDetails = () => {
       if (!activeRecipe) {
-        recipeDetailsEl.innerHTML = '<div class="empty-state">Pick a recipe to see the details.</div>';
         recipeDetailsEl.dataset.componentFiltering = 'false';
         pendingScrollComponentId = null;
         updateRecipeActionState();
+        const chips = (recipe) => {
+          const tags = [];
+          if (recipe.metadata?.diet?.vegan) tags.push('Vegan');
+          if (recipe.metadata?.diet?.vegetarian && !recipe.metadata?.diet?.vegan) tags.push('Vegetarian');
+          if (recipe.metadata?.diet?.gluten_free) tags.push('Gluten-free');
+          if (!recipe.metadata?.diet?.contains_dairy) tags.push('Dairy-free');
+          return tags.map((t) => `<span class="chip">${t}</span>`).join('');
+        };
+        recipeDetailsEl.innerHTML = filteredRecipes.length
+          ? `<div class="recipe-browser">${filteredRecipes.map((recipe) => `
+              <article class="recipe-browser-card" data-recipe-id="${recipe.id}">
+                <h3>${recipe.name}</h3>
+                ${recipe.metadata?.style ? `<p class="style-tag">${recipe.metadata.style}</p>` : ''}
+                <div class="chip-row">${chips(recipe)}</div>
+              </article>`).join('')}</div>`
+          : '<div class="empty-state">No recipes match that search.</div>';
         return;
       }
 
@@ -7154,6 +7209,12 @@
       }
       updateRecipeActionState();
     };
+
+    recipeDetailsEl.addEventListener('click', (event) => {
+      const card = event.target.closest('.recipe-browser-card[data-recipe-id]');
+      if (!card) return;
+      selectRecipe(card.dataset.recipeId);
+    });
 
     recipeListEl.addEventListener('click', (event) => {
       const card = event.target.closest('[data-recipe-id]');
