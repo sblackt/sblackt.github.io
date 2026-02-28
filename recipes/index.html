@@ -4746,6 +4746,451 @@ Steps:
           less_bright: 'Reduce lime juice in the broth to 1 tbsp and let diners adjust individually with lime wedges.',
           spicier: 'Increase dried chilies or chili flakes in the paste, add more paste to the broth, and serve with a bold chili oil or crisp for extra heat.'
         }
+      },
+      {
+        id: 'einkorn-pancakes-mango-banana',
+        name: 'Einkorn Pancakes with Mango Banana Topping',
+        version: 1,
+        servings: {
+          count: 4,
+          note: 'Makes 10–12 medium pancakes; scale batter by 1.5x for larger groups.'
+        },
+        metadata: {
+          style: 'Fluffy ancient grain pancakes with a warm tropical fruit topping',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: 'Einkorn flour gives these pancakes a nutty, wholesome flavour and a tender crumb. The batter needs a short rest as einkorn absorbs liquid more slowly than modern wheat. The mango banana topping brings tropical brightness with very little added sugar needed.'
+        },
+        components: [
+          {
+            id: 'einkorn-pancake-batter',
+            name: 'Einkorn Pancake Batter',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Dry ingredients',
+                items: [
+                  {
+                    name: 'Einkorn flour (all-purpose or whole grain)',
+                    amount: 1.5,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'All-purpose einkorn gives lighter pancakes; whole grain adds more flavour and a heartier texture. Do not substitute 1:1 with modern wheat flour without adjusting liquid — einkorn absorbs more.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Whole wheat flour',
+                        ratio: '1:1 by weight',
+                        notes: 'Denser result; increase buttermilk by 2 tbsp to compensate.'
+                      },
+                      {
+                        name: 'Spelt flour',
+                        ratio: '1:1',
+                        notes: 'Closest modern alternative; similar nutty flavour and slightly better gluten structure.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Baking powder',
+                    amount: 2,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Double-acting baking powder gives a reliable rise; check it is fresh for best results.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Baking soda',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Reacts with the acidity in buttermilk for extra lift and a slightly tangy flavour.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Enhances all the flavours; do not skip.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Ground cardamom',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adds a warm, floral note that pairs beautifully with the mango and banana topping.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'Ground cinnamon',
+                        ratio: '1:1',
+                        notes: 'More familiar spice profile; also pairs well with the fruit topping.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Wet ingredients',
+                items: [
+                  {
+                    name: 'Large eggs',
+                    amount: 2,
+                    unit: 'egg',
+                    prep: 'room temperature',
+                    notes: 'Room temperature eggs blend more evenly into the batter.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Flax egg',
+                        ratio: '1 tbsp ground flax + 3 tbsp water per egg; rest 5 min before using',
+                        notes: 'Makes pancakes vegan; slightly denser texture but still holds together well.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Buttermilk',
+                    amount: 1.25,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Einkorn absorbs liquid more slowly than modern wheat; the batter will visibly thicken during the resting period. This is expected and normal.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Milk + lemon juice',
+                        ratio: '1.25 cups milk + 1 tbsp lemon juice; stir and rest 5 min',
+                        notes: 'Quick buttermilk substitute; the curdled milk reacts with baking soda for lift.'
+                      },
+                      {
+                        name: 'Oat milk or other plant milk + lemon juice',
+                        ratio: '1.25 cups plant milk + 1 tbsp lemon juice',
+                        notes: 'For dairy-free; the acidity still helps with rise even without dairy protein.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Unsalted butter',
+                    amount: 3,
+                    unit: 'tbsp',
+                    prep: 'melted and cooled slightly',
+                    notes: 'Brown the butter first for a deeper, nutty flavour that complements the einkorn. Let it cool so it does not scramble the eggs.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Neutral oil',
+                        ratio: '1:1',
+                        notes: 'Use for dairy-free; refined coconut oil adds a subtle tropical note that works well with the topping.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Maple syrup',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Just enough in the batter to balance flavour; the topping provides most of the sweetness.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Honey',
+                        ratio: '1:1',
+                        notes: 'Not vegan; adds a floral note.'
+                      },
+                      {
+                        name: 'Cane sugar',
+                        ratio: '1 tbsp',
+                        notes: 'Add to the dry ingredients instead of the wet.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Vanilla extract',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Rounds out the flavour of the batter and bridges with the fruit topping.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'For cooking',
+                items: [
+                  {
+                    name: 'Butter or neutral oil',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'Use a very thin layer between batches to prevent sticking; too much fat will make the pancakes greasy and prevent even browning.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Ghee',
+                        ratio: '1:1',
+                        notes: 'Higher smoke point; gives a rich, nutty flavour on the crust.'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Whisk dry ingredients',
+                instructions: [
+                  'Combine the einkorn flour, baking powder, baking soda, salt, and cardamom (if using) in a large mixing bowl.',
+                  'Whisk thoroughly for 30 seconds to distribute the leaveners evenly throughout the flour.',
+                  'Make a well in the centre of the dry ingredients to receive the wet mixture.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Mix wet ingredients, combine, and rest',
+                instructions: [
+                  'In a separate bowl, whisk together the eggs, buttermilk, melted butter, maple syrup, and vanilla extract until smooth and well combined.',
+                  'Pour the wet ingredients into the well of the dry ingredients.',
+                  'Fold gently with a spatula just until no dry flour streaks remain. The batter will be lumpy — that is correct. Do not overmix; einkorn gluten is more delicate than modern wheat and overworking the batter will make pancakes tough and flat.',
+                  'Let the batter rest uncovered for 8–10 minutes. Einkorn absorbs liquid more slowly than modern wheat, so the batter will thicken noticeably during the rest. This is normal and expected; do not add more liquid.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Cook the pancakes',
+                instructions: [
+                  'Heat a non-stick or well-seasoned cast iron skillet or griddle over medium heat for 2–3 minutes. The pan is ready when a few drops of water flicked onto the surface sizzle and evaporate immediately.',
+                  'Add a small amount of butter or oil and spread it into a very thin, even film, wiping away any excess with a folded paper towel.',
+                  'Pour about 1/4 cup of batter per pancake onto the pan, spacing them apart. The batter will be thicker than regular pancake batter and may need a gentle nudge to spread slightly.',
+                  'Cook until bubbles form across the surface, the edges look dry and set, and the underside is golden, about 2–3 minutes. Einkorn pancakes take slightly longer on the first side than modern wheat pancakes.',
+                  'Flip gently with a wide spatula and cook for another 1–2 minutes until the underside is evenly golden and the pancake feels set in the centre when lightly pressed.',
+                  'Transfer to a wire rack or oven-safe plate. To keep warm while cooking remaining batches, hold in a 100°C / 200°F oven uncovered so they stay crisp on the outside.',
+                  'Re-grease the pan lightly between each batch.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'mango-banana-topping',
+            name: 'Warm Mango Banana Topping',
+            kind: 'topping',
+            ingredients: [
+              {
+                section: 'Fruit',
+                items: [
+                  {
+                    name: 'Ripe mango',
+                    amount: 1,
+                    unit: 'large',
+                    prep: 'peeled and diced into 1 cm cubes',
+                    notes: 'Alphonso or Ataulfo mangoes are sweetest and most aromatic. Frozen mango works well in off-season.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Frozen mango chunks',
+                        ratio: '1:1 by volume',
+                        notes: 'Thaw slightly and drain excess liquid before using.'
+                      },
+                      {
+                        name: 'Peach or nectarine',
+                        ratio: '1:1 by volume',
+                        notes: 'Works well in summer when mangoes are not at their peak.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Ripe bananas',
+                    amount: 2,
+                    unit: 'medium',
+                    prep: 'sliced into 1 cm rounds',
+                    notes: 'The riper and more spotted the banana, the sweeter and more flavourful the topping. Avoid firm, underripe bananas.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Plantain',
+                        ratio: '1:1',
+                        notes: 'Use a very ripe yellow plantain; cook 2–3 minutes longer until fully soft and caramelized.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Sauce and seasoning',
+                items: [
+                  {
+                    name: 'Fresh lime juice',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Balances the sweetness of the fruit and keeps the banana from browning. Adjust to taste.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Lemon juice',
+                        ratio: '1:1',
+                        notes: 'Slightly less tropical brightness but equally effective for balance.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Maple syrup',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Taste the fruit before adding — ripe mango and spotted banana may not need any sweetener at all.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'Honey',
+                        ratio: '1:1',
+                        notes: 'Not vegan; adds a floral note that pairs well with the mango.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Vanilla extract',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'Adds warmth and rounds out the fruit flavours.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Unsalted butter',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Creates a light glaze and a gentle caramelized note when the fruit is cooked in it. Skip for dairy-free.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'Coconut oil',
+                        ratio: '1:1',
+                        notes: 'Adds a tropical flavour; use refined for a neutral taste.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Salt',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'Just a small pinch; amplifies the sweetness of the fruit.',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Optional garnishes',
+                items: [
+                  {
+                    name: 'Fresh mint leaves',
+                    amount: null,
+                    unit: '',
+                    prep: 'torn or left whole',
+                    notes: 'Adds freshness and visual contrast; pairs especially well with the mango.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Toasted coconut flakes',
+                    amount: null,
+                    unit: '',
+                    prep: 'lightly toasted in a dry pan until golden',
+                    notes: 'Adds a nutty crunch and reinforces the tropical profile.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Chili flakes or Tajín',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'A tiny pinch over the finished topping adds heat that makes the tropical fruit flavours pop.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Prep the fruit',
+                instructions: [
+                  'Peel the mango and cut the flesh away from the pit, then dice into roughly 1 cm cubes.',
+                  'Slice the bananas into 1 cm rounds.',
+                  'Set both aside separately; the banana will be added to the pan first since it takes a moment longer to caramelize.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Warm and glaze the topping',
+                instructions: [
+                  'Heat a small skillet over medium heat and add the butter or coconut oil (if using).',
+                  'Once the butter foams and subsides, add the banana slices in a single layer. Cook without stirring for about 1 minute until lightly golden on the bottom.',
+                  'Flip the banana slices and cook for another 30 seconds.',
+                  'Add the diced mango, lime juice, maple syrup (if using), vanilla, and a pinch of salt. Stir gently and cook for 1–2 minutes until the fruit is warmed through and the juices have reduced into a light, glossy syrup.',
+                  'Remove from heat. Taste and adjust with more lime juice for brightness or maple syrup for sweetness.',
+                  'Spoon generously over the pancakes while still warm. Scatter mint, coconut flakes, or chili if using.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Alternative: fresh uncooked topping',
+                instructions: [
+                  'For a fresh, no-cook version, toss the diced mango and sliced banana together with the lime juice, maple syrup (if using), vanilla, and a pinch of salt.',
+                  'Taste and adjust sweetness and acidity. Let rest for 5 minutes for the flavours to meld, then spoon over the pancakes.',
+                  'This version is best in summer when the fruit is very ripe and sweet.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Mix batter and let it rest',
+            items: [
+              { component: 'einkorn-pancake-batter', step: 1 },
+              { component: 'einkorn-pancake-batter', step: 2 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'Prep and warm the topping while batter rests',
+            items: [
+              { component: 'mango-banana-topping', step: 1 },
+              { component: 'mango-banana-topping', step: 2 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'Cook pancakes and serve',
+            items: [
+              { component: 'einkorn-pancake-batter', step: 3 }
+            ]
+          }
+        ],
+        substitution_summary: {
+          dairy_free: 'Replace buttermilk with oat milk (or other plant milk) plus 1 tbsp lemon juice. Use neutral oil instead of butter in the batter and for cooking. For the topping, use coconut oil instead of butter.',
+          vegan: 'Follow dairy-free substitutions and replace each egg with a flax egg (1 tbsp ground flax + 3 tbsp water, rested 5 minutes before using). The pancakes will be slightly denser but hold together well.',
+          gluten_free: 'Einkorn is not gluten-free and is not suitable for celiac disease. For a gluten-free version, use a quality 1:1 GF flour blend and add 1 tsp xanthan gum if not already included. Expect a slightly different texture.',
+          extra_rich: 'Brown the butter before adding it to the batter for deep nutty flavour. For the topping, add an extra knob of butter and a small splash of cream or coconut cream to create a richer caramel-like sauce around the fruit.',
+          spicier: 'Add a pinch of cayenne to the dry ingredients for a subtle background heat in the pancakes. Finish the topping with a small pinch of chili flakes or Tajín for a contrast that makes the mango flavour pop.'
+        }
       }
     ];
 
