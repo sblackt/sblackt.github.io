@@ -136,6 +136,7 @@
       grid-template-columns: minmax(250px, 320px) 1fr;
       gap: 1.25rem;
       width: 100%;
+      align-items: start;
     }
 
 
@@ -159,108 +160,20 @@
       color: var(--text-muted);
     }
 
-    .header-actions {
+    .recipe-index-panel {
+      position: sticky;
+      top: 1.25rem;
+      max-height: calc(100vh - 2.5rem);
+      overflow-y: auto;
       display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 0.75rem;
-      margin-top: 1rem;
-    }
-
-    .add-recipe-button {
-      border-radius: 999px;
-      border: 1px solid var(--panel-border);
-      background: linear-gradient(90deg, var(--accent), var(--accent-strong));
-      color: #1b0c04;
-      font-weight: 600;
-      padding: 0.65rem 1.5rem;
-      font-size: 0.95rem;
-      cursor: pointer;
-    }
-
-    .edit-recipe-button {
-      border-radius: 999px;
-      border: 1px solid var(--panel-border);
-      background: transparent;
-      color: var(--text);
-      font-weight: 500;
-      padding: 0.65rem 1.25rem;
-      font-size: 0.95rem;
-      cursor: pointer;
-    }
-
-    .edit-recipe-button[disabled] {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .recipe-capture-panel {
-      margin-top: 1rem;
-      display: grid;
-      gap: 0.75rem;
-    }
-
-    .recipe-capture-panel[hidden] {
-      display: none;
-    }
-
-    .recipe-capture-form textarea {
-      width: 100%;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text);
-      padding: 0.85rem;
-      font-size: 1rem;
-      min-height: 220px;
-      resize: vertical;
-      font-family: 'Inter', monospace;
-      line-height: 1.45;
-    }
-
-    .capture-helper {
-      margin: 0.25rem 0 0;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
-    .recipe-capture-actions {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.65rem;
-    }
-
-    .recipe-capture-actions button {
-      border-radius: 999px;
-      border: 1px solid var(--panel-border);
-      padding: 0.5rem 1.3rem;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .recipe-capture-actions button[type="submit"] {
-      background: linear-gradient(90deg, var(--accent), var(--accent-strong));
-      color: #1b0c04;
-    }
-
-    .recipe-capture-actions button[type="button"] {
-      background: transparent;
-      color: var(--text);
-    }
-
-    #recipeCaptureStatus {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      min-height: 1.2em;
+      flex-direction: column;
     }
 
     .recipe-list {
       display: flex;
       flex-direction: column;
       gap: 0.8rem;
-      max-height: calc(100vh - 220px);
-      overflow: auto;
+      overflow: visible;
       padding-right: 0.5rem;
     }
 
@@ -820,36 +733,9 @@
       <p class="eyebrow">Recipe library</p>
       <h1>Field Notes From the Bonfire Kitchen</h1>
       <p>
-        Keep the cabin pantry organized: search what you already perfected, jot down new
-        ideas the second they appear, and share easy swaps with whoever is cooking next.
+        Keep the cabin pantry organized: search what you’ve already perfected and share easy swaps with whoever is cooking next.
       </p>
-      <div class="header-actions">
-        <button type="button" class="edit-recipe-button" id="editRecipeButton" disabled>Edit recipe</button>
-        <button type="button" class="add-recipe-button" id="openRecipeCapture">Add recipe</button>
-      </div>
     </header>
-
-    <section class="panel recipe-capture-panel" id="recipeCapturePanel" hidden>
-      <form id="recipeCaptureForm" class="recipe-capture-form">
-        <label for="recipeCaptureInput">Paste recipe notes or JSON</label>
-        <textarea id="recipeCaptureInput" placeholder="Title: Bonfire ramen
-Style: Midnight broth
-Diet: vegan, gluten-free
-Component: Broth (kind: soup)
-Ingredients:
-- 4 cups veg stock - simmering
-- 1 thumb ginger; sliced
-Steps:
-1. Simmer aromatics until fragrant.
-2. Add noodles, finish with chili crisp."></textarea>
-        <p class="capture-helper">We’ll auto-detect JSON blobs or smart text and turn them into full components, steps, workflow, and substitutions.</p>
-        <div class="recipe-capture-actions">
-          <button type="submit">Save</button>
-          <button type="button" id="recipeCaptureCancel">Cancel</button>
-          <span id="recipeCaptureStatus" role="status" aria-live="polite"></span>
-        </div>
-      </form>
-    </section>
 
     <section class="controls">
       <div class="search-field">
@@ -5787,7 +5673,7 @@ Steps:
 
     let recipes = [...defaultRecipes];
     let filteredRecipes = [...recipes];
-    let activeRecipe = recipes[0] || null;
+    let activeRecipe = null;
     let activeTab = 'ingredients';
     let activeComponentId = null;
     let pendingScrollComponentId = null;
@@ -5800,41 +5686,6 @@ Steps:
     const mobileDrawerListEl = document.getElementById('mobileRecipeList');
     const mobileToggleButton = document.getElementById('mobileRecipeToggle');
     const mobileCloseButton = document.getElementById('mobileRecipeClose');
-    const recipeCapturePanel = document.getElementById('recipeCapturePanel');
-    const recipeCaptureForm = document.getElementById('recipeCaptureForm');
-    const recipeCaptureInput = document.getElementById('recipeCaptureInput');
-    const recipeCaptureStatus = document.getElementById('recipeCaptureStatus');
-    const recipeCaptureCancel = document.getElementById('recipeCaptureCancel');
-    const recipeCaptureOpenButton = document.getElementById('openRecipeCapture');
-    const recipeEditButton = document.getElementById('editRecipeButton');
-    const setCapturePanelState = (isOpen) => {
-      if (!recipeCapturePanel) return;
-      if (isOpen) {
-        recipeCapturePanel.removeAttribute('hidden');
-        recipeCaptureInput?.focus();
-      } else {
-        recipeCapturePanel.setAttribute('hidden', '');
-        if (recipeCaptureStatus) {
-          recipeCaptureStatus.textContent = '';
-        }
-      }
-    };
-
-    const openRecipeEditor = () => {
-      if (!activeRecipe || !recipeCaptureInput) {
-        return;
-      }
-      const editableRecipe = buildEditableRecipePayload(activeRecipe);
-      if (!editableRecipe) {
-        return;
-      }
-      recipeCaptureInput.value = JSON.stringify(editableRecipe, null, 2);
-      if (recipeCaptureStatus) {
-        recipeCaptureStatus.textContent = `Editing "${activeRecipe.name}"`;
-      }
-      setCapturePanelState(true);
-      recipeCaptureInput.focus();
-    };
 
     const formatComponentKind = (kind = '') =>
       kind
@@ -6238,10 +6089,8 @@ Steps:
       if (activeRecipe) {
         const stillVisible = filteredRecipes.some((recipe) => recipe.id === activeRecipe.id);
         if (!stillVisible) {
-          activeRecipe = filteredRecipes[0] || null;
+          activeRecipe = null;
         }
-      } else {
-        activeRecipe = filteredRecipes[0] || null;
       }
 
       if (activeRecipe?.id !== previousActiveId) {
@@ -7336,50 +7185,8 @@ Steps:
       }
     });
 
-    recipeCaptureOpenButton?.addEventListener('click', () => {
-      const isHidden = recipeCapturePanel?.hasAttribute('hidden');
-      setCapturePanelState(Boolean(isHidden));
-    });
-
-    recipeCaptureCancel?.addEventListener('click', () => {
-      setCapturePanelState(false);
-      if (recipeCaptureInput) {
-        recipeCaptureInput.value = '';
-      }
-    });
-    recipeEditButton?.addEventListener('click', () => {
-      if (!activeRecipe) {
-        return;
-      }
-      openRecipeEditor();
-    });
-
-    recipeCaptureForm?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      try {
-        if (recipeCaptureStatus) {
-          recipeCaptureStatus.textContent = 'Saving...';
-        }
-        const parsedRecipe = parseRecipeInput(recipeCaptureInput?.value || '');
-        await addRecipeToLibrary(parsedRecipe);
-        if (recipeCaptureInput) {
-          recipeCaptureInput.value = '';
-        }
-        if (recipeCaptureStatus) {
-          recipeCaptureStatus.textContent = 'Recipe saved.';
-        }
-        setCapturePanelState(false);
-      } catch (error) {
-        console.error('Failed to save recipe', error);
-        if (recipeCaptureStatus) {
-          recipeCaptureStatus.textContent = error.message || 'Could not save that recipe.';
-        }
-      }
-    });
-
     refreshRecipeViews();
     setMobileDrawerState(false);
-    setCapturePanelState(false);
   </script>
 </body>
 </html>
