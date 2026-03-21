@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Love Squeeze Build Notes | stevemwhite.com</title>
+  <meta name="description" content="Modified Rothwell Love Squeeze compressor pedal — perfboard build notes with attack, release and threshold controls.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2322110c'/%3E%3Cpath d='M9 21c3.5-3.5 5.6-5.6 7-10 1.4 4.4 3.5 6.5 7 10-2.1 1.4-5 2-7 2s-4.9-.6-7-2z' fill='%23f6a23a'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --bg: #140906;
+      --bg-gradient: radial-gradient(circle at 20% 20%, rgba(255,196,125,0.18), transparent 55%),
+                     radial-gradient(circle at 80% 0%, rgba(207,115,31,0.12), transparent 45%),
+                     linear-gradient(180deg, #0d0503 0%, #1b0a05 65%, #140906 100%);
+      --panel: rgba(42, 18, 11, 0.88);
+      --panel-border: rgba(255, 198, 150, 0.18);
+      --panel-highlight: rgba(246, 162, 58, 0.1);
+      --surface2: rgba(255, 198, 150, 0.06);
+      --text: #fff5eb;
+      --text-muted: rgba(255, 230, 207, 0.65);
+      --accent: #f6a23a;
+      --accent-strong: #ff8a3c;
+      --red: #e05a3a;
+      --green: #5ec47a;
+      --blue: #5aace0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      background-image: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.65;
+      font-size: 15px;
+      overflow-x: hidden;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      height: 52px;
+      border-bottom: 1px solid var(--panel-border);
+      background: rgba(20, 9, 6, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-back {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .topbar-back:hover { color: var(--accent); }
+
+    .topbar-back svg { opacity: 0.7; }
+
+    .topbar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    /* mobile contents toggle */
+    .contents-toggle {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: var(--panel-highlight);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* ── Sidebar ── */
+    aside {
+      border-right: 1px solid var(--panel-border);
+      background: rgba(10, 4, 2, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 28px 0 40px;
+      position: sticky;
+      top: 52px;
+      height: calc(100vh - 52px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(246,162,58,0.2) transparent;
+    }
+
+    aside::-webkit-scrollbar { width: 4px; }
+    aside::-webkit-scrollbar-thumb { background: rgba(246,162,58,0.2); border-radius: 2px; }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      padding: 16px 22px 6px;
+      display: block;
+    }
+
+    .nav-section-label:first-child { padding-top: 0; }
+
+    aside a {
+      display: block;
+      padding: 5px 22px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+      line-height: 1.4;
+    }
+
+    aside a:hover {
+      color: var(--text);
+      border-left-color: var(--accent);
+      background: var(--panel-highlight);
+    }
+
+    aside a.sub {
+      padding-left: 34px;
+      font-size: 12px;
+      color: rgba(255, 230, 207, 0.45);
+    }
+
+    aside a.sub:hover { color: var(--text-muted); }
+
+    .nav-rule {
+      border: none;
+      border-top: 1px solid var(--panel-border);
+      margin: 10px 22px;
+    }
+
+    /* ── Main content ── */
+    main {
+      padding: clamp(28px, 5vw, 56px) clamp(20px, 5vw, 56px);
+      max-width: 840px;
+    }
+
+    /* ── Page header ── */
+    .page-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    .page-desc {
+      color: var(--text-muted);
+      font-size: 15px;
+      max-width: 60ch;
+      margin-bottom: 36px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--panel-border);
+    }
+
+    /* ── Section headings ── */
+    h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 52px 0 16px;
+      padding-bottom: 9px;
+      border-bottom: 1px solid var(--panel-border);
+      scroll-margin-top: 72px;
+      letter-spacing: 0.01em;
+    }
+
+    h3 {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin: 28px 0 10px;
+      scroll-margin-top: 72px;
+    }
+
+    p { margin-bottom: 12px; color: var(--text-muted); }
+    p strong { color: var(--text); }
+
+    ul, ol {
+      margin: 8px 0 14px 18px;
+      color: var(--text-muted);
+    }
+    li { margin-bottom: 5px; }
+    li strong { color: var(--text); }
+
+    /* ── Callouts ── */
+    .callout {
+      display: flex;
+      gap: 12px;
+      border: 1px solid var(--panel-border);
+      border-left: 3px solid var(--accent);
+      background: var(--panel-highlight);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .callout.warn { border-left-color: var(--red); }
+    .callout.info { border-left-color: var(--blue); }
+    .callout.ok { border-left-color: var(--green); }
+
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    .callout-body { flex: 1; }
+    .callout-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 3px;
+    }
+
+    .callout.warn .callout-label { color: var(--red); }
+    .callout.info .callout-label { color: var(--blue); }
+    .callout.ok .callout-label { color: var(--green); }
+
+    /* ── Tables ── */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 12px 0 24px;
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: rgba(246, 162, 58, 0.07);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--panel-border);
+      white-space: nowrap;
+    }
+
+    tbody tr { transition: background 0.1s; }
+    tbody tr:hover { background: var(--panel-highlight); }
+    tbody tr:nth-child(even) { background: rgba(255,255,255,0.015); }
+    tbody tr:nth-child(even):hover { background: var(--panel-highlight); }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(255,198,150,0.07);
+      vertical-align: top;
+      color: var(--text-muted);
+    }
+
+    td strong { color: var(--text); }
+    tbody tr:last-child td { border-bottom: none; }
+
+    /* cell states */
+    .c-changed { color: var(--accent); font-weight: 600; }
+    .c-removed { color: var(--red); text-decoration: line-through; opacity: 0.7; }
+    .c-keep { color: var(--green); }
+    .c-new { color: var(--blue); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+
+    .badge-new { background: rgba(90,172,224,0.15); color: var(--blue); border: 1px solid rgba(90,172,224,0.25); }
+    .badge-changed { background: rgba(246,162,58,0.12); color: var(--accent); border: 1px solid rgba(246,162,58,0.25); }
+    .badge-remove { background: rgba(224,90,58,0.12); color: var(--red); border: 1px solid rgba(224,90,58,0.25); }
+    .badge-keep { background: rgba(94,196,122,0.12); color: var(--green); border: 1px solid rgba(94,196,122,0.25); }
+
+    /* ── Code ── */
+    code {
+      background: rgba(246,162,58,0.1);
+      border: 1px solid rgba(246,162,58,0.2);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    /* ── Checklist ── */
+    .checklist {
+      list-style: none;
+      margin: 0;
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 11px 16px;
+      border-bottom: 1px solid rgba(255,198,150,0.07);
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    .checklist li:last-child { border-bottom: none; }
+    .checklist li:hover { background: var(--panel-highlight); }
+    .checklist li.done { color: rgba(255,230,207,0.35); }
+    .checklist li.done label { text-decoration: line-through; }
+
+    .checklist input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 17px;
+      height: 17px;
+      min-width: 17px;
+      border: 1.5px solid rgba(255,198,150,0.35);
+      border-radius: 4px;
+      margin-top: 2px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s;
+      background: transparent;
+    }
+
+    .checklist input[type="checkbox"]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .checklist input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 5px;
+      height: 9px;
+      border: 2px solid #140906;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .checklist label { cursor: pointer; flex: 1; line-height: 1.4; }
+
+    /* checklist groups */
+    .checklist-group-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(246,162,58,0.06);
+      padding: 8px 16px;
+      border-bottom: 1px solid rgba(255,198,150,0.07);
+      display: block;
+    }
+
+    /* ── Mobile nav drawer ── */
+    .mobile-nav-drawer {
+      display: none;
+      background: rgba(10, 4, 2, 0.97);
+      border-bottom: 1px solid var(--panel-border);
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease;
+      grid-column: 1 / -1;
+    }
+
+    .mobile-nav-drawer.open { max-height: 80vh; overflow-y: auto; }
+
+    .mobile-nav-drawer a {
+      display: block;
+      padding: 10px 22px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,198,150,0.06);
+    }
+
+    .mobile-nav-drawer a:hover { color: var(--accent); }
+    .mobile-nav-drawer a.sub { padding-left: 36px; font-size: 13px; }
+    .mobile-nav-drawer .nav-section-label { padding: 12px 22px 4px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 720px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      aside { display: none; }
+
+      .contents-toggle { display: flex; }
+
+      .mobile-nav-drawer { display: block; }
+
+      main { padding: 24px 18px 48px; }
+
+      h2 { scroll-margin-top: 108px; }
+      h3 { scroll-margin-top: 108px; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <a href="https://www.stevemwhite.com" class="topbar-back">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      stevemwhite.com
+    </a>
+    <span class="topbar-title">Love Squeeze</span>
+    <button class="contents-toggle" id="contentsToggle" aria-expanded="false" aria-controls="mobileNav">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 2h11M1 6.5h8M1 11h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Contents
+    </button>
+  </header>
+
+  <!-- Mobile nav drawer -->
+  <nav class="mobile-nav-drawer" id="mobileNav" aria-label="Page sections">
+    <span class="nav-section-label">Circuit</span>
+    <a href="#overview">Overview</a>
+    <a href="#component-ref">Component Reference</a>
+    <a class="sub" href="#power">Power Supply</a>
+    <a class="sub" href="#input">Input Stage</a>
+    <a class="sub" href="#ic1a">IC1A — Compression</a>
+    <a class="sub" href="#jfet">JFET &amp; Gate</a>
+    <a class="sub" href="#sidechain">Sidechain / Envelope</a>
+    <a class="sub" href="#ic1b">IC1B — Output</a>
+    <span class="nav-section-label">Problems &amp; Fixes</span>
+    <a href="#issues">Known Issues</a>
+    <a class="sub" href="#issue-hpf">Sidechain Sputtering</a>
+    <a class="sub" href="#issue-treble">Treble Loss</a>
+    <a class="sub" href="#issue-release">Release Artifacts</a>
+    <span class="nav-section-label">Build</span>
+    <a href="#mods">Modifications</a>
+    <a class="sub" href="#controls">Controls</a>
+    <a class="sub" href="#changes">Component Changes</a>
+    <a href="#comparison">vs. Published Fixes</a>
+    <a href="#bom">Bill of Materials</a>
+    <a class="sub" href="#bom-ic">ICs &amp; Semiconductors</a>
+    <a class="sub" href="#bom-r">Resistors</a>
+    <a class="sub" href="#bom-c">Capacitors</a>
+    <a class="sub" href="#bom-pots">Pots</a>
+    <a href="#build-tips">Build Tips</a>
+    <a href="#checklist">Build Checklist</a>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside aria-label="Page sections">
+    <span class="nav-section-label">Circuit</span>
+    <a href="#overview">Overview</a>
+    <a href="#component-ref">Component Reference</a>
+    <a class="sub" href="#power">Power Supply</a>
+    <a class="sub" href="#input">Input Stage</a>
+    <a class="sub" href="#ic1a">IC1A — Compression</a>
+    <a class="sub" href="#jfet">JFET &amp; Gate</a>
+    <a class="sub" href="#sidechain">Sidechain / Envelope</a>
+    <a class="sub" href="#ic1b">IC1B — Output</a>
+    <hr class="nav-rule">
+    <span class="nav-section-label">Problems &amp; Fixes</span>
+    <a href="#issues">Known Issues</a>
+    <a class="sub" href="#issue-hpf">Sidechain Sputtering</a>
+    <a class="sub" href="#issue-treble">Treble Loss</a>
+    <a class="sub" href="#issue-release">Release Artifacts</a>
+    <hr class="nav-rule">
+    <span class="nav-section-label">Build</span>
+    <a href="#mods">Modifications</a>
+    <a class="sub" href="#controls">Controls</a>
+    <a class="sub" href="#changes">Component Changes</a>
+    <a href="#comparison">vs. Published Fixes</a>
+    <a href="#bom">Bill of Materials</a>
+    <a class="sub" href="#bom-ic">ICs &amp; Semiconductors</a>
+    <a class="sub" href="#bom-r">Resistors</a>
+    <a class="sub" href="#bom-c">Capacitors</a>
+    <a class="sub" href="#bom-pots">Pots</a>
+    <hr class="nav-rule">
+    <a href="#build-tips">Build Tips</a>
+    <a href="#checklist">Build Checklist</a>
+  </aside>
+
+  <!-- Main -->
+  <main>
+    <p class="page-eyebrow">Pedal Build &mdash; Perfboard</p>
+    <h1>Rothwell Love Squeeze</h1>
+    <p class="page-desc">Modified JFET compressor build with added attack, release, and threshold controls. Based on the Rothwell Love Squeeze schematic with fixes for sidechain sputtering and treble loss.</p>
+
+    <!-- OVERVIEW -->
+    <section id="overview">
+      <h2>Overview</h2>
+      <p>The Rothwell Love Squeeze is a JFET-based compressor. <strong>Q1 (2N5457)</strong> sits in the feedback loop of <strong>IC1A (TL072)</strong>. At rest, the JFET presents ~300&Omega; and IC1A runs at unity to 10&times; gain depending on the COMP pot setting.</p>
+      <p>When signal hits the input, a peak-to-peak rectifier (<strong>D3, BAR43S</strong> Schottky) develops a negative bias voltage at Q1&rsquo;s gate, increasing its resistance and reducing IC1A&rsquo;s gain &mdash; that&rsquo;s the compression. Attack time is inherently very fast, limited only by the rectifier (half a wavelength of the input fundamental). <strong>IC1B</strong> handles makeup gain and output buffering.</p>
+      <div class="callout info">
+        <span class="callout-icon">🛠</span>
+        <div class="callout-body">
+          <div class="callout-label">Build format</div>
+          Perfboard from scratch &mdash; full layout freedom, no existing PCB to modify.
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPONENT REF -->
+    <section id="component-ref">
+      <h2>Component Reference</h2>
+
+      <h3 id="power">Power Supply</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Part</th><th>Value</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><strong>D1</strong></td><td>1N4001</td><td>Polarity protection &mdash; <strong>not a signal diode</strong>, do not confuse with D4/D5</td></tr>
+            <tr><td><strong>R5</strong></td><td>22&Omega;</td><td>Supply filtering</td></tr>
+            <tr><td><strong>R6</strong></td><td>39K</td><td>Supply filtering</td></tr>
+            <tr><td><strong>R7</strong></td><td>47K</td><td>VB bias rail divider</td></tr>
+            <tr><td><strong>C5</strong></td><td>100&micro;F</td><td>VA rail bypass</td></tr>
+            <tr><td><strong>C6</strong></td><td>100&micro;F</td><td>VB rail bypass</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="input">Input Stage</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Part</th><th>Value</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><strong>R1</strong></td><td>200&Omega;</td><td>Input series resistor</td></tr>
+            <tr><td><strong>R2</strong></td><td>1M&Omega;</td><td>Input bias / bleed</td></tr>
+            <tr><td><strong>R3</strong></td><td>1M&Omega;</td><td>Input bias / bleed</td></tr>
+            <tr><td><strong>C1</strong></td><td>TBC</td><td>Input coupling cap &mdash; verify from schematic</td></tr>
+            <tr><td><strong>C2</strong></td><td>TBC</td><td>Input filter cap &mdash; verify from schematic</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="ic1a">IC1A &mdash; Compression Stage (TL072P)</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Pin&nbsp;3 = non-inv&nbsp;in &nbsp;&bull;&nbsp; Pin&nbsp;2 = inv&nbsp;in &nbsp;&bull;&nbsp; Pin&nbsp;1 = output</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Part</th><th>Value</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><strong>C4</strong></td><td class="c-changed">68nF <span class="badge badge-changed">changed</span></td><td>Sidechain HPF cap &mdash; stock ~1.5nF causes sputtering</td></tr>
+            <tr><td><strong>C12</strong></td><td class="c-changed">4.7nF <span class="badge badge-changed">changed</span></td><td>Treble rolloff in IC1A feedback &mdash; stock ~15nF is too dark</td></tr>
+            <tr><td><strong>D4, D5</strong></td><td class="c-removed">LED3MM <span class="badge badge-remove">omit</span></td><td>Soft clipping in feedback loop &mdash; don&rsquo;t populate on perfboard</td></tr>
+            <tr><td><strong>R13</strong></td><td>22&Omega;</td><td>Keep stock</td></tr>
+            <tr><td><strong>R15</strong></td><td class="c-keep">5.1K <span class="badge badge-keep">keep</span></td><td>Series with COMP pot, sets compression range floor &mdash; leave fixed</td></tr>
+            <tr><td><strong>COMP pot</strong></td><td class="c-keep">10K <span class="badge badge-keep">keep</span></td><td>Existing ratio / depth control</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="jfet">Q1 (2N5457 JFET) &amp; Gate</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Part</th><th>Value</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Q1</strong></td><td>2N5457</td><td>Socket this &mdash; V<sub>p</sub> varies between units, you may want to swap</td></tr>
+            <tr><td><strong>C11</strong></td><td>100&micro;F</td><td>Envelope timing</td></tr>
+            <tr><td><strong>R16</strong></td><td class="c-changed">500K fixed + 500K pot <span class="badge badge-changed">changed</span></td><td>Gate bias / bleed &rarr; now THRESHOLD control. Fixed 500K prevents gate from floating</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="sidechain">Sidechain / Envelope Follower</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Part</th><th>Value</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><strong>D3</strong></td><td>BAR43S</td><td>Schottky rectifier</td></tr>
+            <tr><td><strong>R10</strong></td><td class="c-changed">4.7K fixed + 47K pot <span class="badge badge-changed">changed</span></td><td>Attack timing resistor &rarr; ATTACK control (~1&ndash;11ms)</td></tr>
+            <tr><td><strong>C7</strong></td><td>220nF</td><td>Attack timing cap</td></tr>
+            <tr><td><strong>R11</strong></td><td class="c-changed">15K fixed + 25K pot <span class="badge badge-changed">changed</span></td><td>Release timing resistor &rarr; RELEASE control (~150&ndash;400ms)</td></tr>
+            <tr><td><strong>C10</strong></td><td>10&micro;F</td><td>Release timing cap</td></tr>
+            <tr><td><strong>R12</strong></td><td>1M&Omega;</td><td>Gate discharge &mdash; keep stock</td></tr>
+            <tr><td><strong>HPF resistor</strong></td><td class="c-new">+1M&Omega; in parallel <span class="badge badge-new">add</span></td><td>Add in parallel with the resistor paired with C4 &rarr; ~500K effective</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="ic1b">IC1B &mdash; Output / Makeup Gain (TL072P)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Part</th><th>Value</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><strong>R4</strong></td><td>1M&Omega;</td><td>Bias</td></tr>
+            <tr><td><strong>R8</strong></td><td>39K</td><td>Feedback</td></tr>
+            <tr><td><strong>R9</strong></td><td>22&Omega;</td><td>Output series</td></tr>
+            <tr><td><strong>C9</strong></td><td>10&micro;F</td><td>Output coupling</td></tr>
+            <tr><td><strong>VOL pot</strong></td><td class="c-keep">10K <span class="badge badge-keep">keep</span></td><td>Existing output level control</td></tr>
+            <tr><td><strong>R14</strong></td><td>200&Omega;</td><td>Output series resistor</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- KNOWN ISSUES -->
+    <section id="issues">
+      <h2>Known Design Issues</h2>
+
+      <h3 id="issue-hpf">1. Sidechain High-Pass Filter &rarr; Threshold Sputtering</h3>
+      <p>C4 in the sidechain path forms a high-pass filter around ~106Hz. At low frequencies:</p>
+      <ul>
+        <li>Rectifier sees reduced drive and higher ripple on the envelope</li>
+        <li>Phase shift causes compression to snap in and out right at the threshold</li>
+        <li>Audible as a blatty, sputtering decay on chords &mdash; especially E/A strings</li>
+        <li>Only occurs at the threshold &mdash; louder or quieter signals are fine</li>
+        <li>Confirmed design flaw in LTSpice &mdash; not a layout or component selection issue</li>
+      </ul>
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-body">
+          <div class="callout-label">Fix</div>
+          Replace C4 <code>1.5nF &rarr; 68nF</code> and add <code>1M&Omega;</code> in parallel with the resistor paired with C4 (effective ~500K). Corner drops from ~106Hz to ~4.7Hz &mdash; essentially full-range sidechain.
+        </div>
+      </div>
+      <div class="callout">
+        <span class="callout-icon">⚖️</span>
+        <div class="callout-body">
+          <div class="callout-label">Tradeoff</div>
+          Full-range sidechain allows some pumping on big low-frequency transients. Because the JFET attack is so fast, this is far less noticeable than on traditional compressors. An untested alternative is a &minus;6dB shelving filter below 100Hz in the sidechain.
+        </div>
+      </div>
+
+      <h3 id="issue-treble">2. Treble Loss (C12)</h3>
+      <p>C12 in IC1A&rsquo;s feedback rolls off high frequencies. Stock value ~15nF cuts above ~2.2kHz &mdash; source of the pedal&rsquo;s &ldquo;dark&rdquo; reputation.</p>
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-body">
+          <div class="callout-label">Fix</div>
+          Replace C12 <code>15nF &rarr; 4.7nF</code>. Raises treble corner to ~7.5kHz.
+        </div>
+      </div>
+
+      <h3 id="issue-release">3. Release Ripple Artifacts</h3>
+      <p>Stock R11 (10K) is too low, causing rectifier ripple to modulate Q1&rsquo;s gate and creating intermodulation artifacts on the compression envelope.</p>
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-body">
+          <div class="callout-label">Fix</div>
+          Replace R11 with <code>15K fixed + 25K pot</code> &mdash; adjustable ~150&ndash;400ms release range.
+        </div>
+      </div>
+    </section>
+
+    <!-- MODS -->
+    <section id="mods">
+      <h2>Modifications</h2>
+
+      <div class="callout warn">
+        <span class="callout-icon">🚨</span>
+        <div class="callout-body">
+          <div class="callout-label">Important</div>
+          <strong>D1 is the 1N4001 power supply diode &mdash; do not touch it.</strong> The LEDs being omitted are <strong>D4 and D5</strong> in the IC1A feedback loop. On perfboard, simply don&rsquo;t populate them.
+        </div>
+      </div>
+
+      <h3 id="controls">Controls</h3>
+      <p>5 panel controls total. COMP and VOL are original. ATTACK, RELEASE, and THRESHOLD are new additions.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Knob</th><th>Function</th><th>Replaces</th><th>New Components</th><th>Range</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>COMP</strong> <span class="badge badge-keep">original</span></td>
+              <td>Ratio / depth</td>
+              <td class="c-keep">Existing 10K pot</td>
+              <td>Keep as-is</td>
+              <td>&mdash;</td>
+            </tr>
+            <tr>
+              <td><strong>VOL</strong> <span class="badge badge-keep">original</span></td>
+              <td>Output level</td>
+              <td class="c-keep">Existing 10K pot</td>
+              <td>Keep as-is</td>
+              <td>&mdash;</td>
+            </tr>
+            <tr>
+              <td><strong>ATTACK</strong> <span class="badge badge-new">new</span></td>
+              <td>How fast compression engages</td>
+              <td>R10 (10K)</td>
+              <td>4.7K fixed + <strong>B47K linear pot</strong></td>
+              <td>~1ms &ndash; 11ms</td>
+            </tr>
+            <tr>
+              <td><strong>RELEASE</strong> <span class="badge badge-new">new</span></td>
+              <td>How fast compression recovers</td>
+              <td>R11 (10K)</td>
+              <td>15K fixed + <strong>B25K linear pot</strong></td>
+              <td>~150ms &ndash; 400ms</td>
+            </tr>
+            <tr>
+              <td><strong>THRESHOLD</strong> <span class="badge badge-new">new</span></td>
+              <td>Signal level that triggers compression</td>
+              <td>R16 (1M&Omega;)</td>
+              <td>500K fixed + <strong>B500K linear pot</strong></td>
+              <td>Variable gate bias</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="changes">All Component Changes</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Stock</th><th>Action</th><th>New Value</th><th>Reason</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>D4, D5</strong></td><td>LED3MM</td><td class="c-removed">Omit</td><td>&mdash;</td><td>Soft clip LEDs redundant with clean JFET gain reduction</td></tr>
+            <tr><td><strong>C4</strong></td><td>~1.5nF</td><td class="c-changed">Replace</td><td>68nF</td><td>Lower sidechain HPF corner, eliminate threshold sputtering</td></tr>
+            <tr><td><strong>HPF resistor (paired with C4)</strong></td><td>~1M&Omega;</td><td class="c-new">Add parallel 1M&Omega;</td><td>~500K effective</td><td>Completes HPF corner fix</td></tr>
+            <tr><td><strong>C12</strong></td><td>~15nF</td><td class="c-changed">Replace</td><td>4.7nF</td><td>Restore treble above ~7.5kHz</td></tr>
+            <tr><td><strong>R10</strong></td><td>10K</td><td class="c-changed">Replace</td><td>4.7K fixed + 47K pot</td><td>ATTACK control</td></tr>
+            <tr><td><strong>R11</strong></td><td>10K</td><td class="c-changed">Replace</td><td>15K fixed + 25K pot</td><td>RELEASE control</td></tr>
+            <tr><td><strong>R16</strong></td><td>1M&Omega;</td><td class="c-changed">Replace</td><td>500K fixed + 500K pot</td><td>THRESHOLD control</td></tr>
+            <tr><td><strong>R15</strong></td><td>5.1K</td><td class="c-keep">Keep fixed</td><td>5.1K</td><td>Sets compression floor &mdash; COMP pot handles ratio</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- COMPARISON -->
+    <section id="comparison">
+      <h2>vs. Published Fixes</h2>
+
+      <h3>Sidechain HPF</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Approach</th><th>Change</th><th>Corner</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><strong>This build</strong></td><td>C4: 1.5nF &rarr; 68nF + halve paired R</td><td>~4.7Hz</td><td>Full-range sidechain, definitively fixes sputtering</td></tr>
+            <tr><td>Annabelle Khoo</td><td>Same values, SPICE-verified</td><td>~4.7Hz</td><td>Identical fix</td></tr>
+            <tr><td>Forum (original source)</td><td>Same fix</td><td>~4.7Hz</td><td>Also suggests untested shelving filter alternative</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Release Fix</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Approach</th><th>Change</th><th>Range</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><strong>This build</strong></td><td>R11 &rarr; 15K + 25K pot</td><td>~150&ndash;400ms</td><td>Panel pot, live-tweakable</td></tr>
+            <tr><td>Annabelle Khoo</td><td>R10: 10K &rarr; 20K trimmer</td><td>Fixed / trimmable</td><td>Set-and-forget approach; different designator</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Treble Cap &amp; LEDs</h3>
+      <p>All approaches identical: C12 <code>15nF &rarr; 4.7nF</code>, remove D4/D5.</p>
+    </section>
+
+    <!-- BOM -->
+    <section id="bom">
+      <h2>Bill of Materials</h2>
+
+      <h3 id="bom-ic">ICs &amp; Semiconductors</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Part</th><th>Value / Type</th><th>Qty</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><strong>IC1</strong></td><td>TL072P</td><td>1</td><td>Dual op-amp &mdash; use a socket</td></tr>
+            <tr><td><strong>Q1</strong></td><td>2N5457 JFET</td><td>1</td><td><strong>Socket this</strong> &mdash; V<sub>p</sub> varies between units</td></tr>
+            <tr><td><strong>D1</strong></td><td>1N4001</td><td>1</td><td>Power supply polarity protection</td></tr>
+            <tr><td><strong>D3</strong></td><td>BAR43S Schottky</td><td>1</td><td>Sidechain rectifier</td></tr>
+            <tr><td><strong>D4, D5</strong></td><td class="c-removed">LED3MM</td><td>0</td><td>Omit entirely</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="bom-r">Resistors</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ref</th><th>Value</th><th>Qty</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>R1</td><td>200&Omega;</td><td>1</td><td></td></tr>
+            <tr><td>R2</td><td>1M&Omega;</td><td>1</td><td></td></tr>
+            <tr><td>R3</td><td>1M&Omega;</td><td>1</td><td></td></tr>
+            <tr><td>R4</td><td>1M&Omega;</td><td>1</td><td></td></tr>
+            <tr><td>R5</td><td>22&Omega;</td><td>1</td><td></td></tr>
+            <tr><td>R6</td><td>39K</td><td>1</td><td></td></tr>
+            <tr><td>R7</td><td>47K</td><td>1</td><td></td></tr>
+            <tr><td>R8</td><td>39K</td><td>1</td><td></td></tr>
+            <tr><td>R9</td><td>22&Omega;</td><td>1</td><td></td></tr>
+            <tr><td>R10 fixed</td><td class="c-changed">4.7K</td><td>1</td><td>In series with ATTACK pot</td></tr>
+            <tr><td>R11 fixed</td><td class="c-changed">15K</td><td>1</td><td>In series with RELEASE pot</td></tr>
+            <tr><td>R12</td><td>1M&Omega;</td><td>1</td><td></td></tr>
+            <tr><td>R13</td><td>22&Omega;</td><td>1</td><td></td></tr>
+            <tr><td>R14</td><td>200&Omega;</td><td>1</td><td></td></tr>
+            <tr><td>R15</td><td>5.1K</td><td>1</td><td>Keep fixed &mdash; do not replace with pot</td></tr>
+            <tr><td>R16 fixed</td><td class="c-changed">500K</td><td>1</td><td>In series with THRESHOLD pot</td></tr>
+            <tr><td>HPF parallel R</td><td class="c-new">1M&Omega;</td><td>1</td><td>Add in parallel with resistor paired with C4</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="bom-c">Capacitors</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ref</th><th>Value</th><th>Qty</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>C1</td><td>TBC</td><td>1</td><td>Input coupling &mdash; verify from schematic</td></tr>
+            <tr><td>C2</td><td>TBC</td><td>1</td><td>Input filter &mdash; verify from schematic</td></tr>
+            <tr><td>C4</td><td class="c-changed">68nF</td><td>1</td><td>Changed from ~1.5nF &mdash; sidechain HPF fix</td></tr>
+            <tr><td>C5</td><td>100&micro;F</td><td>1</td><td>VA rail bypass</td></tr>
+            <tr><td>C6</td><td>100&micro;F</td><td>1</td><td>VB rail bypass</td></tr>
+            <tr><td>C7</td><td>220nF</td><td>1</td><td>Attack timing cap</td></tr>
+            <tr><td>C9</td><td>10&micro;F</td><td>1</td><td>Output coupling</td></tr>
+            <tr><td>C10</td><td>10&micro;F</td><td>1</td><td>Release timing cap</td></tr>
+            <tr><td>C11</td><td>100&micro;F</td><td>1</td><td>Envelope timing</td></tr>
+            <tr><td>C12</td><td class="c-changed">4.7nF</td><td>1</td><td>Changed from ~15nF &mdash; treble fix</td></tr>
+            <tr><td>Decoupling</td><td class="c-new">100nF ceramic &times;2</td><td>2</td><td>One per IC supply pin to GND &mdash; place close to IC</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="bom-pots">Pots</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Control</th><th>Value</th><th>Taper</th><th>In Series With</th></tr></thead>
+          <tbody>
+            <tr><td><strong>COMP</strong></td><td>10K</td><td>B linear</td><td>R15 (5.1K fixed)</td></tr>
+            <tr><td><strong>VOL</strong></td><td>10K</td><td>B linear</td><td>&mdash;</td></tr>
+            <tr><td><strong>ATTACK</strong> <span class="badge badge-new">new</span></td><td>47K</td><td>B linear</td><td>4.7K fixed</td></tr>
+            <tr><td><strong>RELEASE</strong> <span class="badge badge-new">new</span></td><td>25K</td><td>B linear</td><td>15K fixed</td></tr>
+            <tr><td><strong>THRESHOLD</strong> <span class="badge badge-new">new</span></td><td>500K</td><td>B linear</td><td>500K fixed</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- BUILD TIPS -->
+    <section id="build-tips">
+      <h2>Build Tips</h2>
+      <ul>
+        <li><strong>Socket both IC1 (TL072) and Q1 (2N5457).</strong> JFET pinch-off voltage varies between units and directly affects threshold behaviour. Being able to swap is worth it.</li>
+        <li><strong>Add 100nF ceramic decoupling caps</strong> from each IC supply pin to GND, placed physically close to the IC. C5/C6 handle bulk storage; these handle high-frequency noise.</li>
+        <li><strong>Keep sidechain wiring short.</strong> The rectifier and envelope section is susceptible to noise pickup. Keep it away from the input path.</li>
+        <li><strong>Wire pots off-board with short leads.</strong> Keep pot wiring away from the input section to avoid noise coupling.</li>
+        <li><strong>VB mid-rail</strong> (set by R7 47K divider) is referenced by several components &mdash; make sure it has low impedance. C5/C6 handle this; don&rsquo;t skip them.</li>
+        <li><strong>Fixed resistors in series with pots are not optional.</strong> 4.7K for attack, 15K for release, 500K for threshold &mdash; they set the minimum value and prevent a floating gate or 0&Omega; short.</li>
+        <li><strong>C1 and C2 values still need to be confirmed</strong> from the original schematic &mdash; not fully legible in the schematic photo.</li>
+      </ul>
+    </section>
+
+    <!-- CHECKLIST -->
+    <section id="checklist">
+      <h2>Build Checklist</h2>
+      <ul class="checklist" id="buildChecklist">
+        <li class="checklist-group-label" style="display:block; cursor:default;">Prep</li>
+        <li><input type="checkbox" id="c1"><label for="c1">Confirm C1 and C2 values from original schematic</label></li>
+        <li><input type="checkbox" id="c2"><label for="c2">Confirm C4 stock value is ~1.5nF</label></li>
+        <li><input type="checkbox" id="c3"><label for="c3">Confirm C12 stock value is ~15nF</label></li>
+        <li><input type="checkbox" id="c4"><label for="c4">Source 68nF cap for C4</label></li>
+        <li><input type="checkbox" id="c5"><label for="c5">Source 4.7nF cap for C12</label></li>
+        <li><input type="checkbox" id="c6"><label for="c6">Source B47K linear pot for ATTACK</label></li>
+        <li><input type="checkbox" id="c7"><label for="c7">Source B25K linear pot for RELEASE</label></li>
+        <li><input type="checkbox" id="c8"><label for="c8">Source B500K linear pot for THRESHOLD</label></li>
+        <li class="checklist-group-label" style="display:block; cursor:default;">Build</li>
+        <li><input type="checkbox" id="c9"><label for="c9">IC socket installed for TL072</label></li>
+        <li><input type="checkbox" id="c10"><label for="c10">Socket installed for Q1 (2N5457)</label></li>
+        <li><input type="checkbox" id="c11"><label for="c11">100nF ceramic decoupling caps placed at IC supply pins</label></li>
+        <li><input type="checkbox" id="c12"><label for="c12">D4 and D5 not populated</label></li>
+        <li><input type="checkbox" id="c13"><label for="c13">D1 (1N4001) installed &mdash; polarity protection, not signal diode</label></li>
+        <li><input type="checkbox" id="c14"><label for="c14">1M&Omega; resistor added in parallel with HPF resistor (paired with C4)</label></li>
+        <li><input type="checkbox" id="c15"><label for="c15">Fixed resistors in series with all three new pots installed</label></li>
+        <li class="checklist-group-label" style="display:block; cursor:default;">Test</li>
+        <li><input type="checkbox" id="c16"><label for="c16">Power supply rails (VA and VB) verified before inserting ICs</label></li>
+        <li><input type="checkbox" id="c17"><label for="c17">Signal passes with JFET removed (confirm no compression)</label></li>
+        <li><input type="checkbox" id="c18"><label for="c18">Compression engages when JFET reinstalled</label></li>
+        <li><input type="checkbox" id="c19"><label for="c19">Sputtering fix confirmed &mdash; E/A strings at medium level, no stutter at threshold</label></li>
+        <li><input type="checkbox" id="c20"><label for="c20">Treble fix confirmed &mdash; no muddiness at high comp settings</label></li>
+        <li><input type="checkbox" id="c21"><label for="c21">ATTACK pot sweeps correctly &mdash; punchy to smooth</label></li>
+        <li><input type="checkbox" id="c22"><label for="c22">RELEASE pot sweeps correctly &mdash; tail length changes audibly</label></li>
+        <li><input type="checkbox" id="c23"><label for="c23">THRESHOLD pot sweeps correctly &mdash; compression kicks in earlier / later</label></li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // Mobile nav toggle
+  const toggle = document.getElementById('contentsToggle');
+  const drawer = document.getElementById('mobileNav');
+
+  toggle.addEventListener('click', () => {
+    const open = drawer.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open);
+  });
+
+  // Close mobile nav when a link is clicked
+  drawer.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      drawer.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  // Checklist persistence via localStorage
+  const checkboxes = document.querySelectorAll('.checklist input[type="checkbox"]');
+
+  checkboxes.forEach(cb => {
+    // Restore saved state
+    if (localStorage.getItem('ls-check-' + cb.id) === 'true') {
+      cb.checked = true;
+      cb.closest('li').classList.add('done');
+    }
+
+    cb.addEventListener('change', () => {
+      localStorage.setItem('ls-check-' + cb.id, cb.checked);
+      cb.closest('li').classList.toggle('done', cb.checked);
+    });
+  });
+
+  // Active nav highlight on scroll
+  const sections = document.querySelectorAll('section, h2, h3[id]');
+  const navLinks = document.querySelectorAll('aside a');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.style.color = '';
+          link.style.borderLeftColor = '';
+        });
+        const id = entry.target.id || entry.target.closest('[id]')?.id;
+        if (id) {
+          const active = document.querySelector(`aside a[href="#${id}"]`);
+          if (active) {
+            active.style.color = 'var(--accent)';
+            active.style.borderLeftColor = 'var(--accent)';
+          }
+        }
+      }
+    });
+  }, { rootMargin: '-52px 0px -70% 0px', threshold: 0 });
+
+  document.querySelectorAll('[id]').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
