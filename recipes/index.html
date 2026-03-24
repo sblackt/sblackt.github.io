@@ -5709,6 +5709,537 @@
           extra_rich: 'Brown the butter before adding it to the batter for deep nutty flavour. For the topping, add an extra knob of butter and a small splash of cream or coconut cream to create a richer caramel-like sauce around the fruit.',
           spicier: 'Add a pinch of cayenne to the dry ingredients for a subtle background heat in the pancakes. Finish the topping with a small pinch of chili flakes or Tajín for a contrast that makes the mango flavour pop.'
         }
+      },
+      {
+        id: 'cornish-hen-au-pied-de-cochon',
+        name: 'Cornish Hen — Au Pied de Cochon Style',
+        version: 1,
+        servings: {
+          count: 2,
+          note: 'Dinner for two. Rich, Québécois, unapologetic.'
+        },
+        metadata: {
+          style: 'Québécois spatchcocked cornish hen with maple-cider glaze',
+          diet: {
+            vegetarian: false,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: 'A full Au Pied de Cochon-inspired dinner for two: quick no-knead baguette with rillettes and brie to start, spatchcocked cornish hen with compound butter and maple-cider glaze over roasted root vegetables, smashed duck fat potatoes, and an optional pan jus.'
+        },
+        components: [
+          {
+            id: 'quick-baguette',
+            name: 'Quick No-Knead Baguette',
+            kind: 'bread',
+            ingredients: [
+              {
+                section: 'Dough',
+                items: [
+                  {
+                    name: 'All-purpose flour',
+                    amount: 2,
+                    unit: 'cups',
+                    prep: '260g',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Instant yeast',
+                    amount: 1.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Warm water',
+                    amount: 200,
+                    unit: 'ml',
+                    prep: 'about 110°F (¾ cup + 2 tbsp)',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Mix the dough (T-3:00)',
+                instructions: [
+                  'Mix flour, yeast, and salt in a bowl.',
+                  'Add warm water. Stir with a wooden spoon until shaggy — don\'t knead, just combine until no dry flour remains.',
+                  'Cover with a damp towel. Let rise in a warm spot for about 2 hours.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Shape and bake (T-0:30 to T-0:20)',
+                instructions: [
+                  'Flour your counter generously. Turn the dough out.',
+                  'Gently shape into a rough log about 14–16 inches long — don\'t punch it down aggressively. Rustic is the vibe.',
+                  'Place on a parchment-lined baking sheet. Slash the top 3–4 times with a sharp knife.',
+                  'Rest the shaped loaf for 10 minutes while the hen finishes its first roasting phase.',
+                  'Place a small oven-safe dish of water on the lower rack for steam.',
+                  'Bake at 425°F for 18–22 minutes until golden and hollow-sounding when tapped.',
+                  'Tear into pieces and set out with rillettes, terrine, and brie — eat this standing in the kitchen with a glass of something while the hen rests.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'cornish-hen',
+            name: 'Spatchcocked Cornish Hen with Maple-Cider Glaze',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'The hen',
+                items: [
+                  {
+                    name: 'Cornish hen',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: '~1.5 lb',
+                    notes: '',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Small whole chicken',
+                        ratio: '1:1',
+                        notes: 'Increase roasting time by 10–15 minutes.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Compound butter',
+                items: [
+                  {
+                    name: 'Unsalted butter',
+                    amount: 3,
+                    unit: 'tbsp',
+                    prep: 'softened',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Chicken livers',
+                    amount: 3,
+                    unit: 'livers',
+                    prep: 'seared and finely mashed',
+                    notes: 'A $2 nod to foie gras — deeply worth it if you can get livers. Even 2 livers make a big difference.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Garlic cloves',
+                    amount: 2,
+                    unit: 'cloves',
+                    prep: 'minced',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Fresh thyme',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: 'leaves stripped',
+                    notes: '',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Dried thyme',
+                        ratio: '1 tbsp fresh ≈ 1 tsp dried',
+                        notes: ''
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Dijon mustard',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: 'for the butter',
+                    notes: 'Adjust to taste.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Black pepper',
+                    amount: 0.125,
+                    unit: 'tsp',
+                    prep: 'for the butter',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Maple-cider glaze',
+                items: [
+                  {
+                    name: 'Maple syrup',
+                    amount: 0.25,
+                    unit: 'cup',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Apple cider',
+                    amount: 0.25,
+                    unit: 'cup',
+                    prep: 'hard or soft, both work',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Cider vinegar',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Black pepper',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    prep: 'generous crack',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Root veg bed',
+                items: [
+                  {
+                    name: 'Carrots',
+                    amount: 2,
+                    unit: 'medium',
+                    prep: 'peeled, cut into chunky 3-inch batons about ½ inch thick',
+                    notes: 'Big enough that they won\'t burn under the hen.',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Parsnip',
+                    amount: 1,
+                    unit: 'large',
+                    prep: 'peeled, cut into chunky 3-inch batons about ½ inch thick',
+                    notes: '',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Turnip or celeriac',
+                        ratio: '1:1 by volume',
+                        notes: 'Similar earthy sweetness.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Duck fat or olive oil',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: 'for tossing the veg',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Make the compound butter (T-2:00)',
+                instructions: [
+                  'If using chicken livers: heat a small pan over high heat with a knob of butter. Sear the livers hard, 1–2 minutes per side — they should still be pink inside. Let cool, then mince very finely and mash with a fork.',
+                  'Mix softened butter with the mashed livers (or skip), garlic, thyme, Dijon, salt, and pepper. Combine until smooth.',
+                  'Set aside at room temperature.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Spatchcock the hen (T-2:00)',
+                instructions: [
+                  'Place hen breast-side down. Using kitchen shears, cut along both sides of the backbone and remove it. Save it for stock if you want.',
+                  'Flip the hen breast-side up and press down firmly on the breastbone until it cracks flat.',
+                  'Gently loosen the skin over the breasts and thighs with your fingers. Spread about ⅔ of the compound butter under the skin, directly on the meat.',
+                  'Spread the remaining ⅓ on top of the skin.',
+                  'Season generously with salt and pepper.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Make the maple-cider glaze (T-2:00)',
+                instructions: [
+                  'Combine maple syrup, apple cider, cider vinegar, and a generous crack of black pepper in a small saucepan.',
+                  'Bring to a boil, then reduce heat and simmer until reduced by about half — it should coat the back of a spoon, about 5–7 minutes.',
+                  'Set aside. It will thicken more as it cools.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Roast the hen (T-1:00)',
+                instructions: [
+                  'Preheat oven to 425°F.',
+                  'Toss the root veg batons with duck fat or olive oil, salt, and pepper. Scatter in a single layer in a cast iron skillet or roasting pan.',
+                  'Place the spatchcocked hen skin-side up directly on top of the vegetables.',
+                  'Put the hen AND the smashed potatoes (on their sheet pan) into the oven at the same time.',
+                  'Roast undisturbed for 30 minutes.'
+                ]
+              },
+              {
+                order: 5,
+                title: 'Glaze and finish (T-0:25)',
+                instructions: [
+                  'After 30 minutes, pull the hen out.',
+                  'Brush generously with the maple-cider glaze — skin, legs, all of it.',
+                  'Return to the oven for 10–12 more minutes, until the skin is deeply bronzed and lacquered and the thigh registers 165°F on a thermometer.',
+                  'If the potatoes are golden and crispy, pull them now.',
+                  'Transfer the hen to a cutting board to rest. Remove the root veg to a serving dish.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'smashed-duck-fat-potatoes',
+            name: 'Smashed Duck Fat Potatoes',
+            kind: 'side',
+            ingredients: [
+              {
+                section: 'Potatoes',
+                items: [
+                  {
+                    name: 'Yellow potatoes',
+                    amount: 1,
+                    unit: 'lb',
+                    prep: 'small-to-medium sized, whole',
+                    notes: '',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Yukon Gold potatoes',
+                        ratio: '1:1',
+                        notes: 'Same family, equally good.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Duck fat',
+                    amount: 3,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'A small jar goes a long way and transforms the texture.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Butter or olive oil',
+                        ratio: '1:1',
+                        notes: 'Good but not the same — duck fat is the move here.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Flaky salt',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: 'to finish',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Fresh thyme or parsley',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: 'to finish',
+                    notes: '',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Boil and smash (T-1:15)',
+                instructions: [
+                  'Boil potatoes whole in well-salted water until fork-tender, about 15–20 minutes.',
+                  'Drain. Let them steam-dry for a minute.',
+                  'On a sheet pan, smash each potato with the bottom of a glass or measuring cup until about ½ inch thick. They should be cracked and craggy — that\'s where the crunch happens.',
+                  'Spoon duck fat over each one. Season with salt and pepper.',
+                  'Set aside until the hen is ready to go in.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Roast until crispy (T-1:00)',
+                instructions: [
+                  'Put the sheet pan of potatoes into the 425°F oven at the same time as the hen.',
+                  'Roast until the edges are golden and deeply crispy, about 35–40 minutes total.',
+                  'If golden before the hen finishes glazing, pull them and keep warm.',
+                  'Finish with flaky salt and fresh herbs.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'pan-jus',
+            name: 'Pan Jus',
+            kind: 'sauce',
+            ingredients: [
+              {
+                section: 'Jus',
+                items: [
+                  {
+                    name: 'Apple cider',
+                    amount: 0.5,
+                    unit: 'cup',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Chicken stock',
+                    amount: 0.5,
+                    unit: 'cup',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Water',
+                        ratio: '1:1',
+                        notes: 'Lighter but still picks up all the fond.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Tomato paste',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: '',
+                    notes: 'For depth and colour.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Build the jus (T-0:05)',
+                instructions: [
+                  'Transfer the rested hen to a cutting board. Remove the root veg to a serving dish.',
+                  'Place the roasting pan on the stove over medium heat.',
+                  'Stir in tomato paste if using.',
+                  'Add the apple cider and chicken stock. Scrape up all the fond from the bottom of the pan.',
+                  'Let reduce by half, about 3–4 minutes.',
+                  'Strain or serve as-is. Season with salt.',
+                  'Halve the hen straight down the middle for two portions. Plate over the roasted carrots and parsnip, pile the smashed potatoes alongside, and spoon the jus over everything.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'T-3:00 — Mix baguette dough',
+            items: [
+              { component: 'quick-baguette', step: 1 }
+            ]
+          },
+          {
+            order: 2,
+            label: 'T-2:00 — Compound butter, spatchcock, glaze',
+            items: [
+              { component: 'cornish-hen', step: 1 },
+              { component: 'cornish-hen', step: 2 },
+              { component: 'cornish-hen', step: 3 }
+            ]
+          },
+          {
+            order: 3,
+            label: 'T-1:15 — Boil and smash potatoes',
+            items: [
+              { component: 'smashed-duck-fat-potatoes', step: 1 }
+            ]
+          },
+          {
+            order: 4,
+            label: 'T-1:00 — Hen and potatoes in the oven',
+            items: [
+              { component: 'cornish-hen', step: 4 },
+              { component: 'smashed-duck-fat-potatoes', step: 2 }
+            ]
+          },
+          {
+            order: 5,
+            label: 'T-0:30 — Shape and rest the baguette',
+            items: [
+              { component: 'quick-baguette', step: 2 }
+            ]
+          },
+          {
+            order: 6,
+            label: 'T-0:25 — Glaze the hen, baguette in the oven',
+            items: [
+              { component: 'cornish-hen', step: 5 }
+            ]
+          },
+          {
+            order: 7,
+            label: 'Serve — Jus while hen rests, then plate',
+            items: [
+              { component: 'pan-jus', step: 1 }
+            ]
+          }
+        ],
+        substitution_summary: {
+          no_livers: 'Skip the chicken livers in the compound butter — plain garlic-thyme-Dijon butter is still excellent. The liver adds a foie-gras-adjacent richness, but the maple-cider glaze carries the dish on its own.',
+          no_duck_fat: 'Use butter or olive oil for the smashed potatoes. You\'ll still get good crunch, just not quite the same depth. Duck fat is cheap, keeps for months in the fridge, and is worth keeping on hand.',
+          gluten_free: 'Skip the baguette or use a gluten-free flour blend for the dough. The hen, potatoes, and jus are naturally gluten-free.',
+          non_alcoholic_cider: 'Use fresh-pressed or non-alcoholic apple cider for the glaze and jus. The result is just as good — the cider is there for brightness and body, not booze.',
+          extra_rich: 'Brown the compound butter before mixing, add a splash of cream to the jus, and drizzle a little extra maple syrup over the plated potatoes. This is an Au Pied de Cochon tribute — lean in.'
+        }
       }
     ];
 
