@@ -7319,12 +7319,15 @@
       document.body.style.overflow = isOpen ? 'hidden' : '';
     };
 
-    const selectRecipe = (recipeId, { scrollToCard = true, closeDrawer = false } = {}) => {
+    const selectRecipe = (recipeId, { scrollToCard = true, closeDrawer = false, updateHash = true } = {}) => {
       const recipe = recipes.find((entry) => entry.id === recipeId);
       if (!recipe) return;
       activeRecipe = recipe;
       activeTab = 'ingredients';
       activeComponentId = null;
+      if (updateHash) {
+        history.replaceState(null, '', `#${recipeId}`);
+      }
       renderRecipeList();
       renderRecipeDetails();
       if (scrollToCard) {
@@ -7779,6 +7782,16 @@
 
     refreshRecipeViews();
     setMobileDrawerState(false);
+
+    const initialHash = window.location.hash.slice(1);
+    if (initialHash) {
+      selectRecipe(initialHash, { scrollToCard: true, updateHash: false });
+    }
+
+    window.addEventListener('hashchange', () => {
+      const id = window.location.hash.slice(1);
+      if (id) selectRecipe(id, { scrollToCard: true, updateHash: false });
+    });
   </script>
 </body>
 </html>
