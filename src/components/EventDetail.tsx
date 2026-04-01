@@ -73,6 +73,16 @@ interface EventDetailProps {
   onEventUpdated: () => void;
 }
 
+const getAnonymousVoterId = (): string => {
+  const key = 'meeple_voter_id';
+  let id = localStorage.getItem(key);
+  if (!id) {
+    id = uuidv4();
+    localStorage.setItem(key, id);
+  }
+  return id;
+};
+
 const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const [responses, setResponses] = useState<AvailabilityResponse[]>([]);
   const [participantName, setParticipantName] = useState('');
@@ -502,11 +512,10 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   };
 
   const handleRescheduleVote = async (vote: 'yes' | 'no') => {
-    const name = participantName.trim();
-    if (!name) return;
-    if (event.rescheduleVote?.voters.includes(name)) return;
+    const voterId = getAnonymousVoterId();
+    if (event.rescheduleVote?.voters.includes(voterId)) return;
     try {
-      await firebaseService.castRescheduleVote(event.id, vote, name);
+      await firebaseService.castRescheduleVote(event.id, vote, voterId);
       onEventUpdated();
     } catch (error) {
       console.error('Error casting reschedule vote:', error);
@@ -1214,8 +1223,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
             const vote = event.rescheduleVote!;
             const interestedCount = event.interestedCount ?? 0;
             const totalVotes = vote.yesVotes + vote.noVotes;
-            const name = participantName.trim();
-            const hasVoted = name ? vote.voters.includes(name) : false;
+            const hasVoted = vote.voters.includes(getAnonymousVoterId());
             const noWins = vote.noVotes > vote.yesVotes && totalVotes >= interestedCount && interestedCount > 0;
 
             return (
@@ -1227,8 +1235,6 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
                       type="button"
                       className="reschedule-vote-btn yes"
                       onClick={() => void handleRescheduleVote('yes')}
-                      disabled={!name}
-                      title={!name ? 'Enter your name below to vote' : undefined}
                     >
                       ✅ Yes, let's reschedule
                     </button>
@@ -1236,14 +1242,9 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
                       type="button"
                       className="reschedule-vote-btn no"
                       onClick={() => void handleRescheduleVote('no')}
-                      disabled={!name}
-                      title={!name ? 'Enter your name below to vote' : undefined}
                     >
                       ❌ No, let's call it
                     </button>
-                    {!name && (
-                      <p className="reschedule-vote-name-hint">Enter your name below to cast a vote.</p>
-                    )}
                   </div>
                 ) : (
                   <p className="reschedule-vote-voted">You've voted.</p>
