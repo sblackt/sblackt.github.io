@@ -185,6 +185,7 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     });
 
     return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event.id, savedName]);
 
   useEffect(() => {
