@@ -1656,40 +1656,31 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
                       )}
                     </div>
                   </div>
-                  {available.length > 0 && (
-                    <div className="available-participants">
-                      <span className="available-label">Available:</span>
-                      {available.map(({ name, preference }, index) => {
-                        let icon = '';
-                        let prefClass = 'available';
-
-                        if (preference === 'tentative') {
-                          icon = '? ';
-                          prefClass = 'tentative';
-                        } else if (preference === 'preferred') {
-                          icon = '★ ';
-                          prefClass = 'preferred';
-                        }
-
-                        return (
-                          <React.Fragment key={`${name}-${index}`}>
-                            <span className={`participant-name ${prefClass}`}>
-                              {icon}{name}
-                            </span>
-                            {index < available.length - 1 && ', '}
-                          </React.Fragment>
-                        );
-                      })}
-                    </div>
-                  )}
+                  {available.length > 0 && (() => {
+                    const groups = (['preferred', 'available', 'tentative'] as const)
+                      .map(pref => ({ pref, count: available.filter(a => a.preference === pref).length }))
+                      .filter(g => g.count > 0);
+                    return (
+                      <div className="available-participants">
+                        <span className="available-label">Available:</span>
+                        {groups.map(({ pref, count }, i) => {
+                          const icon = pref === 'preferred' ? '★ ' : pref === 'tentative' ? '? ' : '';
+                          return (
+                            <React.Fragment key={pref}>
+                              <span className={`participant-name ${pref}`}>{icon}{count}</span>
+                              {i < groups.length - 1 && ', '}
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                   {unavailable.length > 0 && (
                     <div className="unavailable-participants">
                       <span className="unavailable-label">Not Available:</span>
-                      {unavailable.map((name, index) => (
-                        <span key={`${name}-${index}`} className="participant-name unavailable">
-                          {name}{index < unavailable.length - 1 ? ', ' : ''}
-                        </span>
-                      ))}
+                      <span className="participant-name unavailable">
+                        {unavailable.length}
+                      </span>
                     </div>
                   )}
                   {available.length === 0 && unavailable.length === 0 && (
