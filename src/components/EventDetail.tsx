@@ -500,6 +500,19 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
     }
   };
 
+  const handleRescheduleVote = async (vote: 'yes' | 'no') => {
+    const name = participantName.trim();
+    if (!name) return;
+    if (event.rescheduleVote?.voters.includes(name)) return;
+    try {
+      await firebaseService.castRescheduleVote(event.id, vote, name);
+      onEventUpdated();
+    } catch (error) {
+      console.error('Error casting reschedule vote:', error);
+      alert('Failed to record your vote. Please try again.');
+    }
+  };
+
   const handleTrashEvent = async () => {
     if (!window.confirm('Move this event to the trash? This will hide it from all lists.')) {
       return;
@@ -1196,6 +1209,64 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
             </div>
           </div>
 
+          {event.rescheduleVote && (() => {
+            const vote = event.rescheduleVote!;
+            const interestedCount = event.interestedCount ?? 0;
+            const totalVotes = vote.yesVotes + vote.noVotes;
+            const name = participantName.trim();
+            const hasVoted = name ? vote.voters.includes(name) : false;
+            const noWins = vote.noVotes > vote.yesVotes && totalVotes >= interestedCount && interestedCount > 0;
+
+            return (
+              <div className="reschedule-vote-card">
+                <p className="reschedule-vote-question">Should this event be rescheduled?</p>
+                {!hasVoted ? (
+                  <div className="reschedule-vote-buttons">
+                    <button
+                      type="button"
+                      className="reschedule-vote-btn yes"
+                      onClick={() => void handleRescheduleVote('yes')}
+                      disabled={!name}
+                      title={!name ? 'Enter your name below to vote' : undefined}
+                    >
+                      ✅ Yes, let's reschedule
+                    </button>
+                    <button
+                      type="button"
+                      className="reschedule-vote-btn no"
+                      onClick={() => void handleRescheduleVote('no')}
+                      disabled={!name}
+                      title={!name ? 'Enter your name below to vote' : undefined}
+                    >
+                      ❌ No, let's call it
+                    </button>
+                    {!name && (
+                      <p className="reschedule-vote-name-hint">Enter your name below to cast a vote.</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="reschedule-vote-voted">You've voted.</p>
+                )}
+                <p className="reschedule-vote-tally">
+                  {vote.yesVotes} reschedule · {vote.noVotes} cancel
+                  {totalVotes > 0 && ` (${totalVotes} ${totalVotes === 1 ? 'vote' : 'votes'})`}
+                </p>
+                {noWins && (
+                  <div className="reschedule-vote-cancel-prompt">
+                    <p>The group voted to cancel this event.</p>
+                    <button
+                      type="button"
+                      className="reschedule-vote-archive-btn"
+                      onClick={() => void handleArchiveEvent()}
+                    >
+                      Archive this event
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           <div className="reaction-inline">
             <div className="reaction-summary">
               {hasReactions ? (
@@ -1281,6 +1352,19 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
                   }}
                 >
                   Mark Complete
+                </button>
+              )}
+              {!event.rescheduleVote && (
+                <button
+                  type="button"
+                  className="actions-menu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeActionsMenu();
+                    void firebaseService.startRescheduleVote(event.id);
+                  }}
+                >
+                  Start Reschedule Vote
                 </button>
               )}
               <button

@@ -9,6 +9,7 @@ import {
   query,
   where,
   increment,
+  arrayUnion,
   deleteField,
   writeBatch
 } from 'firebase/firestore';
@@ -124,6 +125,28 @@ export const firebaseService = {
     const docRef = doc(db, EVENTS_COLLECTION, eventId);
     await updateDoc(docRef, {
       [`reactions.${emoji}`]: increment(1),
+      updatedAt: new Date().toISOString()
+    });
+  },
+
+  async startRescheduleVote(eventId: string): Promise<void> {
+    const docRef = doc(db, EVENTS_COLLECTION, eventId);
+    await updateDoc(docRef, {
+      rescheduleVote: {
+        startedAt: new Date().toISOString(),
+        yesVotes: 0,
+        noVotes: 0,
+        voters: []
+      },
+      updatedAt: new Date().toISOString()
+    });
+  },
+
+  async castRescheduleVote(eventId: string, vote: 'yes' | 'no', voterName: string): Promise<void> {
+    const docRef = doc(db, EVENTS_COLLECTION, eventId);
+    await updateDoc(docRef, {
+      [`rescheduleVote.${vote}Votes`]: increment(1),
+      'rescheduleVote.voters': arrayUnion(voterName),
       updatedAt: new Date().toISOString()
     });
   },

@@ -40,6 +40,16 @@ export interface Event {
     lastSentAt?: string;
     reminderCount?: number;
   };
+  staleEventReminders?: {
+    lastSentAt?: string;
+    reminderCount?: number;
+  };
+  rescheduleVote?: {
+    startedAt: string;
+    yesVotes: number;
+    noVotes: number;
+    voters: string[];
+  };
 }
 
 export type AvailabilityPreference = 'available' | 'tentative' | 'preferred' | 'unavailable';

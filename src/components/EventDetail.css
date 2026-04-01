@@ -621,6 +621,114 @@
   padding: 2px 4px;
 }
 
+.reschedule-vote-card {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: var(--accent-bg, rgba(102, 126, 234, 0.08));
+  border: 1px solid var(--accent-color, #667eea);
+  border-radius: 10px;
+}
+
+.reschedule-vote-question {
+  font-weight: 700;
+  font-size: 15px;
+  margin: 0 0 12px;
+  color: var(--accent-text, #2d2f55);
+}
+
+.reschedule-vote-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.reschedule-vote-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.reschedule-vote-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.reschedule-vote-btn:not(:disabled):hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.reschedule-vote-btn.yes {
+  background: #27ae60;
+  color: #fff;
+}
+
+.reschedule-vote-btn.no {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.reschedule-vote-name-hint {
+  width: 100%;
+  font-size: 12px;
+  color: #6c757d;
+  margin: 0;
+}
+
+.reschedule-vote-voted {
+  font-size: 14px;
+  font-style: italic;
+  color: #6c757d;
+  margin: 0 0 8px;
+}
+
+.reschedule-vote-tally {
+  font-size: 13px;
+  color: var(--accent-text, #2d2f55);
+  margin: 0;
+}
+
+.reschedule-vote-cancel-prompt {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgba(231, 76, 60, 0.08);
+  border: 1px solid #e74c3c;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reschedule-vote-cancel-prompt p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #c0392b;
+  flex: 1;
+}
+
+.reschedule-vote-archive-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.reschedule-vote-archive-btn:hover {
+  opacity: 0.85;
+}
+
 .reaction-inline {
   margin-top: 12px;
   display: flex;

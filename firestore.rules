@@ -71,7 +71,9 @@ service cloud.firestore {
         'remindersSent',
         'location',
         'interestedCount',
-        'availabilityReminders'
+        'availabilityReminders',
+        'staleEventReminders',
+        'rescheduleVote'
       ]) &&
       nonEmptyString(data.title, 140) &&
       nonEmptyString(data.createdBy, 80) &&
@@ -95,7 +97,9 @@ service cloud.firestore {
       optionalMap(data, 'remindersSent') &&
       optionalMap(data, 'location') &&
       optionalInt(data, 'interestedCount') &&
-      optionalMap(data, 'availabilityReminders');
+      optionalMap(data, 'availabilityReminders') &&
+      optionalMap(data, 'staleEventReminders') &&
+      optionalMap(data, 'rescheduleVote');
     }
 
     function optionalInt(data, field) {

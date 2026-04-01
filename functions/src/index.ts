@@ -53,6 +53,16 @@ interface PlannerEvent {
     lastSentAt?: string;
     reminderCount?: number;
   };
+  staleEventReminders?: {
+    lastSentAt?: string;
+    reminderCount?: number;
+  };
+  rescheduleVote?: {
+    startedAt: string;
+    yesVotes: number;
+    noVotes: number;
+    voters: string[];
+  };
 }
 
 const EVENT_TYPE_MAP: Record<EventCategory, {
@@ -898,6 +908,17 @@ export const onEventPlanned = functions.firestore
 const AVAILABILITY_FIRST_REMINDER_DAYS = 5;
 const AVAILABILITY_SUBSEQUENT_INTERVAL_DAYS = 2;
 const RESPONSES_COLLECTION = 'responses';
+const STALE_EVENT_MAX_REMINDERS = 2;
+const STALE_EVENT_FOLLOWUP_DAYS = 3;
+const STALE_EVENT_MIN_AGE_DAYS = 30;
+
+const isEventStale = (event: PlannerEvent, now: Date): boolean => {
+  if (event.confirmedTimeSlotId) return false;
+  if (!event.timeSlots || event.timeSlots.length === 0) return false;
+  const createdAt = new Date(event.createdAt ?? now.toISOString());
+  if (differenceInCalendarDays(now, createdAt) < STALE_EVENT_MIN_AGE_DAYS) return false;
+  return event.timeSlots.every(slot => differenceInCalendarDays(parseLocalDate(slot.date), now) < 0);
+};
 
 const sendAvailabilityReminder = async (params: {
   event: PlannerEvent;
@@ -1047,6 +1068,205 @@ const sendAvailabilityReminder = async (params: {
   }
 };
 
+const sendStaleEventNudge = async (params: {
+  event: PlannerEvent;
+  eventId: string;
+  isFollowUp: boolean;
+  currentVote?: { yesVotes: number; noVotes: number };
+}) => {
+  const { event, eventId, isFollowUp, currentVote } = params;
+  const webhookUrl = getDiscordWebhookUrl(event.eventType);
+  if (!webhookUrl) {
+    functions.logger.warn('Skipping stale event nudge — discord.webhook_url not set.');
+    return;
+  }
+
+  const theme = getEventTypeConfig(event.eventType);
+  const shareLink = buildShareLink(eventId);
+
+  const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
+  type StaleCopySet = { title: string; nudge: string; cta: string; fallback: string };
+
+  const staleVariants: Record<EventCategory, StaleCopySet[]> = {
+    dnd: [
+      {
+        title: `${theme.icon} Should the campaign continue? — ${event.title}`,
+        nudge: `All proposed quest dates have passed with no confirmed session. Should the party try again, or call it?`,
+        cta: `[Cast your vote](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — all quest dates have passed. Should the campaign continue?`
+      },
+      {
+        title: `${theme.icon} The quest board has expired — ${event.title}`,
+        nudge: `Every date on the quest board is now in the past. Is the party ready to forge a new path, or hang up their swords?`,
+        cta: `[Cast your vote](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — the quest board has expired. Reschedule or cancel?`
+      }
+    ],
+    'board-game': [
+      {
+        title: `${theme.icon} Keep it on the table? — ${event.title}`,
+        nudge: `All proposed game dates have passed and nothing was locked in. Should the group deal new dates, or pack it away?`,
+        cta: `[Cast your vote](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — all proposed dates have passed. Keep it going or call it?`
+      },
+      {
+        title: `${theme.icon} ${event.title} — reschedule or cancel?`,
+        nudge: `The table is set but the calendar is empty. Is the group ready to play, or is this one getting shelved?`,
+        cta: `[Cast your vote](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — all dates have passed. Should the group deal new ones?`
+      }
+    ],
+    hangout: [
+      {
+        title: `${theme.icon} Should we still make this happen? — ${event.title}`,
+        nudge: `All the proposed hangout dates have come and gone. Is the group still down, or should we let this one go?`,
+        cta: `[Cast your vote](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — all proposed dates have passed. Still want to make it happen?`
+      },
+      {
+        title: `${theme.icon} ${event.title} — try again or let it go?`,
+        nudge: `Every proposed date is now in the past with no plan confirmed. What does the group think?`,
+        cta: `[Cast your vote](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — all dates have passed. Reschedule or move on?`
+      }
+    ],
+    'worker-bee': [
+      {
+        title: `${theme.icon} Worth rescheduling? — ${event.title}`,
+        nudge: `All the proposed work bee dates are in the past and nothing was scheduled. Should the crew regroup, or wrap it up?`,
+        cta: `[Cast your vote](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — work dates have expired. Worth rescheduling?`
+      },
+      {
+        title: `${theme.icon} ${event.title} — reschedule or cancel?`,
+        nudge: `Every proposed date has passed with no confirmed time. Should the crew keep going or call it done?`,
+        cta: `[Cast your vote](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — all proposed dates are in the past. Reschedule or cancel?`
+      }
+    ],
+    other: [
+      {
+        title: `${theme.icon} Should we try again? — ${event.title}`,
+        nudge: `All the proposed dates for this event have passed with nothing confirmed. Should the group try again or let it go?`,
+        cta: `[Cast your vote](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — all proposed dates have passed. Try again or move on?`
+      },
+      {
+        title: `${theme.icon} ${event.title} — reschedule or cancel?`,
+        nudge: `Every proposed date is now in the past and no time was confirmed. What does the group want to do?`,
+        cta: `[Cast your vote](${shareLink})`,
+        fallback: `${theme.icon} **${event.title}** — needs a decision. Reschedule or cancel?`
+      }
+    ]
+  };
+
+  const variants = staleVariants[event.eventType ?? 'other'] ?? staleVariants.other;
+  const copy = pick(variants);
+
+  const title = isFollowUp ? `Friendly reminder: ${copy.title}` : copy.title;
+
+  const voteTallyLine = isFollowUp && currentVote
+    ? `\nCurrent vote: **${currentVote.yesVotes}** reschedule · **${currentVote.noVotes}** cancel`
+    : '';
+
+  const payload = {
+    username: 'Meeple Planner',
+    embeds: [
+      {
+        title,
+        description: [
+          copy.nudge,
+          voteTallyLine,
+          '',
+          copy.cta
+        ].filter(line => line !== '').join('\n'),
+        url: buildAppEventLink(eventId),
+        color: theme.embedColor,
+        footer: { text: 'Shared via Meeple Planner' }
+      }
+    ],
+    content: `${copy.fallback}\n${shareLink}`
+  };
+
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Discord webhook failed: ${response.status} ${body}`);
+  }
+};
+
+const runStaleEventNudgeJob = async () => {
+  const now = new Date();
+
+  try {
+    const snapshot = await firestore.collection(EVENTS_COLLECTION)
+      .where('isActive', '==', true)
+      .get();
+
+    const tasks = snapshot.docs.map(async (doc) => {
+      const event = doc.data() as PlannerEvent;
+      const eventId = doc.id;
+
+      if (!isEventStale(event, now)) return;
+
+      const reminderCount = event.staleEventReminders?.reminderCount ?? 0;
+      if (reminderCount >= STALE_EVENT_MAX_REMINDERS) return;
+
+      const lastSentAt = event.staleEventReminders?.lastSentAt
+        ? new Date(event.staleEventReminders.lastSentAt)
+        : null;
+
+      if (lastSentAt) {
+        const daysSinceLastNudge = differenceInCalendarDays(now, lastSentAt);
+        if (daysSinceLastNudge < STALE_EVENT_FOLLOWUP_DAYS) return;
+      }
+
+      const isFollowUp = reminderCount > 0;
+      const currentVote = event.rescheduleVote
+        ? { yesVotes: event.rescheduleVote.yesVotes, noVotes: event.rescheduleVote.noVotes }
+        : undefined;
+
+      try {
+        await sendStaleEventNudge({ event, eventId, isFollowUp, currentVote });
+
+        const updatePayload: Record<string, unknown> = {
+          staleEventReminders: {
+            lastSentAt: now.toISOString(),
+            reminderCount: reminderCount + 1
+          }
+        };
+
+        // Initialize the reschedule vote on the first nudge
+        if (!isFollowUp) {
+          updatePayload.rescheduleVote = {
+            startedAt: now.toISOString(),
+            yesVotes: 0,
+            noVotes: 0,
+            voters: []
+          };
+        }
+
+        await doc.ref.set(updatePayload, { merge: true });
+
+        functions.logger.info('Sent stale event nudge', { eventId, reminderCount, isFollowUp });
+      } catch (error) {
+        functions.logger.error('Failed to send stale event nudge', { eventId, error });
+      }
+    });
+
+    await Promise.all(tasks);
+  } catch (error) {
+    functions.logger.error('runStaleEventNudgeJob', error);
+    throw error;
+  }
+};
+
 const runAvailabilityReminderJob = async () => {
   const now = new Date();
 
@@ -1064,6 +1284,9 @@ const runAvailabilityReminderJob = async () => {
 
       // Skip events that already have a confirmed date — those use the planned-date reminder system
       if (event.confirmedTimeSlotId) return;
+
+      // Skip stale events — those get a separate stale-event nudge
+      if (isEventStale(event, now)) return;
 
       // Determine if a reminder is due
       const createdAt = new Date(event.createdAt ?? now.toISOString());
@@ -1130,6 +1353,7 @@ export const checkAvailabilityReminders = functions.pubsub
   .timeZone('America/Toronto')
   .onRun(async () => {
     await runAvailabilityReminderJob();
+    await runStaleEventNudgeJob();
   });
 
 export const triggerAvailabilityReminders = functions.https.onRequest(async (req, res) => {
@@ -1150,6 +1374,7 @@ export const triggerAvailabilityReminders = functions.https.onRequest(async (req
 
   try {
     await runAvailabilityReminderJob();
+    await runStaleEventNudgeJob();
     res.status(200).send('Availability reminders processed');
   } catch (error) {
     res.status(500).send('Availability reminder job failed');
