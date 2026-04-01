@@ -1,6 +1,7 @@
 name: Build Planner
 
 on:
+  workflow_dispatch:
   push:
     branches: [new]
     paths:
