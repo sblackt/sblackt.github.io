@@ -6240,6 +6240,1065 @@
           non_alcoholic_cider: 'Use fresh-pressed or non-alcoholic apple cider for the glaze and jus. The result is just as good — the cider is there for brightness and body, not booze.',
           extra_rich: 'Brown the compound butter before mixing, add a splash of cream to the jus, and drizzle a little extra maple syrup over the plated potatoes. This is an Au Pied de Cochon tribute — lean in.'
         }
+      },
+      {
+        id: 'spinach-leek-soup',
+        name: 'Spinach & Leek Soup',
+        version: 1,
+        servings: {
+          count: 4,
+          note: 'Starter portion. Make ahead and reheat gently — add a splash of stock if too thick.'
+        },
+        metadata: {
+          style: 'smooth spring green soup with crème fraîche and fried capers',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: true,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: 'Easter lunch starter.'
+        },
+        components: [
+          {
+            id: 'soup',
+            name: 'Soup',
+            kind: 'soup',
+            ingredients: [
+              {
+                section: 'Soup',
+                items: [
+                  {
+                    name: 'Butter',
+                    amount: 2,
+                    unit: 'tbsp',
+                    substitutions: [
+                      { name: 'Olive oil', ratio: '1:1', notes: 'Dairy-free option.' }
+                    ]
+                  },
+                  {
+                    name: 'Leeks, white and light green parts',
+                    amount: 2,
+                    unit: 'large',
+                    prep: 'sliced',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Garlic',
+                    amount: 2,
+                    unit: 'cloves',
+                    prep: 'minced',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Chicken or vegetable stock',
+                    amount: 750,
+                    unit: 'ml',
+                    substitutions: [
+                      { name: 'Vegetable stock', ratio: '1:1', notes: 'For vegetarian/vegan version.' }
+                    ]
+                  },
+                  {
+                    name: 'Baby spinach',
+                    amount: 150,
+                    unit: 'g',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Heavy cream',
+                    amount: 150,
+                    unit: 'ml',
+                    substitutions: [
+                      { name: 'Coconut cream', ratio: '1:1', notes: 'Dairy-free; mild coconut note.' },
+                      { name: 'Crème fraîche', ratio: '1:1', notes: 'Tangier, slightly thicker.' }
+                    ]
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: 'plus more to taste',
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'To serve',
+                items: [
+                  {
+                    name: 'Crème fraîche',
+                    amount: 4,
+                    unit: 'tbsp',
+                    prep: 'for swirling on top',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Capers',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: 'fried in neutral oil until crisp and golden',
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Sweat aromatics',
+                instructions: [
+                  'Melt butter in a large pot over medium heat.',
+                  'Add leeks and garlic, season with salt, and sweat gently for 10 minutes until completely soft. Don\'t rush this — it builds the soup\'s sweetness.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Simmer stock',
+                instructions: [
+                  'Add stock and bring to a simmer. Cook for 10 minutes.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Add spinach and blend',
+                instructions: [
+                  'Add spinach and stir until wilted, about 2 minutes.',
+                  'Blend until very smooth — a high-powered blender gives the best colour and texture.',
+                  'Stir in cream. Taste and adjust seasoning.',
+                  'The soup should be vivid green. Serve right away or cool and refrigerate. Reheat gently — don\'t boil or it loses its colour.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Fry capers and serve',
+                instructions: [
+                  'Fry capers in a little neutral oil over medium-high heat until they burst and turn golden, about 2–3 minutes. Drain on paper towel.',
+                  'Serve soup with a swirl of crème fraîche and a small pile of crispy capers on top.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          { order: 1, label: 'Sweat leeks and garlic (10 min)', items: [{ component: 'soup', step: 1 }] },
+          { order: 2, label: 'Simmer stock (10 min)', items: [{ component: 'soup', step: 2 }] },
+          { order: 3, label: 'Wilt spinach, blend, finish with cream', items: [{ component: 'soup', step: 3 }] },
+          { order: 4, label: 'Fry capers and serve', items: [{ component: 'soup', step: 4 }] }
+        ],
+        substitution_summary: {
+          dairy_free: 'Replace butter with olive oil, cream with coconut cream, and skip the crème fraîche or use a dairy-free alternative.',
+          vegan: 'Use vegetable stock, olive oil instead of butter, and plant-based cream. Skip crème fraîche.'
+        }
+      },
+      {
+        id: 'hot-cross-buns',
+        name: 'Hot Cross Buns',
+        version: 1,
+        servings: {
+          count: 12,
+          note: 'Makes 12 buns. Best served warm.'
+        },
+        metadata: {
+          style: 'spiced enriched yeasted buns with dried fruit and honey glaze',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: 'Easter bread. Bake same day or reheat briefly.'
+        },
+        components: [
+          {
+            id: 'buns',
+            name: 'Hot Cross Buns',
+            kind: 'bread',
+            ingredients: [
+              {
+                section: 'Dough',
+                items: [
+                  {
+                    name: 'All-purpose flour',
+                    amount: 500,
+                    unit: 'g',
+                    substitutions: [
+                      { name: 'Bread flour', ratio: '1:1', notes: 'Slightly chewier result.' }
+                    ]
+                  },
+                  {
+                    name: 'Instant yeast',
+                    amount: 7,
+                    unit: 'g',
+                    notes: '1 standard sachet.',
+                    substitutions: [
+                      { name: 'Active dry yeast', ratio: '1:1', notes: 'Dissolve in warm milk first before adding.' }
+                    ]
+                  },
+                  {
+                    name: 'Sugar',
+                    amount: 50,
+                    unit: 'g',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 1,
+                    unit: 'tsp',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Cinnamon',
+                    amount: 1,
+                    unit: 'tsp',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Mixed spice or allspice',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Nutmeg',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Butter',
+                    amount: 75,
+                    unit: 'g',
+                    prep: 'softened',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Warm milk',
+                    amount: 250,
+                    unit: 'ml',
+                    substitutions: [
+                      { name: 'Oat milk', ratio: '1:1', notes: 'Works well for dairy-free.' }
+                    ]
+                  },
+                  {
+                    name: 'Egg',
+                    amount: 1,
+                    unit: 'large',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Mixed dried fruit (currants, raisins, mixed peel)',
+                    amount: 150,
+                    unit: 'g',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Orange zest',
+                    amount: 1,
+                    unit: 'orange',
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Crosses',
+                items: [
+                  {
+                    name: 'All-purpose flour',
+                    amount: 75,
+                    unit: 'g',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Water',
+                    amount: 6,
+                    unit: 'tbsp',
+                    notes: '5–6 tbsp, add until a thick pipeable paste forms.',
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Glaze',
+                items: [
+                  {
+                    name: 'Honey or maple syrup',
+                    amount: 3,
+                    unit: 'tbsp',
+                    prep: 'warmed',
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Make dough',
+                instructions: [
+                  'Combine flour, yeast, sugar, salt, and spices in a large bowl. Rub in softened butter until the mixture resembles breadcrumbs.',
+                  'Add warm milk and egg. Mix to a soft dough.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Knead and first rise',
+                instructions: [
+                  'Knead 8–10 minutes by hand (or 5–6 minutes in a stand mixer) until smooth and elastic.',
+                  'Fold in dried fruit and orange zest.',
+                  'Cover and let rise 1–1.5 hours until doubled in size.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Shape and second prove',
+                instructions: [
+                  'Divide dough into 12 equal pieces. Shape each into a smooth ball.',
+                  'Place in a greased 9×13 baking dish, sides touching.',
+                  'Cover and prove 45 minutes until puffed and filling the dish.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Pipe crosses and bake',
+                instructions: [
+                  'Preheat oven to 375°F (190°C).',
+                  'Mix flour and water to a thick, pipeable paste. Pipe crosses over the buns using a piping bag or zip-lock with a corner snipped.',
+                  'Bake 20–22 minutes until deep golden brown.'
+                ]
+              },
+              {
+                order: 5,
+                title: 'Glaze',
+                instructions: [
+                  'Brush immediately with warmed honey or maple syrup while still hot.',
+                  'Cool slightly before serving. Best eaten warm.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          { order: 1, label: 'Mix dough and knead (15 min)', items: [{ component: 'buns', step: 1 }, { component: 'buns', step: 2 }] },
+          { order: 2, label: 'First rise (1–1.5 hrs)', items: [] },
+          { order: 3, label: 'Shape and second prove (45 min)', items: [{ component: 'buns', step: 3 }] },
+          { order: 4, label: 'Pipe crosses and bake (20–22 min)', items: [{ component: 'buns', step: 4 }] },
+          { order: 5, label: 'Glaze and cool', items: [{ component: 'buns', step: 5 }] }
+        ],
+        substitution_summary: {
+          dairy_free: 'Replace butter with dairy-free spread and use oat milk instead of dairy milk.',
+          less_sweet: 'Reduce sugar to 30g and use a light honey glaze. The dried fruit provides plenty of sweetness.',
+          extra_spiced: 'Double the cinnamon and add 1/4 tsp ground cloves and 1/4 tsp ground cardamom.'
+        }
+      },
+      {
+        id: 'cider-elderflower-glazed-pork',
+        name: 'Cider & Elderflower Glazed Pork',
+        version: 1,
+        servings: {
+          count: 4,
+          note: 'A 4–5 lb joint serves 4 generously.'
+        },
+        metadata: {
+          style: 'slow-roasted pork with a lacquered cider and elderflower glaze',
+          diet: {
+            vegetarian: false,
+            vegan: false,
+            gluten_free: true,
+            contains_dairy: false,
+            contains_lentils: false
+          },
+          context: 'Easter lunch centrepiece. The porchetta variation (pork belly, rolled and tied) is noted in the steps.'
+        },
+        components: [
+          {
+            id: 'pork',
+            name: 'Glazed Pork',
+            kind: 'roast',
+            ingredients: [
+              {
+                section: 'Pork',
+                items: [
+                  {
+                    name: 'Bone-in pork leg or shoulder',
+                    amount: 4,
+                    unit: 'lb',
+                    prep: 'skin scored in a crosshatch pattern',
+                    notes: '4–5 lb joint. Remove from fridge 1 hour before cooking.',
+                    substitutions: [
+                      { name: 'Pork belly (for porchetta)', ratio: '1:1 by weight', notes: 'See porchetta variation in step notes.' }
+                    ]
+                  },
+                  {
+                    name: 'Neutral oil',
+                    amount: 2,
+                    unit: 'tbsp',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 2,
+                    unit: 'tsp',
+                    prep: 'worked into the scored fat generously',
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Glaze',
+                items: [
+                  {
+                    name: 'Dry sparkling cider',
+                    amount: 250,
+                    unit: 'ml',
+                    substitutions: [
+                      { name: 'Non-alcoholic sparkling cider', ratio: '1:1', notes: 'Works perfectly.' }
+                    ]
+                  },
+                  {
+                    name: 'Elderflower cordial',
+                    amount: 3,
+                    unit: 'tbsp',
+                    substitutions: [
+                      { name: 'Apple juice concentrate', ratio: '1:1', notes: 'Less floral but still good.' }
+                    ]
+                  },
+                  {
+                    name: 'Grainy Dijon mustard',
+                    amount: 2,
+                    unit: 'tbsp',
+                    substitutions: [
+                      { name: 'Smooth Dijon', ratio: '1:1' }
+                    ]
+                  },
+                  {
+                    name: 'Maple syrup',
+                    amount: 2,
+                    unit: 'tbsp',
+                    substitutions: [
+                      { name: 'Honey', ratio: '1:1' }
+                    ]
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Prep and start roasting',
+                instructions: [
+                  'Remove pork from fridge 1 hour before cooking. Pat dry thoroughly.',
+                  'Rub all over with oil and salt generously, working salt into the scored fat.',
+                  'Preheat oven to 325°F (165°C). Place pork fat-side up in a roasting pan.',
+                  'Roast uncovered for 2.5–3 hours until internal temperature reaches 160°F (71°C).'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Make glaze',
+                instructions: [
+                  'Combine cider, elderflower cordial, mustard, and maple syrup in a small saucepan.',
+                  'Simmer over medium heat for 10–15 minutes, stirring occasionally, until reduced by half and slightly syrupy.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Glaze and finish',
+                instructions: [
+                  'In the last 45 minutes of cooking, raise oven temperature to 400°F (200°C).',
+                  'Brush glaze over the pork every 15 minutes, 3 times total, until the surface is lacquered and deep amber.',
+                  'Porchetta variation: lay pork belly flat, skin-side down. Spread with minced garlic, fennel seed, rosemary, lemon zest, salt and pepper. Roll tightly and tie with kitchen twine. Roast at 325°F for 2 hours then 450°F for final 30 minutes for crackling. Apply glaze in last 20 minutes.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Rest and carve',
+                instructions: [
+                  'Rest 20 minutes before carving. This is not optional — the juices need time to redistribute.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          { order: 1, label: 'Prep pork and start low roast (2.5–3 hrs)', items: [{ component: 'pork', step: 1 }] },
+          { order: 2, label: 'Make glaze while pork roasts', items: [{ component: 'pork', step: 2 }] },
+          { order: 3, label: 'Raise heat and glaze 3× (last 45 min)', items: [{ component: 'pork', step: 3 }] },
+          { order: 4, label: 'Rest 20 min before carving', items: [{ component: 'pork', step: 4 }] }
+        ],
+        substitution_summary: {
+          no_elderflower: 'Replace elderflower cordial with 2 tbsp apple juice concentrate and a strip of lemon zest added while reducing. Less floral but still delicious.',
+          non_alcoholic: 'Use fresh-pressed or non-alcoholic sparkling cider. The flavour is essentially the same — no booze is needed for the glaze.',
+          porchetta: 'Use a pork belly, lay flat, spread with garlic, fennel, rosemary, lemon zest, salt and pepper, roll and tie. Roast 325°F for 2 hrs then 450°F for 30 min. Glaze in last 20 min.'
+        }
+      },
+      {
+        id: 'asparagus-ramp-pea-gratin',
+        name: 'Asparagus, Ramp & Pea Gratin',
+        version: 1,
+        servings: {
+          count: 4,
+          note: 'Side dish. Pairs well with the glazed pork.'
+        },
+        metadata: {
+          style: 'spring vegetable gratin with gruyère and cream',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: true,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: 'Easter lunch side. Can be assembled ahead and baked when needed.'
+        },
+        components: [
+          {
+            id: 'gratin',
+            name: 'Gratin',
+            kind: 'gratin',
+            ingredients: [
+              {
+                section: 'Vegetables',
+                items: [
+                  {
+                    name: 'Asparagus',
+                    amount: 1,
+                    unit: 'bunch',
+                    prep: 'woody ends removed, cut into 2-inch pieces',
+                    substitutions: [
+                      { name: 'Broccolini', ratio: '1:1 by weight', notes: 'Cut into similar-sized pieces.' }
+                    ]
+                  },
+                  {
+                    name: 'Ramps or green onions',
+                    amount: 1,
+                    unit: 'bunch',
+                    prep: 'roughly chopped',
+                    substitutions: [
+                      { name: 'Green onions/scallions', ratio: '1:1', notes: 'Use if ramps are unavailable.' }
+                    ]
+                  },
+                  {
+                    name: 'Fresh or frozen peas',
+                    amount: 1,
+                    unit: 'cup',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Butter',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: 'for greasing the baking dish',
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Gratin',
+                items: [
+                  {
+                    name: 'Heavy cream',
+                    amount: 200,
+                    unit: 'ml',
+                    substitutions: [
+                      { name: 'Crème fraîche thinned with a splash of milk', ratio: '1:1', notes: 'Tangier result.' }
+                    ]
+                  },
+                  {
+                    name: 'Gruyère',
+                    amount: 150,
+                    unit: 'g',
+                    prep: 'grated',
+                    substitutions: [
+                      { name: 'Comté', ratio: '1:1' },
+                      { name: 'Emmental', ratio: '1:1', notes: 'Milder flavour.' }
+                    ]
+                  },
+                  {
+                    name: 'Nutmeg',
+                    amount: 1,
+                    unit: 'pinch',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Salt and pepper',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: 'to taste',
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Assemble',
+                instructions: [
+                  'Preheat oven to 375°F (190°C).',
+                  'Butter a medium baking dish. Add asparagus, ramps, and peas. Season well with salt and pepper.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Add cream and cheese',
+                instructions: [
+                  'Pour cream evenly over the vegetables.',
+                  'Scatter grated gruyère over the top. Add a pinch of nutmeg.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Bake',
+                instructions: [
+                  'Bake for 25–30 minutes until bubbling at the edges and golden on top.',
+                  'Rest 5 minutes before serving.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          { order: 1, label: 'Preheat and assemble', items: [{ component: 'gratin', step: 1 }, { component: 'gratin', step: 2 }] },
+          { order: 2, label: 'Bake 25–30 min', items: [{ component: 'gratin', step: 3 }] }
+        ],
+        substitution_summary: {
+          dairy_free: 'Use coconut cream and a dairy-free cheese, or top with seasoned breadcrumbs and olive oil instead of cheese.',
+          make_ahead: 'Assemble up to a few hours ahead, cover and refrigerate. Add 5 minutes to baking time if going in cold.'
+        }
+      },
+      {
+        id: 'roasted-radishes-carrots-thyme',
+        name: 'Roasted Radishes & Carrots with Thyme',
+        version: 1,
+        servings: {
+          count: 4,
+          note: 'Side dish.'
+        },
+        metadata: {
+          style: 'caramelised spring vegetables with butter, thyme, and red wine vinegar',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: true,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: 'Easter lunch side. Radishes mellow and sweeten beautifully in the oven.'
+        },
+        components: [
+          {
+            id: 'roasted-veg',
+            name: 'Roasted Radishes & Carrots',
+            kind: 'side',
+            ingredients: [
+              {
+                section: 'Vegetables',
+                items: [
+                  {
+                    name: 'Radishes',
+                    amount: 1,
+                    unit: 'bunch',
+                    prep: 'halved',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Baby carrots',
+                    amount: 1,
+                    unit: 'bunch',
+                    prep: 'scrubbed, large ones halved lengthwise',
+                    substitutions: [
+                      { name: 'Regular carrots cut into batons', ratio: '1:1 by weight' }
+                    ]
+                  },
+                  {
+                    name: 'Butter',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: 'melted',
+                    substitutions: [
+                      { name: 'Olive oil', ratio: '1:1', notes: 'For vegan version.' }
+                    ]
+                  },
+                  {
+                    name: 'Olive oil',
+                    amount: 1,
+                    unit: 'tbsp',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Fresh thyme',
+                    amount: 5,
+                    unit: 'sprigs',
+                    substitutions: [
+                      { name: 'Dried thyme', ratio: '5 sprigs ≈ 1/2 tsp dried' }
+                    ]
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Black pepper',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Red wine vinegar',
+                    amount: 1,
+                    unit: 'tbsp',
+                    prep: 'splashed on just before serving',
+                    substitutions: [
+                      { name: 'Sherry vinegar', ratio: '1:1', notes: 'Slightly nuttier.' },
+                      { name: 'Lemon juice', ratio: '1:1', notes: 'Brighter.' }
+                    ]
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Toss and roast',
+                instructions: [
+                  'Preheat oven to 400°F (200°C).',
+                  'Toss radishes and carrots with melted butter, olive oil, thyme sprigs, salt, and pepper.',
+                  'Spread on a baking sheet in a single layer — don\'t overcrowd or they\'ll steam rather than caramelise.',
+                  'Roast 25–30 minutes until tender and caramelised at the edges.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Finish and serve',
+                instructions: [
+                  'Splash with red wine vinegar right before serving.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          { order: 1, label: 'Toss and roast (25–30 min)', items: [{ component: 'roasted-veg', step: 1 }] },
+          { order: 2, label: 'Splash with vinegar and serve', items: [{ component: 'roasted-veg', step: 2 }] }
+        ],
+        substitution_summary: {
+          vegan: 'Replace butter with additional olive oil (or use all olive oil). The caramelisation is slightly less rich but still excellent.',
+          extra_flavour: 'Add a drizzle of honey with the butter before roasting, and scatter with fresh flat-leaf parsley to finish.'
+        }
+      },
+      {
+        id: 'mashed-potato-chive-butter',
+        name: 'Mashed Potato with Chive Butter',
+        version: 1,
+        servings: {
+          count: 4,
+          note: 'Side dish. Generous portions.'
+        },
+        metadata: {
+          style: 'rich, creamy mashed potato with cultured butter and chives',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: true,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: 'Easter lunch side.'
+        },
+        components: [
+          {
+            id: 'mash',
+            name: 'Mash',
+            kind: 'side',
+            ingredients: [
+              {
+                section: 'Mash',
+                items: [
+                  {
+                    name: 'Yukon Gold potatoes',
+                    amount: 7,
+                    unit: 'medium',
+                    prep: 'peeled and roughly chopped',
+                    notes: '6–8 potatoes, about 1.2–1.4 kg total.',
+                    substitutions: [
+                      { name: 'Maris Piper', ratio: '1:1', notes: 'Classic for mash.' },
+                      { name: 'Desiree', ratio: '1:1' }
+                    ]
+                  },
+                  {
+                    name: 'Cultured butter',
+                    amount: 75,
+                    unit: 'g',
+                    prep: 'cut into cubes',
+                    notes: 'Cultured butter adds a subtle tang. Regular unsalted butter also works.',
+                    substitutions: [
+                      { name: 'Regular unsalted butter', ratio: '1:1' }
+                    ]
+                  },
+                  {
+                    name: 'Warm milk or cream',
+                    amount: 100,
+                    unit: 'ml',
+                    prep: 'warmed before adding',
+                    substitutions: [
+                      { name: 'Oat milk', ratio: '1:1', notes: 'Dairy-free option, less rich.' }
+                    ]
+                  },
+                  {
+                    name: 'Chives',
+                    amount: 1,
+                    unit: 'small bunch',
+                    prep: 'finely chopped',
+                    substitutions: [
+                      { name: 'Flat-leaf parsley', ratio: '1:1', notes: 'Different flavour but works well.' }
+                    ]
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 1,
+                    unit: 'tsp',
+                    prep: 'for cooking water, plus more to taste',
+                    substitutions: []
+                  },
+                  {
+                    name: 'White pepper',
+                    amount: 0.25,
+                    unit: 'tsp',
+                    substitutions: [
+                      { name: 'Black pepper', ratio: '1:1', notes: 'Visible flecks but same flavour.' }
+                    ]
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Boil potatoes',
+                instructions: [
+                  'Cover potatoes with cold, well-salted water. Bring to a boil and cook 15–20 minutes until completely tender when pierced with a knife.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Steam dry',
+                instructions: [
+                  'Drain well and return to the pot over low heat for 1–2 minutes, shaking occasionally, to steam off excess moisture.',
+                  'Dry potatoes absorb butter better and make fluffier mash.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Mash and enrich',
+                instructions: [
+                  'Mash thoroughly or pass through a ricer for the smoothest result.',
+                  'Beat in butter and warm milk a little at a time until smooth and creamy.',
+                  'Season well with salt and white pepper.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Finish with chives',
+                instructions: [
+                  'Fold in most of the chives, reserving a little for garnish.',
+                  'Top with remaining chives to serve.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          { order: 1, label: 'Boil potatoes (15–20 min)', items: [{ component: 'mash', step: 1 }] },
+          { order: 2, label: 'Steam dry, mash, and enrich', items: [{ component: 'mash', step: 2 }, { component: 'mash', step: 3 }] },
+          { order: 3, label: 'Finish with chives', items: [{ component: 'mash', step: 4 }] }
+        ],
+        substitution_summary: {
+          dairy_free: 'Use olive oil or dairy-free butter in place of cultured butter, and oat milk or potato cooking water instead of milk.',
+          extra_rich: 'Use all cream instead of milk, and increase butter to 100g. Add a spoonful of crème fraîche at the end for tang.'
+        }
+      },
+      {
+        id: 'lemon-posset-shortbread',
+        name: 'Lemon Posset with Shortbread & Edible Flowers',
+        version: 1,
+        servings: {
+          count: 4,
+          note: 'Dessert. Make the posset a day ahead.'
+        },
+        metadata: {
+          style: 'silky set cream dessert with fennel shortbread and edible flowers',
+          diet: {
+            vegetarian: true,
+            vegan: false,
+            gluten_free: false,
+            contains_dairy: true,
+            contains_lentils: false
+          },
+          context: 'Easter lunch dessert. The posset sets with lemon juice alone — no gelatine needed. The fennel seeds in the shortbread are a lovely surprise.'
+        },
+        components: [
+          {
+            id: 'posset',
+            name: 'Lemon Posset',
+            kind: 'dessert',
+            ingredients: [
+              {
+                section: 'Posset',
+                items: [
+                  {
+                    name: 'Heavy cream',
+                    amount: 600,
+                    unit: 'ml',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Sugar',
+                    amount: 150,
+                    unit: 'g',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Lemon juice',
+                    amount: 80,
+                    unit: 'ml',
+                    prep: 'freshly squeezed, about 2 lemons',
+                    substitutions: [
+                      { name: 'Lime juice', ratio: '1:1', notes: 'Sharper, slightly floral.' }
+                    ]
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Cook cream and set',
+                instructions: [
+                  'Combine cream and sugar in a heavy saucepan. Bring to a boil over medium heat, stirring to dissolve the sugar.',
+                  'Once boiling, cook for exactly 3 minutes — use a timer. The cream will thicken slightly.',
+                  'Remove from heat. Stir in lemon juice.',
+                  'Pour into 4 glasses or ramekins. Cool to room temperature, then refrigerate for at least 3 hours or overnight.',
+                  'The posset is set when it holds a slight wobble but doesn\'t slosh when tilted.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'shortbread',
+            name: 'Fennel Shortbread',
+            kind: 'biscuit',
+            ingredients: [
+              {
+                section: 'Shortbread',
+                items: [
+                  {
+                    name: 'All-purpose flour',
+                    amount: 150,
+                    unit: 'g',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Butter',
+                    amount: 100,
+                    unit: 'g',
+                    prep: 'softened',
+                    substitutions: []
+                  },
+                  {
+                    name: 'Icing sugar',
+                    amount: 50,
+                    unit: 'g',
+                    substitutions: [
+                      { name: 'Caster sugar', ratio: '1:1', notes: 'Slightly crunchier texture.' }
+                    ]
+                  },
+                  {
+                    name: 'Fennel seeds',
+                    amount: 0.5,
+                    unit: 'tsp',
+                    prep: 'lightly crushed',
+                    notes: 'Subtle anise note — unexpected and very good with lemon.',
+                    optional: true,
+                    substitutions: [
+                      { name: 'Lemon zest', ratio: '1/2 tsp fennel seeds ≈ zest of 1/2 lemon', notes: 'Keeps it citrus-forward.' }
+                    ]
+                  },
+                  {
+                    name: 'Salt',
+                    amount: 1,
+                    unit: 'pinch',
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Make shortbread dough',
+                instructions: [
+                  'Preheat oven to 325°F (165°C).',
+                  'Beat butter and icing sugar until pale and fluffy.',
+                  'Mix in flour, fennel seeds, and salt until a dough forms — it will look crumbly, then come together.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Roll, cut, and bake',
+                instructions: [
+                  'Roll dough to about 5mm thick on a lightly floured surface. Cut into fingers or rounds.',
+                  'Bake 15–18 minutes until just barely golden at the edges. The shortbread should look pale — it firms up as it cools.',
+                  'Cool completely on the tray before handling.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'assembly',
+            name: 'Assembly',
+            kind: 'assembly',
+            ingredients: [
+              {
+                section: 'To serve',
+                items: [
+                  {
+                    name: 'Edible flowers',
+                    amount: 1,
+                    unit: 'small handful',
+                    prep: 'violet, nasturtium, or borage',
+                    substitutions: [
+                      { name: 'Lemon zest curls', ratio: 'garnish', notes: 'Elegant alternative if flowers are unavailable.' }
+                    ]
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Serve',
+                instructions: [
+                  'Top each chilled posset with a few edible flowers.',
+                  'Serve with shortbread fingers on the side.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          { order: 1, label: 'Make posset and refrigerate (3+ hrs or overnight)', items: [{ component: 'posset', step: 1 }] },
+          { order: 2, label: 'Make shortbread dough and bake (30 min)', items: [{ component: 'shortbread', step: 1 }, { component: 'shortbread', step: 2 }] },
+          { order: 3, label: 'Decorate and serve', items: [{ component: 'assembly', step: 1 }] }
+        ],
+        substitution_summary: {
+          gluten_free: 'Use a 1:1 gluten-free flour blend for the shortbread. Rice flour-based blends work particularly well for a shortbread texture.',
+          no_flowers: 'Top posset with lemon zest curls, a thin lemon slice, or a few fresh mint leaves instead.',
+          lime_version: 'Replace lemon juice with lime juice for a sharper, more tropical posset. Reduce to 70ml as limes are more acidic.'
+        }
       }
     ];
 
