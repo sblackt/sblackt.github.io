@@ -1657,31 +1657,30 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
                       )}
                     </div>
                   </div>
-                  {available.length > 0 && (() => {
-                    const groups = (['preferred', 'available', 'tentative'] as const)
-                      .map(pref => ({ pref, count: available.filter(a => a.preference === pref).length }))
-                      .filter(g => g.count > 0);
-                    return (
-                      <div className="available-participants">
-                        <span className="available-label">Available:</span>
-                        {groups.map(({ pref, count }, i) => {
-                          const icon = pref === 'preferred' ? '★ ' : pref === 'tentative' ? '? ' : '';
-                          return (
-                            <React.Fragment key={pref}>
-                              <span className={`participant-name ${pref}`}>{icon}{count}</span>
-                              {i < groups.length - 1 && ', '}
-                            </React.Fragment>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
+                  {available.length > 0 && (
+                    <div className="available-participants">
+                      <span className="available-label">Available:</span>
+                      {available.map(({ name, preference }, index) => {
+                        const prefClass = preference === 'preferred' ? 'preferred' : preference === 'tentative' ? 'tentative' : 'available';
+                        const icon = preference === 'preferred' ? '★ ' : preference === 'tentative' ? '? ' : '';
+                        return (
+                          <React.Fragment key={name}>
+                            <span className={`participant-name ${prefClass}`}>{icon}{name}</span>
+                            {index < available.length - 1 && ', '}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                  )}
                   {unavailable.length > 0 && (
                     <div className="unavailable-participants">
                       <span className="unavailable-label">Not Available:</span>
-                      <span className="participant-name unavailable">
-                        {unavailable.length}
-                      </span>
+                      {unavailable.map((name, index) => (
+                        <React.Fragment key={name}>
+                          <span className="participant-name unavailable">{name}</span>
+                          {index < unavailable.length - 1 && ', '}
+                        </React.Fragment>
+                      ))}
                     </div>
                   )}
                   {available.length === 0 && unavailable.length === 0 && (
