@@ -7299,6 +7299,393 @@
           no_flowers: 'Top posset with lemon zest curls, a thin lemon slice, or a few fresh mint leaves instead.',
           lime_version: 'Replace lemon juice with lime juice for a sharper, more tropical posset. Reduce to 70ml as limes are more acidic.'
         }
+      },
+      {
+        id: 'pad-thai-classic',
+        name: 'Pad Thai',
+        version: 1,
+        servings: {
+          count: 2,
+          note: 'Cook in a single wok batch; scale by cooking in separate batches'
+        },
+        metadata: {
+          style: 'Classic Thai stir-fried rice noodles with tamarind sauce',
+          diet: {
+            vegetarian: false,
+            vegan: false,
+            gluten_free: true,
+            contains_dairy: false,
+            contains_lentils: false
+          },
+          context: 'Street-style pad Thai with a tamarind-forward sauce, tofu, egg, and the classic garnish of bean sprouts, crushed peanuts, and lime.'
+        },
+        components: [
+          {
+            id: 'pad_thai_sauce',
+            name: 'Pad Thai Sauce',
+            kind: 'sauce',
+            ingredients: [
+              {
+                section: 'Sauce',
+                items: [
+                  {
+                    name: 'Tamarind paste (concentrate)',
+                    amount: 3,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Use seedless concentrate, not block tamarind. Adjust quantity to tartness of your brand.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Tamarind block',
+                        ratio: '1 tbsp concentrate = 2 tbsp block dissolved in 2 tbsp warm water, strained',
+                        notes: 'Block tamarind gives a rounder, less sharp flavour.'
+                      },
+                      {
+                        name: 'Rice vinegar + lime juice',
+                        ratio: '1.5 tbsp each in place of 3 tbsp tamarind',
+                        notes: 'Sharper and less complex; works in a pinch.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Fish sauce',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Soy sauce',
+                        ratio: '1:1',
+                        notes: 'Makes the dish vegetarian/vegan. Use light soy sauce.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Palm sugar (or light brown sugar)',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: 'grated or loosely packed',
+                    notes: 'Palm sugar gives a more authentic mellow sweetness.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Brown sugar',
+                        ratio: '1:1',
+                        notes: 'Slightly more molasses flavour; still excellent.'
+                      },
+                      {
+                        name: 'Maple syrup',
+                        ratio: '1.5 tbsp in place of 2 tbsp sugar',
+                        notes: 'Works well; slightly thinner sauce.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Water',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Thins the sauce to the right wok consistency.',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Mix sauce',
+                instructions: [
+                  'Combine tamarind paste, fish sauce, palm sugar, and water in a small bowl.',
+                  'Stir until the sugar is fully dissolved.',
+                  'Taste: it should be tangy, salty, and sweet in equal measure. Adjust fish sauce for salt or tamarind for tartness.'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'pad_thai_main',
+            name: 'Pad Thai Stir-Fry',
+            kind: 'main',
+            ingredients: [
+              {
+                section: 'Noodles',
+                items: [
+                  {
+                    name: 'Dried flat rice noodles (3–5 mm wide)',
+                    amount: 200,
+                    unit: 'g',
+                    prep: 'soaked in room-temperature water for 30 minutes, then drained',
+                    notes: 'Do not soak in hot water — noodles should be pliable but still firm when they hit the wok.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Fresh rice noodles',
+                        ratio: '300 g fresh in place of 200 g dried',
+                        notes: 'Separate the noodles gently before adding to the wok. Reduce soaking step entirely.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Protein',
+                items: [
+                  {
+                    name: 'Extra-firm tofu',
+                    amount: 200,
+                    unit: 'g',
+                    prep: 'pressed dry, cut into 1.5 cm cubes',
+                    notes: 'Press for at least 20 minutes to get good browning.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Large shrimp (peeled, deveined)',
+                        ratio: '200 g',
+                        notes: 'Add shrimp after the aromatics; cook 90 seconds per side before adding noodles.'
+                      },
+                      {
+                        name: 'Chicken breast or thigh',
+                        ratio: '200 g, thinly sliced',
+                        notes: 'Stir-fry until just cooked through before adding noodles.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Eggs',
+                    amount: 2,
+                    unit: 'large',
+                    prep: '',
+                    notes: '',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Silken tofu scramble',
+                        ratio: '100 g silken tofu, crumbled',
+                        notes: 'Makes the dish vegan; texture is softer.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Aromatics',
+                items: [
+                  {
+                    name: 'Garlic cloves',
+                    amount: 3,
+                    unit: 'cloves',
+                    prep: 'minced',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Shallots',
+                    amount: 2,
+                    unit: 'medium',
+                    prep: 'thinly sliced',
+                    notes: '',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Red onion',
+                        ratio: '0.5 small onion',
+                        notes: 'Slice thin; flavour is slightly stronger.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Dried shrimp',
+                    amount: 2,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'Adds background umami depth. Find at Asian grocery stores.',
+                    optional: true,
+                    substitutions: [
+                      {
+                        name: 'Omit',
+                        ratio: '',
+                        notes: 'The dish is still excellent without; just slightly less complex.'
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                section: 'Cooking',
+                items: [
+                  {
+                    name: 'Neutral oil (vegetable, canola, or rice bran)',
+                    amount: 3,
+                    unit: 'tbsp',
+                    prep: '',
+                    notes: 'High smoke point needed for wok heat.',
+                    optional: false,
+                    substitutions: []
+                  }
+                ]
+              },
+              {
+                section: 'Garnish',
+                items: [
+                  {
+                    name: 'Bean sprouts',
+                    amount: 1,
+                    unit: 'cup',
+                    prep: '',
+                    notes: 'Half stirred into the wok at the end, half served raw at the table.',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Julienned cucumber or shredded cabbage',
+                        ratio: '1:1',
+                        notes: 'Good crunchy stand-ins if sprouts are unavailable.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Green onions',
+                    amount: 4,
+                    unit: 'stalks',
+                    prep: 'cut into 3 cm pieces',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Roasted peanuts',
+                    amount: 3,
+                    unit: 'tbsp',
+                    prep: 'roughly crushed',
+                    notes: '',
+                    optional: false,
+                    substitutions: [
+                      {
+                        name: 'Omit (nut-free)',
+                        ratio: '',
+                        notes: 'Omit entirely for nut-free; add toasted sesame seeds for crunch.'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'Lime',
+                    amount: 1,
+                    unit: 'whole',
+                    prep: 'cut into wedges',
+                    notes: '',
+                    optional: false,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Dried chili flakes',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'Serve on the side.',
+                    optional: true,
+                    substitutions: []
+                  },
+                  {
+                    name: 'Extra fish sauce and sugar',
+                    amount: null,
+                    unit: '',
+                    prep: '',
+                    notes: 'Table condiments for individual seasoning.',
+                    optional: true,
+                    substitutions: []
+                  }
+                ]
+              }
+            ],
+            steps: [
+              {
+                order: 1,
+                title: 'Brown the tofu',
+                instructions: [
+                  'Heat 1.5 tbsp oil in a wok or large non-stick pan over high heat until shimmering.',
+                  'Add tofu in a single layer and leave undisturbed for 2–3 minutes until golden on one side.',
+                  'Turn and brown the remaining sides, about 2 more minutes. Season lightly with a pinch of salt.',
+                  'Remove tofu from the pan and set aside.'
+                ]
+              },
+              {
+                order: 2,
+                title: 'Stir-fry aromatics and noodles',
+                instructions: [
+                  'Add remaining 1.5 tbsp oil to the wok over high heat.',
+                  'Add shallots and dried shrimp (if using); stir-fry 60 seconds until fragrant.',
+                  'Add garlic and stir-fry 30 seconds.',
+                  'Add the drained noodles and pour the sauce over them.',
+                  'Toss and stir-fry until the noodles absorb the sauce and begin to char slightly at the edges, about 2–3 minutes. Add a splash of water (1–2 tbsp) if noodles stick before they are cooked through.'
+                ]
+              },
+              {
+                order: 3,
+                title: 'Add egg and finish',
+                instructions: [
+                  'Push the noodles to one side of the wok.',
+                  'Crack both eggs into the cleared space and scramble gently until just set but still slightly glossy.',
+                  'Fold the egg into the noodles before it is fully cooked — residual heat will finish it.',
+                  'Return the tofu to the wok and toss everything together.',
+                  'Add half the bean sprouts and the green onions; toss for 30 seconds.'
+                ]
+              },
+              {
+                order: 4,
+                title: 'Plate and garnish',
+                instructions: [
+                  'Divide between bowls.',
+                  'Top with crushed peanuts and the remaining raw bean sprouts.',
+                  'Serve immediately with lime wedges, chili flakes, and extra fish sauce and sugar on the side.'
+                ]
+              }
+            ]
+          }
+        ],
+        workflow: [
+          {
+            order: 1,
+            label: 'Soak noodles (30 min)',
+            items: [{ component: 'pad_thai_main', step: 1 }]
+          },
+          {
+            order: 2,
+            label: 'Mix sauce',
+            items: [{ component: 'pad_thai_sauce', step: 1 }]
+          },
+          {
+            order: 3,
+            label: 'Brown tofu',
+            items: [{ component: 'pad_thai_main', step: 1 }]
+          },
+          {
+            order: 4,
+            label: 'Stir-fry aromatics and noodles',
+            items: [{ component: 'pad_thai_main', step: 2 }]
+          },
+          {
+            order: 5,
+            label: 'Add egg and finish',
+            items: [{ component: 'pad_thai_main', step: 3 }]
+          },
+          {
+            order: 6,
+            label: 'Plate and garnish',
+            items: [{ component: 'pad_thai_main', step: 4 }]
+          }
+        ],
+        substitution_summary: {
+          vegan: 'Replace fish sauce with soy sauce, swap eggs for crumbled silken tofu, and omit dried shrimp. The dish is otherwise already plant-based.',
+          nut_free: 'Omit peanuts entirely or replace with toasted sesame seeds for crunch.',
+          shrimp_version: 'Replace tofu with 200 g large shrimp. Stir-fry shrimp after the aromatics for 90 seconds per side, remove, then add back with the egg.',
+          no_tamarind: 'Use 1.5 tbsp rice vinegar plus 1.5 tbsp lime juice. The sauce will be sharper and less complex but still good.',
+          more_heat: 'Add a sliced fresh bird\'s eye chili with the shallots, or increase the chili flakes at the table.'
+        }
       }
     ];
 
