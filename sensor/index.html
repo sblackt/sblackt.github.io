@@ -969,6 +969,25 @@
                 grid-template-columns: minmax(0, 1fr);
             }
         }
+
+        .section-label {
+            font-family: 'Hepta Slab', 'Inter', serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: rgba(248, 250, 252, 0.65);
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .section-label span {
+            font-weight: 400;
+            font-size: 0.8rem;
+            opacity: 0.55;
+            margin-left: 0.6rem;
+            text-transform: none;
+            letter-spacing: 0;
+        }
     </style>
 </head>
 <body>
@@ -995,6 +1014,8 @@
         <section id="dashboard-view" class="view view--active" role="tabpanel" aria-labelledby="tab-dashboard">
             <section id="metric-cards" class="metric-grid" aria-live="polite"></section>
             <section id="feed-details" class="detail-grid"></section>
+            <h2 class="section-label">Bedroom <span>Airthings Wave Plus</span></h2>
+            <section id="airthings-cards" class="metric-grid" aria-live="polite"></section>
         </section>
 
         <section id="insights-view" class="view" role="tabpanel" aria-labelledby="tab-insights" hidden>
@@ -1265,6 +1286,66 @@
             }
         ];
 
+        const AIRTHINGS_FEEDS = [
+            {
+                id: 'bedroom.temperature',
+                name: 'Temperature',
+                unit: '°C',
+                coldBelow: 18,
+                superColdBelow: 16,
+                warmAbove: 23,
+                warmMidAbove: 21,
+                showCard: true,
+                showDetail: false,
+                emoji: { warm: '🔥', superwarm: '😅', supercold: '🧊', cold: '🥶', ok: '😌', default: '😌' }
+            },
+            {
+                id: 'bedroom.humidity',
+                name: 'Humidity',
+                unit: '%',
+                goodRange: [40, 60],
+                showCard: true,
+                showDetail: false,
+                emoji: { ok: '💧', alert: '🌵', default: '💧' }
+            },
+            {
+                id: 'bedroom.pressure',
+                name: 'Pressure',
+                unit: 'hPa',
+                goodRange: [980, 1025],
+                showCard: true,
+                showDetail: false,
+                emoji: { ok: '☁️', alert: '🌪️', default: '🌤️' }
+            },
+            {
+                id: 'bedroom.co2',
+                name: 'CO₂',
+                unit: 'ppm',
+                goodRange: [0, 1000],
+                showCard: true,
+                showDetail: false,
+                emoji: { ok: '🌿', alert: '🏭', default: '🌿' }
+            },
+            {
+                id: 'bedroom.voc',
+                name: 'VOC',
+                unit: 'ppb',
+                goodRange: [0, 250],
+                showCard: true,
+                showDetail: false,
+                emoji: { ok: '✨', alert: '⚠️', default: '✨' }
+            },
+            {
+                id: 'bedroom.radon',
+                name: 'Radon',
+                unit: 'Bq/m³',
+                goodRange: [0, 100],
+                showCard: true,
+                showDetail: false,
+                emoji: { ok: '☢️', alert: '⚠️', default: '☢️' }
+            }
+        ];
+
         const FURNACE_PROFILE = {
             name: 'Newmac solid fuel/oil forced-air furnace',
             leadTimeMinutes: 25,
@@ -1307,6 +1388,7 @@
             refresh: document.getElementById('refresh-btn'),
             metricGrid: document.getElementById('metric-cards'),
             detailGrid: document.getElementById('feed-details'),
+            airthingsGrid: document.getElementById('airthings-cards'),
             viewTabs: document.getElementById('view-tabs'),
             dashboardView: document.getElementById('dashboard-view'),
             insightsView: document.getElementById('insights-view'),
@@ -1923,8 +2005,9 @@
             dom.refresh.disabled = true;
 
             try {
-                const [feeds, weather, temperatureHistory] = await Promise.all([
+                const [feeds, airthingsFeeds, weather, temperatureHistory] = await Promise.all([
                     Promise.all(FEEDS.map(feed => fetchFeedData(feed))),
+                    Promise.all(AIRTHINGS_FEEDS.map(feed => fetchFeedData(feed))),
                     fetchWeatherData(),
                     fetchTemperatureHistory({
                         limit: TEMPERATURE_HISTORY_LIMIT,
@@ -1936,6 +2019,7 @@
                 latestHistory = temperatureHistory;
                 const { timeline } = await refreshHeatHistoryContext(temperatureHistory);
                 updateDashboard(feeds, weather, temperatureHistory);
+                updateAirthings(airthingsFeeds);
                 updateHeatHistory(feeds.find(feed => feed.id === 'home.temperature'), temperatureHistory, timeline);
                 dom.status.textContent = `Updated ${formatDateTime(new Date())} · ${USERNAME} · Last ${DATA_LIMIT} points`;
             } catch (error) {
@@ -2203,6 +2287,19 @@
             removeStaleCards(dom.metricGrid, seen, 'card');
             removeStaleCards(dom.detailGrid, seen, 'detail');
             updateInsights(feeds, weather, temperatureHistory);
+        }
+
+        function updateAirthings(feeds) {
+            if (!dom.airthingsGrid) return;
+            const seen = new Set();
+            feeds.forEach(feed => {
+                if (!feed || !feed.id) return;
+                seen.add(feed.id);
+                if (feed.showCard !== false) {
+                    renderMetricCard(feed, dom.airthingsGrid);
+                }
+            });
+            removeStaleCards(dom.airthingsGrid, seen, 'card');
         }
 
         function refreshInsights() {
@@ -2570,9 +2667,9 @@
             return wrapper;
         }
 
-        function renderMetricCard(feed) {
+        function renderMetricCard(feed, gridEl = dom.metricGrid) {
             const { id, name, unit, data = [], error } = feed;
-            let card = dom.metricGrid.querySelector(`[data-feed-id="${id}"]`);
+            let card = gridEl.querySelector(`[data-feed-id="${id}"]`);
 
             if (!card) {
                 card = document.createElement('article');
@@ -2602,7 +2699,7 @@
                     </div>
                     <span class="metric-error"></span>
                 `;
-                dom.metricGrid.appendChild(card);
+                gridEl.appendChild(card);
             }
 
             const emojiEl = card.querySelector('.metric-emoji');
@@ -2920,7 +3017,7 @@
         }
 
         function resolveStateClass(state, feedId) {
-            if (feedId === 'home.temperature') {
+            if (feedId === 'home.temperature' || feedId === 'bedroom.temperature') {
                 if (state === 'ok') {
                     return 'metric-card--temperature-ok';
                 }
@@ -2932,10 +3029,10 @@
                 }
                 return CARD_STATE_CLASSES[state] || CARD_STATE_CLASSES.ok;
             }
-            if (feedId === 'home.humidity') {
+            if (feedId === 'home.humidity' || feedId === 'bedroom.humidity') {
                 return state === 'alert' ? 'metric-card--humidity-alert' : 'metric-card--humidity-ok';
             }
-            if (feedId === 'home.pressure') {
+            if (feedId === 'home.pressure' || feedId === 'bedroom.pressure') {
                 return state === 'alert' ? 'metric-card--pressure-alert' : 'metric-card--pressure-ok';
             }
             return CARD_STATE_CLASSES[state] || CARD_STATE_CLASSES.ok;
