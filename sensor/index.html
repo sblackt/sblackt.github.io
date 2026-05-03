@@ -1412,6 +1412,7 @@
         let latestFeeds = null;
         let latestHistory = null;
         let latestOutdoorSamples = null;
+        let latestAirthingsFeeds = null;
         let latestHeatTimeline = null;
         let heatHistoryChart = null;
         let selectedHistoryRange = HISTORY_RANGE_OPTIONS.find(option => option.id === '7d') || HISTORY_RANGE_OPTIONS[HISTORY_RANGE_OPTIONS.length - 1];
@@ -2015,12 +2016,14 @@
                     })
                 ]);
                 latestFeeds = feeds;
+                latestAirthingsFeeds = airthingsFeeds;
                 latestWeather = weather;
                 latestHistory = temperatureHistory;
                 const { timeline } = await refreshHeatHistoryContext(temperatureHistory);
                 updateDashboard(feeds, weather, temperatureHistory);
                 updateAirthings(airthingsFeeds);
-                updateHeatHistory(feeds.find(feed => feed.id === 'home.temperature'), temperatureHistory, timeline);
+                const bedroomTempFeed = airthingsFeeds.find(f => f.id === 'bedroom.temperature');
+                updateHeatHistory(feeds.find(feed => feed.id === 'home.temperature'), temperatureHistory, timeline, bedroomTempFeed);
                 dom.status.textContent = `Updated ${formatDateTime(new Date())} · ${USERNAME} · Last ${DATA_LIMIT} points`;
             } catch (error) {
                 console.error(error);
@@ -2309,7 +2312,7 @@
             updateInsights(latestFeeds, latestWeather, latestHistory);
         }
 
-        function updateHeatHistory(feed, history, timeline = latestHeatTimeline) {
+        function updateHeatHistory(feed, history, timeline = latestHeatTimeline, bedroomFeed = null) {
             if (!dom.heatHistoryCanvas || !dom.heatHistorySummary) {
                 return;
             }
@@ -2371,6 +2374,11 @@
                 x: new Date(point.x),
                 y: point.y
             }));
+            const bedroomChartPoints = (bedroomFeed?.data || [])
+                .filter(entry => entry.createdAt)
+                .map(entry => ({ x: new Date(entry.createdAt), y: entry.value }))
+                .sort((a, b) => a.x - b.x);
+
             const axisMin = indoorChartPoints[0]?.x
                 ?? outdoorChartPoints[0]?.x
                 ?? undefined;
@@ -2403,6 +2411,18 @@
                                 tension: 0.2,
                                 fill: false,
                                 borderDash: [6, 4],
+                                parsing: false,
+                                spanGaps: true
+                            },
+                            {
+                                label: 'Bedroom temperature',
+                                data: bedroomChartPoints,
+                                borderColor: '#a78bfa',
+                                backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                                pointRadius: 0,
+                                tension: 0.25,
+                                fill: false,
+                                borderDash: [3, 3],
                                 parsing: false,
                                 spanGaps: true
                             }
@@ -2470,6 +2490,22 @@
                 }
                 heatHistoryChart.data.datasets[0].data = indoorChartPoints;
                 heatHistoryChart.data.datasets[1].data = outdoorChartPoints;
+                if (!heatHistoryChart.data.datasets[2]) {
+                    heatHistoryChart.data.datasets[2] = {
+                        label: 'Bedroom temperature',
+                        data: bedroomChartPoints,
+                        borderColor: '#a78bfa',
+                        backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                        pointRadius: 0,
+                        tension: 0.25,
+                        fill: false,
+                        borderDash: [3, 3],
+                        parsing: false,
+                        spanGaps: true
+                    };
+                } else {
+                    heatHistoryChart.data.datasets[2].data = bedroomChartPoints;
+                }
                 heatHistoryChart.options.scales.x.min = axisMin;
                 heatHistoryChart.options.scales.x.max = axisMax;
                 heatHistoryChart.update('none');
