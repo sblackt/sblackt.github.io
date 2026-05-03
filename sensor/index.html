@@ -2023,6 +2023,7 @@
                 updateDashboard(feeds, weather, temperatureHistory);
                 updateAirthings(airthingsFeeds);
                 const bedroomTempFeed = airthingsFeeds.find(f => f.id === 'bedroom.temperature');
+                overlayBedroomOnTemperatureChart(bedroomTempFeed);
                 updateHeatHistory(feeds.find(feed => feed.id === 'home.temperature'), temperatureHistory, timeline, bedroomTempFeed);
                 dom.status.textContent = `Updated ${formatDateTime(new Date())} · ${USERNAME} · Last ${DATA_LIMIT} points`;
             } catch (error) {
@@ -2290,6 +2291,33 @@
             removeStaleCards(dom.metricGrid, seen, 'card');
             removeStaleCards(dom.detailGrid, seen, 'detail');
             updateInsights(feeds, weather, temperatureHistory);
+        }
+
+        function overlayBedroomOnTemperatureChart(bedroomFeed) {
+            const chart = charts.get('home.temperature');
+            if (!chart) return;
+            const points = (bedroomFeed?.data || [])
+                .filter(entry => entry.createdAt)
+                .map(entry => ({ x: new Date(entry.createdAt), y: entry.value }))
+                .sort((a, b) => a.x - b.x);
+            if (!chart.data.datasets[1]) {
+                chart.data.datasets[1] = {
+                    label: 'Bedroom',
+                    data: points,
+                    borderColor: '#a78bfa',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.3,
+                    borderWidth: 2,
+                    borderDash: [4, 3],
+                    pointRadius: 0,
+                    parsing: false
+                };
+                chart.options.plugins.legend.display = true;
+            } else {
+                chart.data.datasets[1].data = points;
+            }
+            chart.update('none');
         }
 
         function updateAirthings(feeds) {
