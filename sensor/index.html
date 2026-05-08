@@ -424,6 +424,14 @@
             color: #f1f5f9;
         }
 
+        .insight-hero__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
         .insight-hero h2 {
             font-size: 2rem;
             margin-bottom: 0.35rem;
@@ -433,6 +441,30 @@
         .insight-hero p {
             color: rgba(248, 250, 252, 0.8);
             font-size: 1rem;
+        }
+
+        .season-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 250, 252, 0.25);
+            background: rgba(248, 250, 252, 0.07);
+            color: rgba(248, 250, 252, 0.85);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            white-space: nowrap;
+        }
+
+        .season-toggle:hover {
+            background: rgba(248, 250, 252, 0.14);
+            border-color: rgba(248, 250, 252, 0.4);
+        }
+
+        .insight-card--summer {
+            border-color: rgba(20, 184, 166, 0.5);
         }
 
         .heat-history {
@@ -1020,9 +1052,12 @@
 
         <section id="insights-view" class="view" role="tabpanel" aria-labelledby="tab-insights" hidden>
             <div class="insight-hero">
-                <div>
-                    <h2>Insights</h2>
-                    <p id="insights-summary">Waiting for enough readings to build insights.</p>
+                <div class="insight-hero__header">
+                    <div>
+                        <h2>Insights</h2>
+                        <p id="insights-summary">Waiting for enough readings to build insights.</p>
+                    </div>
+                    <button id="season-mode-toggle" type="button" class="season-toggle" aria-label="Switch season mode"></button>
                 </div>
             </div>
             <section class="heat-history" aria-labelledby="heat-history-title">
@@ -1402,7 +1437,9 @@
             fireJournalForm: document.getElementById('fire-journal-form'),
             fireJournalNote: document.getElementById('fire-journal-note'),
             fireJournalButtons: Array.from(document.querySelectorAll('[data-fire-size]')),
-            fireJournalEntries: document.getElementById('fire-journal-entries')
+            fireJournalEntries: document.getElementById('fire-journal-entries'),
+            seasonToggle: document.getElementById('season-mode-toggle'),
+            fireJournalSection: document.querySelector('.fire-journal')
         };
 
         const charts = new Map();
@@ -1420,18 +1457,45 @@
         let selectedFireSize = null;
         let fireJournalSubmitting = false;
 
+        function detectSeason() {
+            const m = new Date().getMonth();
+            return (m >= 4 && m <= 8) ? 'summer' : 'winter';
+        }
+        let currentSeasonMode = detectSeason();
+
         init();
 
         function init() {
             initViewTabs();
             initHistoryRangeControls();
             initFireJournal();
+            applySeasonMode();
+            if (dom.seasonToggle) {
+                dom.seasonToggle.addEventListener('click', () => {
+                    currentSeasonMode = currentSeasonMode === 'winter' ? 'summer' : 'winter';
+                    applySeasonMode();
+                    updateInsights(latestFeeds, latestWeather, latestHistory);
+                });
+            }
             if (dom.refresh) {
                 dom.refresh.addEventListener('click', () => requestData(true));
             }
             requestData(true);
             scheduleRefresh();
             document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
+
+        function applySeasonMode() {
+            if (dom.seasonToggle) {
+                if (currentSeasonMode === 'summer') {
+                    dom.seasonToggle.textContent = '☀ Summer · Switch to Winter';
+                } else {
+                    dom.seasonToggle.textContent = '❄ Winter · Switch to Summer';
+                }
+            }
+            if (dom.fireJournalSection) {
+                dom.fireJournalSection.hidden = (currentSeasonMode === 'summer');
+            }
         }
 
         function initViewTabs() {
@@ -1539,7 +1603,7 @@
                 latestHistory = history;
                 const { timeline } = await refreshHeatHistoryContext(history);
                 const temperatureFeed = latestFeeds.find(feed => feed.id === 'home.temperature');
-                updateHeatHistory(temperatureFeed, history, timeline);
+                updateHeatHistory(temperatureFeed, history, timeline, latestAirthingsFeeds?.find(f => f.id === 'bedroom.temperature'));
                 updateInsights(latestFeeds, latestWeather, history);
             } catch (error) {
                 console.warn('Unable to reload history', error);
@@ -2613,14 +2677,17 @@
                 }
             }
 
-            renderInsightReports(buildFuelEfficiencyReports({
-                fireAnalysis,
-                temperatureFeed,
-                weather,
-                heatTimeline: latestHeatTimeline,
-                normalizedIntervals,
-                coolingAnomalies
-            }));
+            const reports = currentSeasonMode === 'summer'
+                ? buildSummerReports({ temperatureFeed, humidityFeed, weather, airthingsFeeds: latestAirthingsFeeds })
+                : buildFuelEfficiencyReports({
+                    fireAnalysis,
+                    temperatureFeed,
+                    weather,
+                    heatTimeline: latestHeatTimeline,
+                    normalizedIntervals,
+                    coolingAnomalies
+                });
+            renderInsightReports(reports);
         }
 
         function renderInsightReports(items) {
@@ -4475,6 +4542,151 @@ function exposeLatestJson(payload) {
                 footer: analysis.coverageHours ? `Data window ${formatDuration(analysis.coverageHours * 3600000)}` : '',
                 priority: 3.4,
                 variant: 'fire'
+            };
+        }
+
+        function buildSummerReports({ temperatureFeed, humidityFeed, weather, airthingsFeeds }) {
+            const sections = [];
+            const comfort = buildComfortReport(temperatureFeed, humidityFeed, weather);
+            if (comfort) sections.push(comfort);
+            const cooling = buildPassiveCoolingReport(temperatureFeed, weather);
+            if (cooling) sections.push(cooling);
+            const airQuality = buildAirQualityReport(airthingsFeeds);
+            if (airQuality) sections.push(airQuality);
+            return sections;
+        }
+
+        function buildComfortReport(temperatureFeed, humidityFeed, weather) {
+            if (!temperatureFeed) return null;
+            const tempData = temperatureFeed.data || [];
+            const humData = humidityFeed?.data || [];
+            const unitLabel = temperatureFeed.unit || '°C';
+
+            const TEMP_LOW = 20, TEMP_HIGH = 25;
+            const HUM_LOW = 30, HUM_HIGH = 60;
+
+            const tempValues = tempData.map(e => Number(e.value)).filter(Number.isFinite);
+            const humValues = humData.map(e => Number(e.value)).filter(Number.isFinite);
+
+            if (!tempValues.length) return null;
+
+            const avgTemp = tempValues.reduce((s, v) => s + v, 0) / tempValues.length;
+            const comfortCount = tempValues.filter(v => v >= TEMP_LOW && v <= TEMP_HIGH).length;
+            const comfortPct = Math.round((comfortCount / tempValues.length) * 100);
+            const tempHigh = Math.max(...tempValues);
+            const tempLow = Math.min(...tempValues);
+
+            const summaryParts = [
+                `Average ${formatNumber(avgTemp)}${unitLabel} · ${comfortPct}% of readings in the ${TEMP_LOW}–${TEMP_HIGH}° comfort range`
+            ];
+
+            const points = [
+                { label: 'Avg indoor temp', detail: `${formatNumber(avgTemp)}${unitLabel}` },
+                { label: 'Comfort range', detail: `${comfortPct}% of readings (${TEMP_LOW}–${TEMP_HIGH}°)` },
+                { label: 'High / Low', detail: `${formatNumber(tempHigh)}° / ${formatNumber(tempLow)}°` }
+            ];
+
+            if (humValues.length) {
+                const avgHum = humValues.reduce((s, v) => s + v, 0) / humValues.length;
+                const humComfortCount = humValues.filter(v => v >= HUM_LOW && v <= HUM_HIGH).length;
+                const humComfortPct = Math.round((humComfortCount / humValues.length) * 100);
+                summaryParts.push(`Humidity avg ${formatNumber(avgHum)}%`);
+                points.push({ label: 'Avg humidity', detail: `${formatNumber(avgHum)}% · ${humComfortPct}% in range` });
+            }
+
+            return {
+                id: 'comfort-score',
+                badge: 'Comfort',
+                label: 'Indoor comfort',
+                summary: summaryParts.join(' · '),
+                points,
+                priority: 1,
+                variant: 'summer'
+            };
+        }
+
+        function buildPassiveCoolingReport(temperatureFeed, weather) {
+            if (!temperatureFeed) return null;
+            const tempData = temperatureFeed.data || [];
+            const unitLabel = temperatureFeed.unit || '°C';
+            const tempValues = tempData.map(e => Number(e.value)).filter(Number.isFinite);
+            if (!tempValues.length) return null;
+
+            const avgIndoor = tempValues.reduce((s, v) => s + v, 0) / tempValues.length;
+            const outdoorTemp = Number.isFinite(Number(weather?.temperature)) ? Number(weather.temperature) : null;
+
+            const summaryParts = [`Indoor average ${formatNumber(avgIndoor)}${unitLabel}`];
+            const points = [
+                { label: 'Indoor avg', detail: `${formatNumber(avgIndoor)}${unitLabel}` }
+            ];
+
+            if (outdoorTemp !== null) {
+                const delta = outdoorTemp - avgIndoor;
+                if (delta > 0) {
+                    summaryParts[0] = `House is ${formatNumber(delta)}° cooler than outside · Indoor ${formatNumber(avgIndoor)}°, outdoor ${formatNumber(outdoorTemp)}°`;
+                } else if (delta < -0.5) {
+                    summaryParts[0] = `House is ${formatNumber(Math.abs(delta))}° warmer than outside — consider opening windows`;
+                } else {
+                    summaryParts[0] = `Indoor and outdoor temperatures are similar (${formatNumber(avgIndoor)}° in, ${formatNumber(outdoorTemp)}° out)`;
+                }
+                points.push({ label: 'Outdoor now', detail: `${formatNumber(outdoorTemp)}${unitLabel}` });
+                points.push({ label: 'Indoor vs outdoor', detail: delta > 0 ? `${formatNumber(delta)}° cooler inside` : delta < -0.5 ? `${formatNumber(Math.abs(delta))}° warmer inside` : 'About the same' });
+            }
+
+            return {
+                id: 'passive-cooling',
+                badge: 'Cooling',
+                label: 'Passive cooling',
+                summary: summaryParts.join(' · '),
+                points,
+                footer: weather?.fetchedAt ? `Weather synced ${formatTime(weather.fetchedAt)}` : '',
+                priority: 2,
+                variant: 'summer'
+            };
+        }
+
+        function buildAirQualityReport(airthingsFeeds) {
+            if (!Array.isArray(airthingsFeeds) || !airthingsFeeds.length) return null;
+
+            const getFeedLatest = id => {
+                const feed = airthingsFeeds.find(f => f.id === id);
+                const val = Number(feed?.data?.[0]?.value);
+                return Number.isFinite(val) ? val : null;
+            };
+
+            const co2 = getFeedLatest('bedroom.co2');
+            const voc = getFeedLatest('bedroom.voc');
+            const radon = getFeedLatest('bedroom.radon');
+
+            if (co2 === null && voc === null && radon === null) return null;
+
+            const assessCo2 = v => v < 800 ? 'Good' : v < 1200 ? 'Moderate' : 'High';
+            const assessVoc = v => v < 250 ? 'Good' : v < 2000 ? 'Moderate' : 'High';
+            const assessRadon = v => v < 100 ? 'Good' : v < 300 ? 'Elevated' : 'Action needed';
+
+            const concerns = [];
+            if (co2 !== null && co2 >= 1200) concerns.push(`CO₂ high (${formatNumber(co2)} ppm)`);
+            if (voc !== null && voc >= 2000) concerns.push(`VOC high (${formatNumber(voc)} ppb)`);
+            if (radon !== null && radon >= 300) concerns.push(`Radon action level (${formatNumber(radon)} Bq/m³)`);
+            if (radon !== null && radon >= 100 && radon < 300) concerns.push(`Radon elevated (${formatNumber(radon)} Bq/m³)`);
+
+            const summary = concerns.length
+                ? concerns.join(' · ')
+                : 'All bedroom air quality readings look good';
+
+            const points = [];
+            if (co2 !== null) points.push({ label: 'CO₂', detail: `${formatNumber(co2)} ppm · ${assessCo2(co2)}` });
+            if (voc !== null) points.push({ label: 'VOC', detail: `${formatNumber(voc)} ppb · ${assessVoc(voc)}` });
+            if (radon !== null) points.push({ label: 'Radon', detail: `${formatNumber(radon)} Bq/m³ · ${assessRadon(radon)}` });
+
+            return {
+                id: 'air-quality',
+                badge: 'Air Quality',
+                label: 'Bedroom air quality',
+                summary,
+                points,
+                priority: 3,
+                variant: concerns.length ? 'summer' : undefined
             };
         }
 
