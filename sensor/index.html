@@ -571,109 +571,6 @@
             height: 100% !important;
         }
 
-.fire-journal {
-    background: rgba(15, 23, 42, 0.7);
-    border-radius: 24px;
-    padding: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: 1.25rem;
-    display: grid;
-    gap: 1rem;
-}
-
-.fire-journal__header h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-family: 'Hepta Slab', 'Inter', serif;
-    color: #f8fafc;
-}
-
-.fire-journal__header p {
-    margin: 0.3rem 0 0;
-    color: rgba(248, 250, 252, 0.7);
-}
-
-.fire-size-picker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.fire-size-picker--error {
-    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5);
-}
-
-.fire-size__btn {
-    border: 1px solid rgba(248, 250, 252, 0.25);
-    border-radius: 14px;
-    background: rgba(15, 23, 42, 0.4);
-    color: rgba(248, 250, 252, 0.85);
-    padding: 0.55rem 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, border 0.2s ease, color 0.2s ease;
-}
-
-.fire-size__btn--selected {
-    background: rgba(248, 250, 252, 0.9);
-    color: #0f172a;
-}
-
-.fire-journal__note {
-    width: 100%;
-    border-radius: 12px;
-    border: 1px solid rgba(248, 250, 252, 0.2);
-    background: rgba(15, 23, 42, 0.35);
-    color: #f8fafc;
-    padding: 0.75rem;
-    font-size: 0.95rem;
-    resize: vertical;
-}
-
-.fire-journal__actions {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.fire-journal__submit {
-    border: none;
-    border-radius: 12px;
-    padding: 0.65rem 1.1rem;
-    background: linear-gradient(135deg, #fb923c, #f97316);
-    color: #0f172a;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 12px 24px -16px rgba(251, 146, 60, 0.8);
-}
-
-.fire-journal__submit:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
-.fire-journal__entries {
-    display: grid;
-    gap: 0.75rem;
-}
-
-.fire-journal__entry {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-size: 0.95rem;
-    color: rgba(248, 250, 252, 0.9);
-}
-
-.fire-journal__entry span {
-    font-size: 0.85rem;
-    color: rgba(248, 250, 252, 0.65);
-}
-
-.fire-journal__empty {
-    color: rgba(248, 250, 252, 0.6);
-    font-size: 0.9rem;
-}
 
 .insights-grid {
     display: grid;
@@ -1080,30 +977,7 @@
                     <canvas id="heat-history-chart" aria-label="Indoor temperature trend over time"></canvas>
                 </div>
             </section>
-            <section class="fire-journal" aria-labelledby="fire-journal-title">
-                <div class="fire-journal__header">
-                    <h3 id="fire-journal-title">Fire log</h3>
-                    <p>Mark when you reload the furnace so you can compare cadence with the sensor data.</p>
-                </div>
-                <form id="fire-journal-form" class="fire-journal__form">
-                    <div class="fire-size-picker" role="group" aria-label="Select fire size">
-                        <button type="button" class="fire-size__btn" data-fire-size="top-up">Top-up</button>
-                        <button type="button" class="fire-size__btn" data-fire-size="medium">Medium</button>
-                        <button type="button" class="fire-size__btn" data-fire-size="large">Large</button>
-                        <button type="button" class="fire-size__btn" data-fire-size="custom">Custom</button>
-                    </div>
-                    <label class="fire-journal__note-label">
-                        <span class="sr-only">Notes</span>
-                        <textarea id="fire-journal-note" class="fire-journal__note" placeholder="Notes or wood mix (optional)" rows="2"></textarea>
-                    </label>
-                    <div class="fire-journal__actions">
-                        <button type="submit" class="fire-journal__submit">Log fire</button>
-                    </div>
-                </form>
-                <div id="fire-journal-entries" class="fire-journal__entries">
-                    <p class="fire-journal__empty">No fires logged yet.</p>
-                </div>
-            </section>
+
             <section id="insights-grid" class="insights-grid" aria-live="polite"></section>
         </section>
 
@@ -1113,9 +987,7 @@
     <script>
         window.STONEHEDGE_HISTORY_URL = window.STONEHEDGE_HISTORY_URL
             || 'https://us-central1-the-meeple-planner.cloudfunctions.net/adafruitHistory';
-        window.STONEHEDGE_FIRE_JOURNAL_URL = window.STONEHEDGE_FIRE_JOURNAL_URL
-            || 'https://us-central1-the-meeple-planner.cloudfunctions.net/fireJournal';
-        window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
+window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
             || 'https://us-central1-the-meeple-planner.cloudfunctions.net/meteoOutdoorHistory';
     </script>
     <script>
@@ -1132,16 +1004,9 @@
             { id: '3d', label: '3 days', days: 3 },
             { id: '7d', label: '7 days', days: 7 }
         ];
-        const FIRE_JOURNAL_STORAGE_KEY = 'stonehedgeFireJournal';
-        const FIRE_JOURNAL_MAX_ENTRIES = 60;
-        const FIRE_JOURNAL_MATCH_TOLERANCE_MS = 2 * 60 * 60 * 1000;
-        const FIRE_JOURNAL_SYNTH_WINDOW_MS = 6 * 60 * 60 * 1000;
         const HISTORY_API_ENDPOINT = typeof window !== 'undefined' && window.STONEHEDGE_HISTORY_URL
             ? window.STONEHEDGE_HISTORY_URL
             : '/adafruitHistory';
-        const FIRE_JOURNAL_ENDPOINT = typeof window !== 'undefined' && window.STONEHEDGE_FIRE_JOURNAL_URL
-            ? window.STONEHEDGE_FIRE_JOURNAL_URL
-            : '/fireJournal';
         const OUTDOOR_HISTORY_ENDPOINT = typeof window !== 'undefined' && window.STONEHEDGE_OUTDOOR_URL
             ? window.STONEHEDGE_OUTDOOR_URL
             : '/outdoorSamples';
@@ -1434,12 +1299,7 @@
             heatHistoryRange: document.querySelector('.heat-history__range'),
             heatHistoryDelta: document.getElementById('heat-history-delta'),
             historyRangeButtons: Array.from(document.querySelectorAll('[data-history-range]')),
-            fireJournalForm: document.getElementById('fire-journal-form'),
-            fireJournalNote: document.getElementById('fire-journal-note'),
-            fireJournalButtons: Array.from(document.querySelectorAll('[data-fire-size]')),
-            fireJournalEntries: document.getElementById('fire-journal-entries'),
-            seasonToggle: document.getElementById('season-mode-toggle'),
-            fireJournalSection: document.querySelector('.fire-journal')
+            seasonToggle: document.getElementById('season-mode-toggle')
         };
 
         const charts = new Map();
@@ -1453,10 +1313,6 @@
         let latestHeatTimeline = null;
         let heatHistoryChart = null;
         let selectedHistoryRange = HISTORY_RANGE_OPTIONS.find(option => option.id === '7d') || HISTORY_RANGE_OPTIONS[HISTORY_RANGE_OPTIONS.length - 1];
-        let fireJournalEntries = [];
-        let selectedFireSize = null;
-        let fireJournalSubmitting = false;
-
         function detectSeason() {
             const m = new Date().getMonth();
             return (m >= 4 && m <= 8) ? 'summer' : 'winter';
@@ -1468,7 +1324,6 @@
         function init() {
             initViewTabs();
             initHistoryRangeControls();
-            initFireJournal();
             applySeasonMode();
             if (dom.seasonToggle) {
                 dom.seasonToggle.addEventListener('click', () => {
@@ -1487,14 +1342,9 @@
 
         function applySeasonMode() {
             if (dom.seasonToggle) {
-                if (currentSeasonMode === 'summer') {
-                    dom.seasonToggle.textContent = '☀ Summer · Switch to Winter';
-                } else {
-                    dom.seasonToggle.textContent = '❄ Winter · Switch to Summer';
-                }
-            }
-            if (dom.fireJournalSection) {
-                dom.fireJournalSection.hidden = (currentSeasonMode === 'summer');
+                dom.seasonToggle.textContent = currentSeasonMode === 'summer'
+                    ? '☀ Summer · Switch to Winter'
+                    : '❄ Winter · Switch to Summer';
             }
         }
 
@@ -1823,244 +1673,7 @@
             });
         }
 
-        function initFireJournal() {
-            fireJournalEntries = loadFireJournalEntries();
-            renderFireJournalEntries();
-            if (Array.isArray(dom.fireJournalButtons)) {
-                dom.fireJournalButtons.forEach(button => {
-                    button.addEventListener('click', () => selectFireSize(button.dataset.fireSize));
-                });
-            }
-            if (dom.fireJournalForm) {
-                dom.fireJournalForm.addEventListener('submit', handleFireJournalSubmit);
-            }
-            syncFireJournalFromServer();
-        }
 
-        function selectFireSize(sizeId) {
-            selectedFireSize = sizeId;
-            updateFireSizeButtons();
-        }
-
-        function updateFireSizeButtons() {
-            if (!Array.isArray(dom.fireJournalButtons)) {
-                return;
-            }
-            dom.fireJournalButtons.forEach(button => {
-                const isSelected = button.dataset.fireSize === selectedFireSize;
-                button.classList.toggle('fire-size__btn--selected', Boolean(isSelected));
-            });
-        }
-
-        async function handleFireJournalSubmit(event) {
-            event.preventDefault();
-            if (fireJournalSubmitting) {
-                return;
-            }
-            if (!selectedFireSize) {
-                flagFireSizeError();
-                return;
-            }
-            const meta = getFireSizeMeta(selectedFireSize);
-            if (!meta) {
-                flagFireSizeError();
-                return;
-            }
-            const note = dom.fireJournalNote?.value?.trim().slice(0, 240) || '';
-            try {
-                setFireJournalSubmitting(true);
-                const entry = await postFireJournalEntry({ sizeId: meta.id, note });
-                addFireJournalEntry(entry);
-                if (dom.fireJournalNote) {
-                    dom.fireJournalNote.value = '';
-                }
-                selectedFireSize = null;
-                updateFireSizeButtons();
-            } catch (error) {
-                console.warn('Unable to log fire', error);
-                alert('Unable to log fire right now. Please try again.');
-            } finally {
-                setFireJournalSubmitting(false);
-            }
-        }
-
-        function flagFireSizeError() {
-            const picker = dom.fireJournalForm?.querySelector('.fire-size-picker');
-            if (!picker) {
-                return;
-            }
-            picker.classList.add('fire-size-picker--error');
-            setTimeout(() => picker.classList.remove('fire-size-picker--error'), 900);
-        }
-
-        function renderFireJournalEntries() {
-            if (!dom.fireJournalEntries) {
-                return;
-            }
-            if (!fireJournalEntries.length) {
-                dom.fireJournalEntries.innerHTML = '<p class="fire-journal__empty">No fires logged yet.</p>';
-                return;
-            }
-            const recent = fireJournalEntries.slice().sort((a, b) => b.timestamp - a.timestamp).slice(0, 6);
-            dom.fireJournalEntries.innerHTML = recent.map(entry => {
-                const timeLabel = formatDateTime(new Date(entry.timestamp));
-                const note = entry.note ? `<span>${escapeHtml(entry.note)}</span>` : '';
-                return `<p class="fire-journal__entry"><strong>${escapeHtml(entry.sizeLabel)}</strong><span>${timeLabel}${note ? ` · ${note}` : ''}</span></p>`;
-            }).join('');
-        }
-
-        function loadFireJournalEntries() {
-            if (typeof window === 'undefined' || !window.localStorage) {
-                return [];
-            }
-            try {
-                const raw = window.localStorage.getItem(FIRE_JOURNAL_STORAGE_KEY);
-                const parsed = raw ? JSON.parse(raw) : [];
-                if (!Array.isArray(parsed)) {
-                    return [];
-                }
-                return parsed
-                    .map(entry => ({
-                        id: entry.id || `fire-${entry.timestamp}`,
-                        timestamp: Number(entry.timestamp),
-                        sizeId: entry.sizeId,
-                        sizeLabel: entry.sizeLabel || entry.sizeId || 'Fire',
-                        detail: entry.detail || '',
-                        note: entry.note || ''
-                    }))
-                    .filter(entry => Number.isFinite(entry.timestamp));
-            } catch (error) {
-                console.warn('Unable to load fire journal', error);
-                return [];
-            }
-        }
-
-        function saveFireJournalEntries() {
-            if (typeof window === 'undefined' || !window.localStorage) {
-                return;
-            }
-            try {
-                window.localStorage.setItem(FIRE_JOURNAL_STORAGE_KEY, JSON.stringify(fireJournalEntries));
-            } catch (error) {
-                console.warn('Unable to save fire journal', error);
-            }
-        }
-
-        function addFireJournalEntry(entry) {
-            if (!entry || !Number.isFinite(entry.timestamp)) {
-                return;
-            }
-            fireJournalEntries = fireJournalEntries.filter(item => item.id !== entry.id);
-            fireJournalEntries.push(entry);
-            if (fireJournalEntries.length > FIRE_JOURNAL_MAX_ENTRIES) {
-                fireJournalEntries = fireJournalEntries
-                    .sort((a, b) => a.timestamp - b.timestamp)
-                    .slice(fireJournalEntries.length - FIRE_JOURNAL_MAX_ENTRIES);
-            }
-            saveFireJournalEntries();
-            renderFireJournalEntries();
-            refreshInsights();
-        }
-
-        function getFireSizeMeta(sizeId) {
-            if (!sizeId) {
-                return null;
-            }
-            const band = FURNACE_PROFILE.sizeBands.find(entry => entry.id === sizeId);
-            if (band) {
-                return { id: band.id, label: band.title, detail: band.detail };
-            }
-            if (sizeId === 'custom') {
-                return { id: 'custom', label: 'Custom fire', detail: 'Logged manually' };
-            }
-            return null;
-        }
-
-        function setFireJournalSubmitting(isSubmitting) {
-            fireJournalSubmitting = Boolean(isSubmitting);
-            const submitButton = dom.fireJournalForm?.querySelector('.fire-journal__submit');
-            if (submitButton) {
-                submitButton.disabled = fireJournalSubmitting;
-                submitButton.textContent = fireJournalSubmitting ? 'Logging…' : 'Log fire';
-            }
-        }
-
-        async function syncFireJournalFromServer() {
-            if (!FIRE_JOURNAL_ENDPOINT) {
-                return;
-            }
-            try {
-                const entries = await fetchFireJournalEntriesFromServer(FIRE_JOURNAL_MAX_ENTRIES);
-                if (Array.isArray(entries)) {
-                    fireJournalEntries = entries;
-                    saveFireJournalEntries();
-                    renderFireJournalEntries();
-                    refreshInsights();
-                }
-            } catch (error) {
-                console.warn('Unable to sync fire journal', error);
-            }
-        }
-
-        async function fetchFireJournalEntriesFromServer(limit = FIRE_JOURNAL_MAX_ENTRIES) {
-            if (!FIRE_JOURNAL_ENDPOINT) {
-                return null;
-            }
-            const params = new URLSearchParams();
-            params.set('limit', String(Math.max(1, Math.min(limit, FIRE_JOURNAL_MAX_ENTRIES))));
-            const response = await fetch(`${FIRE_JOURNAL_ENDPOINT}?${params.toString()}`, { cache: 'no-store' });
-            if (!response.ok) {
-                throw new Error(`Fire journal fetch failed (${response.status})`);
-            }
-            const payload = await response.json();
-            const entries = Array.isArray(payload.entries) ? payload.entries : [];
-            return entries
-                .map(entry => ({
-                    id: entry.id || `fire-${entry.timestamp}`,
-                    timestamp: Number(entry.timestamp),
-                    sizeId: entry.sizeId,
-                    sizeLabel: entry.sizeLabel || entry.sizeId,
-                    detail: entry.detail || '',
-                    note: entry.note || ''
-                }))
-                .filter(entry => Number.isFinite(entry.timestamp));
-        }
-
-        async function postFireJournalEntry({ sizeId, note }) {
-            if (!FIRE_JOURNAL_ENDPOINT) {
-                throw new Error('Fire journal endpoint unavailable');
-            }
-            const response = await fetch(FIRE_JOURNAL_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sizeId, note })
-            });
-            if (!response.ok) {
-                let message = 'Unable to log fire';
-                try {
-                    const payload = await response.json();
-                    if (payload?.error) {
-                        message = payload.error;
-                    }
-                } catch (error) {
-                    message = await response.text();
-                }
-                throw new Error(message || 'Unable to log fire');
-            }
-            const payload = await response.json();
-            const entry = payload.entry;
-            if (!entry) {
-                throw new Error('Invalid response');
-            }
-            return {
-                id: entry.id || `fire-${entry.timestamp}`,
-                timestamp: Number(entry.timestamp),
-                sizeId: entry.sizeId,
-                sizeLabel: entry.sizeLabel || entry.sizeId,
-                detail: entry.detail || '',
-                note: entry.note || ''
-            };
-        }
 
 
         async function requestData(manualTrigger = false) {
@@ -2648,7 +2261,7 @@
             const analysisSource = historicalSeries
                 ? { ...primaryTempFeed, data: historicalSeries }
                 : primaryTempFeed;
-            const fireAnalysis = analyzeFireCycles(analysisSource, { fireJournalEntries });
+            const fireAnalysis = analyzeFireCycles(analysisSource, {});
             const normalizedIntervals = Array.isArray(latestHeatTimeline) && latestHeatTimeline.length
                 ? computeNormalizedCoolingIntervals({
                     timeline: latestHeatTimeline,
@@ -3626,10 +3239,10 @@ function exposeLatestJson(payload) {
             const earliest = series[0].timestamp;
             const latest = series[series.length - 1].timestamp;
             return sorted.filter(entry => {
-                if (Number.isFinite(earliest) && entry.timestamp < earliest - FIRE_JOURNAL_SYNTH_WINDOW_MS) {
+                if (Number.isFinite(earliest) && entry.timestamp < earliest - 6 * 3600000) {
                     return false;
                 }
-                if (Number.isFinite(latest) && entry.timestamp > latest + FIRE_JOURNAL_SYNTH_WINDOW_MS) {
+                if (Number.isFinite(latest) && entry.timestamp > latest + 6 * 3600000) {
                     return false;
                 }
                 return true;
@@ -3695,7 +3308,7 @@ function exposeLatestJson(payload) {
                     return;
                 }
                 const delta = Math.abs(eventTime - timestamp);
-                if (delta > FIRE_JOURNAL_MATCH_TOLERANCE_MS) {
+                if (delta > 2 * 3600000) {
                     return;
                 }
                 if (!candidate || delta < candidate.delta) {
@@ -3714,7 +3327,7 @@ function exposeLatestJson(payload) {
                 return null;
             }
             const startIndex = findSeriesIndexAtOrBefore(series, sample.timestamp);
-            const searchEnd = entry.timestamp + FIRE_JOURNAL_SYNTH_WINDOW_MS;
+            const searchEnd = entry.timestamp + 6 * 3600000;
             let peakIndex = startIndex;
             let peakValue = series[startIndex].value;
             for (let i = startIndex; i < series.length; i++) {
