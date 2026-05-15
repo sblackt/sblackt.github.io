@@ -29,6 +29,7 @@ jobs:
       - name: Build
         env:
           REACT_APP_EVENT_PREVIEW_BASE_URL: ${{ secrets.REACT_APP_EVENT_PREVIEW_BASE_URL }}
+          REACT_APP_DISCORD_WEBHOOK_URL: ${{ secrets.REACT_APP_DISCORD_WEBHOOK_URL }}
         run: npm run build
 
       - name: Sync build to planner/

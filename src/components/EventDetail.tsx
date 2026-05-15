@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Event, AvailabilityResponse, EventCategory, TimeSlot, AvailabilityPreference } from '../types';
 import { firebaseService } from '../services/firebaseService';
+import { sendDiscordPlannedNotification } from '../services/discordService';
 import { format } from 'date-fns';
 import AvailabilityHeatmap from './AvailabilityHeatmap';
 import { parseLocalDate } from '../utils/dateUtils';
@@ -761,8 +762,19 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   const handleConfirmTimeSlot = async (timeSlotId: string | null) => {
     setPlanning(true);
     try {
+      const isReschedule = !!event.confirmedTimeSlotId && timeSlotId !== null && timeSlotId !== event.confirmedTimeSlotId;
       await firebaseService.updateEvent(event.id, { confirmedTimeSlotId: timeSlotId ?? null });
       onEventUpdated();
+
+      if (timeSlotId !== null) {
+        const slot = event.timeSlots.find(s => s.id === timeSlotId);
+        if (slot) {
+          const shareLink = buildShareLink(event.id);
+          sendDiscordPlannedNotification(event, slot, shareLink, isReschedule).catch(err => {
+            console.error('Discord notification failed:', err);
+          });
+        }
+      }
     } catch (error) {
       console.error('Error setting planned time:', error);
       alert('Failed to update planned time. Please try again.');
