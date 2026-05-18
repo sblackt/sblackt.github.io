@@ -1138,7 +1138,8 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 showCard: true,
                 showDetail: true,
                 offset: -3.3,
-                emoji: { warm: '🔥', superwarm: '😅', supercold: '🧊', cold: '🥶', ok: '😌', default: '😌' }
+                emoji: { warm: '🔥', superwarm: '😅', supercold: '🧊', cold: '🥶', ok: '😌', default: '😌' },
+                summerEmoji: { warm: '😅', superwarm: '🌡️', supercold: '❄️', cold: '🌬️', ok: '😌', default: '😌' }
             },
             {
                 id: 'home.humidity',
@@ -1148,7 +1149,8 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 goodRange: [40, 60],
                 showCard: true,
                 showDetail: true,
-                emoji: { ok: '💧', alert: '🌵', default: '💧' }
+                emoji: { ok: '💧', alert: '🌵', default: '💧' },
+                summerEmoji: { ok: '💧', alert: '💦', default: '💧' }
             },
             {
                 id: 'home.pressure',
@@ -1158,7 +1160,8 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 goodRange: [980, 1025],
                 showCard: true,
                 showDetail: true,
-                emoji: { ok: '☁️', alert: '🌪️', default: '🌤️' }
+                emoji: { ok: '☁️', alert: '🌪️', default: '🌤️' },
+                summerEmoji: { ok: '🌤️', alert: '⛈️', default: '🌤️' }
             },
             {
                 id: 'home.gas',
@@ -1197,7 +1200,8 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 warmMidAbove: 21,
                 showCard: true,
                 showDetail: false,
-                emoji: { warm: '🔥', superwarm: '😅', supercold: '🧊', cold: '🥶', ok: '😌', default: '😌' }
+                emoji: { warm: '🔥', superwarm: '😅', supercold: '🧊', cold: '🥶', ok: '😌', default: '😌' },
+                summerEmoji: { warm: '😅', superwarm: '🌡️', supercold: '❄️', cold: '🌬️', ok: '😌', default: '😌' }
             },
             {
                 id: 'bedroom.humidity',
@@ -1206,7 +1210,8 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 goodRange: [40, 60],
                 showCard: true,
                 showDetail: false,
-                emoji: { ok: '💧', alert: '🌵', default: '💧' }
+                emoji: { ok: '💧', alert: '🌵', default: '💧' },
+                summerEmoji: { ok: '💧', alert: '💦', default: '💧' }
             },
             {
                 id: 'bedroom.pressure',
@@ -1215,7 +1220,8 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 goodRange: [980, 1025],
                 showCard: true,
                 showDetail: false,
-                emoji: { ok: '☁️', alert: '🌪️', default: '🌤️' }
+                emoji: { ok: '☁️', alert: '🌪️', default: '🌤️' },
+                summerEmoji: { ok: '🌤️', alert: '⛈️', default: '🌤️' }
             },
             {
                 id: 'bedroom.co2',
@@ -2857,7 +2863,8 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
             if (!feed || !feed.emoji) {
                 return '✨';
             }
-            return feed.emoji[state] || feed.emoji.default || '✨';
+            const emojiSet = (currentSeasonMode === 'summer' && feed.summerEmoji) ? feed.summerEmoji : feed.emoji;
+            return emojiSet[state] || emojiSet.default || '✨';
         }
 
         function buildDetailSummary(feed, latestValue, average, unit, sampleCount) {
