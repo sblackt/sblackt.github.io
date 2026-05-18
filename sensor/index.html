@@ -1446,14 +1446,16 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
             }
             setHeatHistoryLoadingState();
             try {
-                const history = await fetchTemperatureHistory({
-                    limit: TEMPERATURE_HISTORY_LIMIT,
-                    startDate: resolveHistoryStart()
-                });
+                const rangeStart = resolveHistoryStart();
+                const [history, bedroomHistory] = await Promise.all([
+                    fetchTemperatureHistory({ limit: TEMPERATURE_HISTORY_LIMIT, startDate: rangeStart }),
+                    fetchBedroomTemperatureHistory({ startDate: rangeStart })
+                ]);
                 latestHistory = history;
                 const { timeline } = await refreshHeatHistoryContext(history);
                 const temperatureFeed = latestFeeds.find(feed => feed.id === 'home.temperature');
-                updateHeatHistory(temperatureFeed, history, timeline, latestAirthingsFeeds?.find(f => f.id === 'bedroom.temperature'));
+                overlayBedroomOnTemperatureChart(bedroomHistory);
+                updateHeatHistory(temperatureFeed, history, timeline, bedroomHistory);
                 updateInsights(latestFeeds, latestWeather, history);
             } catch (error) {
                 console.warn('Unable to reload history', error);
@@ -1683,14 +1685,15 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
             dom.refresh.disabled = true;
 
             try {
-                const [feeds, airthingsFeeds, weather, temperatureHistory] = await Promise.all([
+                const [feeds, airthingsFeeds, weather, temperatureHistory, bedroomHistory] = await Promise.all([
                     Promise.all(FEEDS.map(feed => fetchFeedData(feed))),
                     Promise.all(AIRTHINGS_FEEDS.map(feed => fetchFeedData(feed))),
                     fetchWeatherData(),
                     fetchTemperatureHistory({
                         limit: TEMPERATURE_HISTORY_LIMIT,
                         startDate: resolveHistoryStart()
-                    })
+                    }),
+                    fetchBedroomTemperatureHistory({ startDate: resolveHistoryStart() })
                 ]);
                 latestFeeds = feeds;
                 latestAirthingsFeeds = airthingsFeeds;
@@ -1699,9 +1702,8 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 const { timeline } = await refreshHeatHistoryContext(temperatureHistory);
                 updateDashboard(feeds, weather, temperatureHistory);
                 updateAirthings(airthingsFeeds);
-                const bedroomTempFeed = airthingsFeeds.find(f => f.id === 'bedroom.temperature');
-                overlayBedroomOnTemperatureChart(bedroomTempFeed);
-                updateHeatHistory(feeds.find(feed => feed.id === 'home.temperature'), temperatureHistory, timeline, bedroomTempFeed);
+                overlayBedroomOnTemperatureChart(bedroomHistory);
+                updateHeatHistory(feeds.find(feed => feed.id === 'home.temperature'), temperatureHistory, timeline, bedroomHistory);
                 dom.status.textContent = `Updated ${formatDateTime(new Date())} · ${USERNAME} · Last ${DATA_LIMIT} points`;
             } catch (error) {
                 console.error(error);
@@ -1784,6 +1786,62 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 console.warn('Weather fetch failed', error);
                 return null;
             }
+        }
+
+        async function fetchBedroomTemperatureHistory({ startDate } = {}) {
+            const feed = AIRTHINGS_FEEDS.find(f => f.id === 'bedroom.temperature');
+            if (!feed) return [];
+            let rangeStart = null;
+            if (startDate instanceof Date && !Number.isNaN(startDate.getTime())) {
+                rangeStart = new Date(startDate);
+            }
+            const now = Date.now();
+            const spanMs = rangeStart ? Math.max(0, now - rangeStart.getTime()) : 0;
+            const spanDays = rangeStart ? Math.max(1, Math.ceil(spanMs / (24 * 60 * 60 * 1000))) : 7;
+            const targetSamples = Math.min(spanDays * DATA_LIMIT, TEMPERATURE_HISTORY_MAX_POINTS);
+            const adjustValue = typeof feed.adjust === 'function'
+                ? feed.adjust
+                : (value => value + (typeof feed.offset === 'number' ? feed.offset : 0));
+            const entries = [];
+            let nextEndTime = now;
+            let guard = 0;
+            while (entries.length < targetSamples && guard < 500) {
+                const remaining = targetSamples - entries.length;
+                if (remaining <= 0) break;
+                const chunkLimit = Math.min(TEMPERATURE_HISTORY_CHUNK, remaining);
+                const params = new URLSearchParams({ limit: chunkLimit });
+                params.set('end_time', new Date(nextEndTime).toISOString());
+                const url = `https://io.adafruit.com/api/v2/${encodeURIComponent(USERNAME)}/feeds/${encodeURIComponent(feed.id)}/data?${params.toString()}`;
+                let response;
+                try {
+                    response = await fetch(url, { cache: 'no-store' });
+                } catch (networkError) {
+                    console.warn('Bedroom history request failed', networkError);
+                    break;
+                }
+                if (!response.ok) break;
+                const raw = await response.json();
+                if (!Array.isArray(raw) || !raw.length) break;
+                const chunk = raw
+                    .map(entry => {
+                        const rawValue = Number.parseFloat(entry.value);
+                        if (!Number.isFinite(rawValue)) return null;
+                        const adjusted = adjustValue(rawValue);
+                        return Number.isFinite(adjusted) ? { value: adjusted, createdAt: entry.created_at } : null;
+                    })
+                    .filter(Boolean);
+                if (!chunk.length) break;
+                entries.push(...chunk);
+                const oldestTs = chunk.reduce((acc, e) => Math.min(acc, Date.parse(e.createdAt)), Number.POSITIVE_INFINITY);
+                if (!Number.isFinite(oldestTs)) break;
+                nextEndTime = oldestTs - 1000;
+                if (rangeStart && oldestTs <= rangeStart.getTime()) break;
+                guard += 1;
+            }
+            const filtered = entries
+                .filter(e => !rangeStart || Date.parse(e.createdAt) >= rangeStart.getTime())
+                .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
+            return { ...feed, data: filtered };
         }
 
         async function fetchTemperatureHistory({ limit = TEMPERATURE_HISTORY_LIMIT, startDate } = {}) {
