@@ -944,6 +944,8 @@
             <section id="metric-cards" class="metric-grid" aria-live="polite"></section>
             <h2 class="section-label">Bedroom <span>Airthings Wave Plus</span></h2>
             <section id="airthings-cards" class="metric-grid" aria-live="polite"></section>
+            <h2 class="section-label">Outdoor <span>433 MHz</span></h2>
+            <section id="outdoor-cards" class="metric-grid" aria-live="polite"></section>
             <section id="feed-details" class="detail-grid"></section>
         </section>
 
@@ -1163,30 +1165,6 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 emoji: { ok: '☁️', alert: '🌪️', default: '🌤️' },
                 summerEmoji: { ok: '🌤️', alert: '⛈️', default: '🌤️' }
             },
-            {
-                id: 'home.gas',
-                name: 'Air Quality',
-                unit: 'IAQ',
-                color: '#facc15',
-                preferLower: true,
-                showCard: false,
-                showDetail: true,
-                emoji: { ok: '🌿', alert: '🏭', default: '🌿' },
-                interpret(value) {
-                    if (value >= 200) return { label: 'Fresh', advice: 'Air smells great. Keep it up!' };
-                    if (value >= 120) return { label: 'Normal', advice: 'Comfortable. Crack a window occasionally.' };
-                    return { label: 'Stuffy', advice: 'VOC buildup detected. Ventilate the room.' };
-                }
-            },
-            {
-                id: 'home.altitude',
-                name: 'Altitude',
-                unit: 'm',
-                color: '#0ea5e9',
-                preferLower: true,
-                showCard: false,
-                showDetail: false
-            }
         ];
 
         const AIRTHINGS_FEEDS = [
@@ -1214,16 +1192,6 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 summerEmoji: { ok: '💧', alert: '💦', default: '💧' }
             },
             {
-                id: 'bedroom.pressure',
-                name: 'Pressure',
-                unit: 'hPa',
-                goodRange: [980, 1025],
-                showCard: true,
-                showDetail: false,
-                emoji: { ok: '☁️', alert: '🌪️', default: '🌤️' },
-                summerEmoji: { ok: '🌤️', alert: '⛈️', default: '🌤️' }
-            },
-            {
                 id: 'bedroom.co2',
                 name: 'CO₂',
                 unit: 'ppm',
@@ -1249,6 +1217,41 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 showCard: true,
                 showDetail: false,
                 emoji: { ok: '☢️', alert: '⚠️', default: '☢️' }
+            }
+        ];
+
+        const OUTDOOR_FEEDS = [
+            {
+                id: 'outdoor.temperature',
+                name: 'Temperature',
+                unit: '°C',
+                coldBelow: 5,
+                superColdBelow: -10,
+                warmAbove: 28,
+                warmMidAbove: 20,
+                showCard: true,
+                showDetail: false,
+                emoji: { warm: '☀️', superwarm: '🌡️', supercold: '❄️', cold: '🌬️', ok: '🌤️', default: '🌤️' },
+                summerEmoji: { warm: '😅', superwarm: '🌡️', supercold: '❄️', cold: '🌬️', ok: '🌤️', default: '🌤️' }
+            },
+            {
+                id: 'outdoor.humidity',
+                name: 'Humidity',
+                unit: '%',
+                goodRange: [20, 90],
+                showCard: true,
+                showDetail: false,
+                emoji: { ok: '💧', alert: '🌵', default: '💧' },
+                summerEmoji: { ok: '💧', alert: '💦', default: '💧' }
+            },
+            {
+                id: 'outdoor.wind-speed',
+                name: 'Wind Speed',
+                unit: 'km/h',
+                preferLower: true,
+                showCard: true,
+                showDetail: false,
+                emoji: { ok: '🍃', alert: '💨', default: '🍃' }
             }
         ];
 
@@ -1295,6 +1298,7 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
             metricGrid: document.getElementById('metric-cards'),
             detailGrid: document.getElementById('feed-details'),
             airthingsGrid: document.getElementById('airthings-cards'),
+            outdoorGrid: document.getElementById('outdoor-cards'),
             viewTabs: document.getElementById('view-tabs'),
             dashboardView: document.getElementById('dashboard-view'),
             insightsView: document.getElementById('insights-view'),
@@ -1316,6 +1320,7 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
         let latestHistory = null;
         let latestOutdoorSamples = null;
         let latestAirthingsFeeds = null;
+        let latestOutdoorFeeds = null;
         let latestHeatTimeline = null;
         let heatHistoryChart = null;
         let selectedHistoryRange = HISTORY_RANGE_OPTIONS.find(option => option.id === '7d') || HISTORY_RANGE_OPTIONS[HISTORY_RANGE_OPTIONS.length - 1];
@@ -1461,6 +1466,9 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 const { timeline } = await refreshHeatHistoryContext(history);
                 const temperatureFeed = latestFeeds.find(feed => feed.id === 'home.temperature');
                 overlayBedroomOnTemperatureChart(bedroomHistory);
+                if (latestOutdoorFeeds) {
+                    overlayOutdoorOnTemperatureChart(latestOutdoorFeeds.find(f => f.id === 'outdoor.temperature'));
+                }
                 updateHeatHistory(temperatureFeed, history, timeline, bedroomHistory);
                 updateInsights(latestFeeds, latestWeather, history);
             } catch (error) {
@@ -1594,41 +1602,52 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
         }
 
         async function fetchOutdoorSamples({ startDate, endDate }) {
-            if (!startDate || !endDate) {
-                return [];
-            }
-            const startIso = startDate.toISOString();
-            const endIso = endDate.toISOString();
-            if (typeof window !== 'undefined' && typeof window.getOutdoorSamples === 'function') {
-                try {
-                    const payload = await window.getOutdoorSamples(startIso, endIso);
-                    return normalizeOutdoorSamples(payload);
-                } catch (error) {
-                    console.warn('getOutdoorSamples failed', error);
-                }
-            }
-            if (!OUTDOOR_HISTORY_ENDPOINT) {
-                return [];
-            }
-            const params = new URLSearchParams();
-            params.set('start', startIso);
-            params.set('end', endIso);
+            if (!startDate || !endDate) return [];
             try {
-                const response = await fetch(`${OUTDOOR_HISTORY_ENDPOINT}?${params.toString()}`, { cache: 'no-store' });
-                if (!response.ok) {
-                    throw new Error('Outdoor history unavailable');
-                }
-                const payload = await response.json();
-                const points = Array.isArray(payload?.points)
-                    ? payload.points
-                    : Array.isArray(payload)
-                        ? payload
-                        : [];
-                return normalizeOutdoorSamples(points);
+                return await fetchOutdoorAdafruitHistory({ startDate, endDate });
             } catch (error) {
-                console.warn('Outdoor history fetch failed', error);
+                console.warn('Outdoor Adafruit fetch failed', error);
                 return [];
             }
+        }
+
+        async function fetchOutdoorAdafruitHistory({ startDate, endDate }) {
+            const feed = OUTDOOR_FEEDS.find(f => f.id === 'outdoor.temperature');
+            if (!feed) return [];
+            const entries = [];
+            let nextEndTime = endDate instanceof Date ? endDate.getTime() : Date.now();
+            const rangeStart = startDate instanceof Date ? startDate.getTime() : null;
+            let guard = 0;
+            while (guard < 500) {
+                const params = new URLSearchParams({ limit: TEMPERATURE_HISTORY_CHUNK });
+                params.set('end_time', new Date(nextEndTime).toISOString());
+                const url = `https://io.adafruit.com/api/v2/${encodeURIComponent(USERNAME)}/feeds/${encodeURIComponent(feed.id)}/data?${params.toString()}`;
+                let response;
+                try {
+                    response = await fetch(url, { cache: 'no-store' });
+                } catch (e) {
+                    break;
+                }
+                if (!response.ok) break;
+                const raw = await response.json();
+                if (!Array.isArray(raw) || !raw.length) break;
+                const chunk = raw.map(entry => {
+                    const value = Number.parseFloat(entry.value);
+                    const timestamp = Date.parse(entry.created_at ?? entry.createdAt);
+                    if (!Number.isFinite(value) || Number.isNaN(timestamp)) return null;
+                    return { value, timestamp, wind_kph: null };
+                }).filter(Boolean);
+                if (!chunk.length) break;
+                entries.push(...chunk);
+                const oldestTs = chunk.reduce((acc, e) => Math.min(acc, e.timestamp), Number.POSITIVE_INFINITY);
+                if (!Number.isFinite(oldestTs)) break;
+                nextEndTime = oldestTs - 1000;
+                if (rangeStart && oldestTs <= rangeStart) break;
+                guard++;
+            }
+            return entries
+                .filter(e => !rangeStart || e.timestamp >= rangeStart)
+                .sort((a, b) => a.timestamp - b.timestamp);
         }
 
         function normalizeOutdoorSamples(samples) {
@@ -1691,9 +1710,10 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
             dom.refresh.disabled = true;
 
             try {
-                const [feeds, airthingsFeeds, weather, temperatureHistory, bedroomHistory] = await Promise.all([
+                const [feeds, airthingsFeeds, outdoorFeeds, weather, temperatureHistory, bedroomHistory] = await Promise.all([
                     Promise.all(FEEDS.map(feed => fetchFeedData(feed))),
                     Promise.all(AIRTHINGS_FEEDS.map(feed => fetchFeedData(feed))),
+                    Promise.all(OUTDOOR_FEEDS.map(feed => fetchFeedData(feed))),
                     fetchWeatherData(),
                     fetchTemperatureHistory({
                         limit: TEMPERATURE_HISTORY_LIMIT,
@@ -1703,12 +1723,15 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 ]);
                 latestFeeds = feeds;
                 latestAirthingsFeeds = airthingsFeeds;
+                latestOutdoorFeeds = outdoorFeeds;
                 latestWeather = weather;
                 latestHistory = temperatureHistory;
                 const { timeline } = await refreshHeatHistoryContext(temperatureHistory);
                 updateDashboard(feeds, weather, temperatureHistory);
                 updateAirthings(airthingsFeeds);
+                updateOutdoor(outdoorFeeds);
                 overlayBedroomOnTemperatureChart(bedroomHistory);
+                overlayOutdoorOnTemperatureChart(outdoorFeeds.find(f => f.id === 'outdoor.temperature'));
                 updateHeatHistory(feeds.find(feed => feed.id === 'home.temperature'), temperatureHistory, timeline, bedroomHistory);
                 dom.status.textContent = `Updated ${formatDateTime(new Date())} · ${USERNAME} · Last ${DATA_LIMIT} points`;
             } catch (error) {
@@ -2074,6 +2097,46 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
             removeStaleCards(dom.airthingsGrid, seen, 'card');
         }
 
+        function updateOutdoor(feeds) {
+            if (!dom.outdoorGrid) return;
+            const seen = new Set();
+            feeds.forEach(feed => {
+                if (!feed || !feed.id) return;
+                seen.add(feed.id);
+                if (feed.showCard !== false) {
+                    renderMetricCard(feed, dom.outdoorGrid);
+                }
+            });
+            removeStaleCards(dom.outdoorGrid, seen, 'card');
+        }
+
+        function overlayOutdoorOnTemperatureChart(outdoorFeed) {
+            const chart = charts.get('home.temperature');
+            if (!chart) return;
+            const points = (outdoorFeed?.data || [])
+                .filter(entry => entry.createdAt)
+                .map(entry => ({ x: new Date(entry.createdAt), y: entry.value }))
+                .sort((a, b) => a.x - b.x);
+            if (!chart.data.datasets[2]) {
+                chart.data.datasets[2] = {
+                    label: 'Outdoor',
+                    data: points,
+                    borderColor: '#38bdf8',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.3,
+                    borderWidth: 2,
+                    borderDash: [6, 4],
+                    pointRadius: 0,
+                    parsing: false
+                };
+                chart.options.plugins.legend.display = true;
+            } else {
+                chart.data.datasets[2].data = points;
+            }
+            chart.update('none');
+        }
+
         function refreshInsights() {
             if (!latestFeeds || !latestFeeds.length) {
                 return;
@@ -2311,7 +2374,6 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
             const temperatureFeed = feeds.find(feed => feed.id === 'home.temperature');
             const humidityFeed = feeds.find(feed => feed.id === 'home.humidity');
             const pressureFeed = feeds.find(feed => feed.id === 'home.pressure');
-            const airFeed = feeds.find(feed => feed.id === 'home.gas');
             const historicalSeries = Array.isArray(temperatureHistory) && temperatureHistory.length
                 ? temperatureHistory
                     .slice()
@@ -2340,7 +2402,7 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 : [];
 
             const coverage = deriveHistoryCoverage(temperatureHistory)
-                || deriveCoverage([temperatureFeed, humidityFeed, pressureFeed, airFeed]);
+                || deriveCoverage([temperatureFeed, humidityFeed, pressureFeed]);
             if (dom.insightsSummary) {
                 const parts = [];
                 if (coverage) {
@@ -2825,7 +2887,7 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
         }
 
         function resolveStateClass(state, feedId) {
-            if (feedId === 'home.temperature' || feedId === 'bedroom.temperature') {
+            if (feedId === 'home.temperature' || feedId === 'bedroom.temperature' || feedId === 'outdoor.temperature') {
                 if (state === 'ok') {
                     return 'metric-card--temperature-ok';
                 }
@@ -2959,13 +3021,6 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
             capture('home.pressure', reading => {
                 payload.hPa = Number(reading.value.toFixed(1));
             });
-            capture('home.gas', reading => {
-                payload.gas_kohm = Number((reading.value / 1000).toFixed(1));
-            });
-            capture('home.altitude', reading => {
-                payload.alt_m = Number(reading.value.toFixed(1));
-            });
-
             payload.updated = latestTs
                 ? new Date(latestTs).toISOString()
                 : new Date().toISOString();
