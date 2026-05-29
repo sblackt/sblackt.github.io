@@ -1231,6 +1231,7 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
                 warmMidAbove: 20,
                 showCard: true,
                 showDetail: false,
+                dataLimit: 1500,
                 emoji: { warm: '☀️', superwarm: '🌡️', supercold: '❄️', cold: '🌬️', ok: '🌤️', default: '🌤️' },
                 summerEmoji: { warm: '😅', superwarm: '🌡️', supercold: '❄️', cold: '🌬️', ok: '🌤️', default: '🌤️' }
             },
@@ -1743,7 +1744,8 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
         }
 
         async function fetchFeedData(feed) {
-            const url = `https://io.adafruit.com/api/v2/${encodeURIComponent(USERNAME)}/feeds/${encodeURIComponent(feed.id)}/data?limit=${DATA_LIMIT}`;
+            const limit = feed.dataLimit || DATA_LIMIT;
+            const url = `https://io.adafruit.com/api/v2/${encodeURIComponent(USERNAME)}/feeds/${encodeURIComponent(feed.id)}/data?limit=${limit}`;
             try {
                 const response = await fetch(url, { cache: 'no-store' });
                 if (response.status === 404) {
