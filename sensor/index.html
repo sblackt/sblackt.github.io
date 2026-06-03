@@ -4288,6 +4288,8 @@ function exposeLatestJson(payload) {
             if (cooling) sections.push(cooling);
             const airQuality = buildAirQualityReport(airthingsFeeds);
             if (airQuality) sections.push(airQuality);
+            const overnightCo2 = buildOvernightCo2Report(airthingsFeeds);
+            if (overnightCo2) sections.push(overnightCo2);
             return sections;
         }
 
@@ -4377,6 +4379,69 @@ function exposeLatestJson(payload) {
                 footer: weather?.fetchedAt ? `Weather synced ${formatTime(weather.fetchedAt)}` : '',
                 priority: 2,
                 variant: 'summer'
+            };
+        }
+
+        function buildOvernightCo2Report(airthingsFeeds) {
+            if (!Array.isArray(airthingsFeeds) || !airthingsFeeds.length) return null;
+
+            const co2Feed = airthingsFeeds.find(f => f.id === 'bedroom.co2');
+            if (!co2Feed || !Array.isArray(co2Feed.data) || !co2Feed.data.length) return null;
+
+            const getLocalHour = createdAt => {
+                const d = new Date(createdAt);
+                const h = new Intl.DateTimeFormat('en-CA', {
+                    hour: 'numeric', hour12: false, timeZone: 'America/Toronto'
+                }).format(d);
+                return parseInt(h, 10);
+            };
+
+            // Sleep window: 10 pm – 7 am local time
+            const sleepReadings = co2Feed.data
+                .map(d => ({ value: Number(d.value), hour: getLocalHour(d.createdAt) }))
+                .filter(d => Number.isFinite(d.value) && (d.hour >= 22 || d.hour < 7));
+
+            if (sleepReadings.length < 6) return null;
+
+            const values = sleepReadings.map(r => r.value);
+            const avg = Math.round(values.reduce((s, v) => s + v, 0) / values.length);
+            const peak = Math.max(...values);
+            const pct1000 = Math.round((values.filter(v => v >= 1000).length / values.length) * 100);
+            const pct1200 = Math.round((values.filter(v => v >= 1200).length / values.length) * 100);
+
+            let verdict, summary;
+            if (avg < 800) {
+                verdict = 'Good';
+                summary = `Overnight CO₂ is well-controlled — sleep average ${formatNumber(avg)} ppm, no ill effects expected`;
+            } else if (avg < 1000) {
+                verdict = 'Acceptable';
+                summary = `Overnight CO₂ is mildly elevated — sleep average ${formatNumber(avg)} ppm, minimal impact expected for most people`;
+            } else if (avg < 1200) {
+                verdict = 'Elevated';
+                summary = `Overnight CO₂ is elevated (avg ${formatNumber(avg)} ppm) — research links this range to reduced sleep quality and morning grogginess`;
+            } else {
+                verdict = 'High';
+                summary = `Overnight CO₂ is high (avg ${formatNumber(avg)} ppm) — likely disrupting sleep quality; cracking a window before bed would help`;
+            }
+
+            const points = [
+                { label: 'Sleep avg', detail: `${formatNumber(avg)} ppm · ${verdict}` },
+                { label: 'Peak', detail: `${formatNumber(peak)} ppm` },
+                { label: '≥ 1,000 ppm', detail: `${pct1000}% of sleep window` },
+            ];
+            if (pct1200 > 0) {
+                points.push({ label: '≥ 1,200 ppm', detail: `${pct1200}% of sleep window` });
+            }
+
+            return {
+                id: 'overnight-co2',
+                badge: 'Sleep Air Quality',
+                label: 'Overnight CO₂',
+                summary,
+                points,
+                footer: `Based on ${sleepReadings.length} readings in the 10 pm – 7 am window`,
+                priority: 2.5,
+                variant: avg >= 1000 ? 'summer' : undefined
             };
         }
 
