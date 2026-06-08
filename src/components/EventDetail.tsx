@@ -9,7 +9,7 @@ import { parseLocalDate } from '../utils/dateUtils';
 import { EVENT_TYPE_OPTIONS, getEventTypeConfig } from '../constants/eventTypes';
 import './EventDetail.css';
 
-const EVENT_PREVIEW_BASE_URL = process.env.REACT_APP_EVENT_PREVIEW_BASE_URL;
+const EVENT_PREVIEW_BASE_URL = process.env.REACT_APP_EVENT_PREVIEW_BASE_URL?.trim();
 
 const formatSlotTime = (value: string): string => {
   if (value === 'all-day') {
