@@ -41,6 +41,7 @@ interface PlannerEvent {
   imageUrl?: string;
   eventType?: EventCategory;
   confirmedTimeSlotId?: string | null;
+  isCompleted?: boolean;
   timeSlots: TimeSlot[];
   participants?: string[];
   reminderSettings?: {
@@ -369,6 +370,122 @@ const sendDiscordReminder = async (params: {
     ]
       .filter(Boolean)
       .join('\n')
+  };
+
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Discord webhook failed: ${response.status} ${body}`);
+  }
+};
+
+type CompletionCopySet = { title: string; body: string; fallback: string };
+
+const sendDiscordCompletionNotification = async (params: {
+  event: PlannerEvent;
+  eventId: string;
+}) => {
+  const { event, eventId } = params;
+  const webhookUrl = getDiscordWebhookUrl(event.eventType);
+  if (!webhookUrl) {
+    functions.logger.warn('Skipping completion notification because discord.webhook_url is not set.');
+    return;
+  }
+
+  const theme = getEventTypeConfig(event.eventType);
+  const eventLink = buildAppEventLink(eventId);
+  const embedImageUrl = event.imageUrl?.trim() || getShareImageUrl(event.eventType);
+
+  const pick = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
+  const completionVariants: Record<EventCategory, CompletionCopySet[]> = {
+    dnd: [
+      {
+        title: `${theme.icon} The party returns — ${event.title}`,
+        body: `The party returns from **${event.title}**. What tales came out of this session?`,
+        fallback: `${theme.icon} **${event.title}** has concluded — how did the session go?`
+      },
+      {
+        title: `${theme.icon} Session complete — ${event.title}`,
+        body: `Another session of **${event.title}** is in the books. How'd the campaign move along?`,
+        fallback: `${theme.icon} **${event.title}** is complete — how'd the campaign go?`
+      }
+    ],
+    'board-game': [
+      {
+        title: `${theme.icon} The table's been cleared — ${event.title}`,
+        body: `The table's been cleared on **${event.title}**. Who came out on top?`,
+        fallback: `${theme.icon} **${event.title}** is complete — how'd the games go?`
+      },
+      {
+        title: `${theme.icon} Game night wrapped — ${event.title}`,
+        body: `**${event.title}** has wrapped. How'd the games go — any big wins or upsets?`,
+        fallback: `${theme.icon} **${event.title}** is complete — how'd it go?`
+      }
+    ],
+    hangout: [
+      {
+        title: `${theme.icon} That's a wrap — ${event.title}`,
+        body: `**${event.title}** is a wrap! How was the hang?`,
+        fallback: `${theme.icon} **${event.title}** is complete — how was the hang?`
+      },
+      {
+        title: `${theme.icon} ${event.title} — all done!`,
+        body: `**${event.title}** has come and gone. How'd it go?`,
+        fallback: `${theme.icon} **${event.title}** is complete — how'd it go?`
+      }
+    ],
+    'worker-bee': [
+      {
+        title: `${theme.icon} Job well done — ${event.title}`,
+        body: `The crew wrapped up **${event.title}**. How'd the work go?`,
+        fallback: `${theme.icon} **${event.title}** is complete — how'd the work go?`
+      },
+      {
+        title: `${theme.icon} ${event.title} — crew's done`,
+        body: `**${event.title}** is finished. How much did the crew get through?`,
+        fallback: `${theme.icon} **${event.title}** is complete — how'd it go?`
+      }
+    ],
+    other: [
+      {
+        title: `${theme.icon} ${event.title} — in the books!`,
+        body: `That's a wrap on **${event.title}**. How'd it go?`,
+        fallback: `${theme.icon} **${event.title}** is complete — how'd it go?`
+      },
+      {
+        title: `${theme.icon} ${event.title} — all done!`,
+        body: `**${event.title}** has wrapped up. How'd it go?`,
+        fallback: `${theme.icon} **${event.title}** is complete — how'd it go?`
+      }
+    ]
+  };
+
+  const variants = completionVariants[event.eventType ?? 'other'] ?? completionVariants.other;
+  const copy = pick(variants);
+
+  const payload = {
+    username: 'Meeple Planner',
+    embeds: [
+      {
+        title: copy.title,
+        description: copy.body,
+        url: eventLink,
+        color: theme.embedColor,
+        ...(embedImageUrl ? { image: { url: embedImageUrl } } : {}),
+        footer: {
+          text: 'Shared via Meeple Planner'
+        }
+      }
+    ],
+    content: `${copy.fallback}\n${eventLink}`
   };
 
   const response = await fetch(webhookUrl, {
@@ -902,6 +1019,41 @@ export const onEventPlanned = functions.firestore
       functions.logger.info('Sent planning announcement', { eventId: context.params.eventId, reminderKey });
     } catch (error) {
       functions.logger.error('Failed to send planning announcement', { eventId: context.params.eventId, error });
+    }
+  });
+
+export const onEventCompleted = functions.firestore
+  .document(`${EVENTS_COLLECTION}/{eventId}`)
+  .onUpdate(async (change, context) => {
+    const before = change.before.data() as PlannerEvent | undefined;
+    const after = change.after.data() as PlannerEvent | undefined;
+
+    if (!after) {
+      return;
+    }
+
+    const wasCompleted = Boolean(before?.isCompleted);
+    const isNowCompleted = Boolean(after.isCompleted);
+    const announcementAlreadySent = Boolean(before?.remindersSent?.completedAnnouncement);
+
+    if (!isNowCompleted || wasCompleted || announcementAlreadySent) {
+      return;
+    }
+
+    try {
+      await sendDiscordCompletionNotification({ event: after, eventId: context.params.eventId });
+
+      const todaysKey = format(new Date(), 'yyyy-MM-dd');
+      await change.after.ref.set({
+        remindersSent: {
+          ...(after.remindersSent ?? {}),
+          completedAnnouncement: todaysKey
+        }
+      }, { merge: true });
+
+      functions.logger.info('Sent completion announcement', { eventId: context.params.eventId });
+    } catch (error) {
+      functions.logger.error('Failed to send completion announcement', { eventId: context.params.eventId, error });
     }
   });
 
