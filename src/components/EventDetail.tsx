@@ -760,20 +760,27 @@ const EventDetail: React.FC<EventDetailProps> = ({ event, onEventUpdated }) => {
   };
 
   const handleConfirmTimeSlot = async (timeSlotId: string | null) => {
+    let slot: TimeSlot | undefined;
+    if (timeSlotId !== null) {
+      slot = event.timeSlots.find(s => s.id === timeSlotId);
+      const dateLabel = slot ? format(parseLocalDate(slot.date), 'EEEE, MMM d') : 'this date';
+      const timeLabel = slot ? (slot.time === 'all-day' ? '' : ` at ${formatSlotTime(slot.time)}`) : '';
+      if (!window.confirm(`Mark ${dateLabel}${timeLabel} as the planned date? This will notify everyone.`)) {
+        return;
+      }
+    }
+
     setPlanning(true);
     try {
       const isReschedule = !!event.confirmedTimeSlotId && timeSlotId !== null && timeSlotId !== event.confirmedTimeSlotId;
       await firebaseService.updateEvent(event.id, { confirmedTimeSlotId: timeSlotId ?? null });
       onEventUpdated();
 
-      if (timeSlotId !== null) {
-        const slot = event.timeSlots.find(s => s.id === timeSlotId);
-        if (slot) {
-          const shareLink = buildShareLink(event.id);
-          sendDiscordPlannedNotification(event, slot, shareLink, isReschedule).catch(err => {
-            console.error('Discord notification failed:', err);
-          });
-        }
+      if (timeSlotId !== null && slot) {
+        const shareLink = buildShareLink(event.id);
+        sendDiscordPlannedNotification(event, slot, shareLink, isReschedule).catch(err => {
+          console.error('Discord notification failed:', err);
+        });
       }
     } catch (error) {
       console.error('Error setting planned time:', error);
