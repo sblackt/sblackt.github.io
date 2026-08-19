@@ -972,6 +972,21 @@ export const onEventPlanned = functions.firestore
 
     const wasPlanned = Boolean(before?.confirmedTimeSlotId);
     const isPlanned = Boolean(after.confirmedTimeSlotId);
+
+    if (wasPlanned && !isPlanned) {
+      // Event was unscheduled — clear the sent-announcement flag so a future
+      // reschedule triggers a fresh Discord notification instead of being
+      // silently skipped as "already sent".
+      if (before?.remindersSent?.plannedAnnouncement) {
+        await change.after.ref.set({
+          remindersSent: {
+            plannedAnnouncement: admin.firestore.FieldValue.delete()
+          }
+        }, { merge: true });
+      }
+      return;
+    }
+
     const announcementAlreadySent = Boolean(before?.remindersSent?.plannedAnnouncement);
 
     if (!isPlanned || wasPlanned || announcementAlreadySent) {
