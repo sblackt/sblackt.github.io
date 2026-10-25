@@ -2083,6 +2083,8 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
             } else {
                 chart.data.datasets[1].data = points;
             }
+            // Cancel the indoor line's intro animation, or it finishes at the pre-overlay y scale.
+            chart.stop();
             chart.update('none');
         }
 
@@ -2136,6 +2138,8 @@ window.STONEHEDGE_OUTDOOR_URL = window.STONEHEDGE_OUTDOOR_URL
             } else {
                 chart.data.datasets[2].data = points;
             }
+            // Cancel the indoor line's intro animation, or it finishes at the pre-overlay y scale.
+            chart.stop();
             chart.update('none');
         }
 
