@@ -836,6 +836,7 @@
 
     let wishlistDocRef = null;
     let pairingsDocRef = null;
+    let lastYearDocRef = null;
     let firestoreUnavailable = false;
     let suggestionValues = readWishlistBackup();
     let latestPairings = readPairingsBackup();
@@ -914,16 +915,18 @@
       return arr;
     }
 
-    function isValidPair(giver, receiver) {
-      return giver !== receiver && !disallowedPairs.has(`${giver}|${receiver}`);
+    function isValidPair(giver, receiver, lastYear = {}) {
+      return giver !== receiver &&
+        !disallowedPairs.has(`${giver}|${receiver}`) &&
+        lastYear[giver] !== receiver;
     }
 
-    function createDerangement(items, maxAttempts = 1000) {
+    function createDerangement(items, lastYear = {}, maxAttempts = 1000) {
       for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
         const givers = shuffle(items);
         const receivers = shuffle(items);
 
-        if (givers.every((giver, idx) => isValidPair(giver, receivers[idx]))) {
+        if (givers.every((giver, idx) => isValidPair(giver, receivers[idx], lastYear))) {
           return givers.map((giver, idx) => ({
             giver,
             receiver: receivers[idx]
@@ -1062,6 +1065,12 @@
       return true;
     }
 
+    // Throws if 2025 can't be read, so a draw never silently ignores last year.
+    async function loadLastYearPairs() {
+      const snapshot = await getDoc(lastYearDocRef);
+      return snapshot.exists() ? snapshot.data().pairs || {} : {};
+    }
+
     async function savePairingsToCloud(pairings) {
       if (!pairingsDocRef) return null;
       const updatedAt = new Date().toISOString();
@@ -1081,7 +1090,7 @@
             return;
           }
         }
-        const freshPairings = createDerangement(people);
+        const freshPairings = createDerangement(people, await loadLastYearPairs());
         const updatedAt = await savePairingsToCloud(freshPairings);
         applyPairings(freshPairings, 'cloud', { updatedAt });
       } catch (error) {
@@ -1107,7 +1116,7 @@
 
       let nextPairings;
       try {
-        nextPairings = createDerangement(people);
+        nextPairings = createDerangement(people, await loadLastYearPairs());
       } catch (error) {
         alert('Could not build a valid set of pairings. Try again.');
         return;
@@ -1317,6 +1326,7 @@
         const db = getFirestore(app);
         wishlistDocRef = doc(db, 'secretSanta', 'wishlists2026');
         pairingsDocRef = doc(db, 'secretSanta', 'pairings2026');
+        lastYearDocRef = doc(db, 'secretSanta', 'pairings');
         updateSyncStatus('Connected', 'connected');
         updatePairingsStatus('Connected · loading saved pairings…', 'syncing');
       } catch (error) {

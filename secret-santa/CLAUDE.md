@@ -28,9 +28,10 @@ The 2026 page can't save until that deploy is done. App Check is enforced, so pl
 
 localStorage keys are per year too (same origin as the archive), so old backups can't leak into a new year.
 The first visitor to a year's page generates its pairings; the shuffle menu needs the family password.
+Draws skip partners and whoever you drew last year (read live from last year's doc; the draw fails rather than ignoring it).
 
 ## New year checklist
 
 1. Move `index.html` to `<year>/index.html`; change avatar paths to `../`, make it read-only (see the 2025 diff)
-2. New doc IDs and localStorage keys in the new page; add the IDs to `firestore.rules` and deploy
+2. New doc IDs and localStorage keys in the new page; point `lastYearDocRef` at the year just archived; add the IDs to `firestore.rules` and deploy
 3. Add the archive to the footer's "Past years" line
