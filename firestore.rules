@@ -142,8 +142,8 @@ service cloud.firestore {
       allow read: if true;
 
       allow write: if trustedClient() && (
-        documentId == 'pairings' && validSecretSantaPairings(request.resource.data) ||
-        documentId == 'wishlists' && validSecretSantaWishlist(request.resource.data)
+        documentId in ['pairings', 'pairings2026'] && validSecretSantaPairings(request.resource.data) ||
+        documentId in ['wishlists', 'wishlists2026'] && validSecretSantaWishlist(request.resource.data)
       );
     }
 

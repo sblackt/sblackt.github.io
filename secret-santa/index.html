@@ -3,24 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Family Secret Santa (Not Secret)</title>
+  <title>White Family Secret Santa 2026 (Not Secret)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,400..700,0..100,0..1;1,9..144,400..700,0..100,0..1&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      color-scheme: light;
+      color-scheme: dark;
       font-size: 16px;
-      --page-gradient: radial-gradient(circle at 20% 10%, rgba(74, 222, 128, 0.25), transparent 50%), radial-gradient(circle at 80% 0%, rgba(34, 197, 94, 0.2), transparent 55%), linear-gradient(180deg, #05140d 0%, #0c2315 55%, #0f2919 100%);
-      --card-bg: rgba(255, 255, 255, 0.96);
-      --accent: #6ed8ac;
-      --accent-secondary: #0aa974;
-      --accent-soft: rgba(16, 185, 129, 0.18);
-      --text: #ecfff5;
-      --text-muted: rgba(224, 245, 235, 0.82);
-      --card-text: #031f13;
-      --border: rgba(255, 255, 255, 0.18);
-      --menu-bg: rgba(7, 18, 15, 0.9);
+
+      /* The room */
+      --night: #1d100b;
+      --wall: #2a170f;
+      --wood: #5a3420;
+      --wood-light: #7a4a2c;
+
+      /* The fire */
+      --ember: #e8743b;
+      --amber: #f2a950;
+      --cranberry: #8f2a24;
+      --cranberry-deep: #5e1b17;
+
+      /* Wool and paper */
+      --wool: #f6e8d2;
+      --paper: #fbf3e4;
+      --ink: #3a2114;
+      --ink-soft: #6f4f3a;
+
+      /* Text on the dark room */
+      --text: #fbeedb;
+      --text-muted: #e8d3b8;
+
+      --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+      --body: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --hand: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
     }
 
     * {
@@ -29,346 +45,506 @@
 
     body {
       margin: 0;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--page-gradient);
-      color: var(--text);
       min-height: 100vh;
-      padding: clamp(1.5rem, 4vw, 3rem);
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      position: relative;
+      font-family: var(--body);
+      color: var(--text);
+      background-color: var(--night);
+      /* Faint cabin planks */
+      background-image:
+        repeating-linear-gradient(90deg, rgba(255, 220, 180, 0.03) 0 1px, transparent 1px 148px),
+        linear-gradient(180deg, var(--night) 0%, var(--wall) 100%);
       overflow-x: hidden;
     }
 
-    body::before {
-      content: '';
+    a {
+      color: var(--amber);
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--amber);
+      outline-offset: 2px;
+    }
+
+    /* Firelight washing up the wall, and a few sparks */
+    .firelight {
       position: fixed;
       inset: 0;
-      background: url('https://media.easy-peasy.ai/8dbdb37e-9d0c-49e0-9b44-4dea16c58a19/9445c4c9-9ace-4de4-8f47-976747d1b9ad.webp') center/cover no-repeat;
-      opacity: 0.32;
-      z-index: -2;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 95% 60% at 50% 108%, rgba(232, 116, 59, 0.42), transparent 72%),
+        radial-gradient(ellipse 60% 34% at 50% 104%, rgba(242, 169, 80, 0.3), transparent 70%);
+      animation: flicker 7s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 0.86; }
+      12% { opacity: 1; }
+      21% { opacity: 0.8; }
+      37% { opacity: 0.96; }
+      48% { opacity: 0.84; }
+      63% { opacity: 1; }
+      78% { opacity: 0.78; }
+      90% { opacity: 0.94; }
+    }
+
+    .embers {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .embers span {
+      position: absolute;
+      bottom: -12px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 8px 2px rgba(232, 116, 59, 0.8);
+      opacity: 0;
+      animation: rise 13s linear infinite;
+    }
+
+    .embers span:nth-child(1) { left: 34%; animation-delay: 0s; }
+    .embers span:nth-child(2) { left: 46%; animation-delay: 3.4s; animation-duration: 11s; }
+    .embers span:nth-child(3) { left: 58%; animation-delay: 6.1s; }
+    .embers span:nth-child(4) { left: 41%; animation-delay: 8.7s; animation-duration: 15s; }
+    .embers span:nth-child(5) { left: 66%; animation-delay: 1.9s; animation-duration: 16s; }
+    .embers span:nth-child(6) { left: 52%; animation-delay: 10.3s; animation-duration: 10s; }
+    .embers span:nth-child(7) { left: 27%; animation-delay: 5.2s; animation-duration: 17s; }
+
+    @keyframes rise {
+      0% { transform: translate(0, 0) scale(1); opacity: 0; }
+      8% { opacity: 0.95; }
+      50% { transform: translate(26px, -42vh) scale(0.8); opacity: 0.6; }
+      100% { transform: translate(-18px, -82vh) scale(0.3); opacity: 0; }
     }
 
     main {
-      width: min(1100px, 100%);
-      background: transparent;
-      border-radius: 0;
-      padding: clamp(1.5rem, 4vw, 3.5rem);
-      box-shadow: none;
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: clamp(1rem, 4vw, 3rem) clamp(1rem, 4vw, 3rem) 0;
+    }
+
+    /* Hero */
+    .hero {
       position: relative;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1.5rem;
-      margin-bottom: 2.5rem;
-    }
-
-    header .intro {
       display: grid;
-      gap: 0.6rem;
-      flex: 1;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: clamp(1rem, 4vw, 3rem);
     }
 
-    header h1 {
-      font-size: clamp(2rem, 5vw, 3rem);
-      margin: 0;
-      line-height: 1.2;
-      color: #f6fff9;
+    .intro {
+      padding-bottom: clamp(1.25rem, 3vw, 2.5rem);
     }
 
     .eyebrow {
-      margin: 0;
-      color: var(--accent);
-      letter-spacing: 0.22em;
+      margin: 0 0 0.9rem;
+      color: var(--amber);
+      font-weight: 700;
+      font-size: 0.875rem;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      font-size: 0.85rem;
-      font-weight: 600;
     }
 
-    header .tagline {
+    h1 {
       margin: 0;
-      color: rgba(236, 249, 244, 0.92);
-      font-size: 1.05rem;
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: clamp(2.75rem, 8vw, 5.25rem);
+      line-height: 1.02;
+      letter-spacing: -0.015em;
+      font-variation-settings: 'SOFT' 100, 'WONK' 1;
+      text-wrap: balance;
     }
 
+    h1 em {
+      color: var(--amber);
+      font-weight: 500;
+    }
+
+    .tagline {
+      margin: 1.1rem 0 0;
+      font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+      color: var(--text-muted);
+    }
+
+    .scene {
+      display: block;
+      width: clamp(170px, 30vw, 310px);
+      height: auto;
+      overflow: visible;
+    }
+
+    .scene .flake {
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      from { transform: translate(0, -30px); }
+      to { transform: translate(14px, 330px); }
+    }
+
+    .scene .steam {
+      fill: none;
+      stroke: #fbeedb;
+      stroke-width: 3;
+      stroke-linecap: round;
+      opacity: 0;
+      animation: steam 5s ease-in-out infinite;
+    }
+
+    .scene .steam.later {
+      animation-delay: 2.2s;
+    }
+
+    @keyframes steam {
+      0% { transform: translateY(8px); opacity: 0; }
+      35% { opacity: 0.55; }
+      100% { transform: translateY(-16px); opacity: 0; }
+    }
+
+    .scene .candle-flame,
+    .hearth .flame {
+      transform-box: fill-box;
+      transform-origin: 50% 100%;
+      animation: lick 2.6s ease-in-out infinite;
+    }
+
+    @keyframes lick {
+      0%, 100% { transform: scale(1, 1) skewX(0deg); }
+      25% { transform: scale(0.95, 1.07) skewX(-2.5deg); }
+      55% { transform: scale(1.04, 0.94) skewX(2deg); }
+      80% { transform: scale(0.97, 1.04) skewX(-1deg); }
+    }
+
+    /* Knitted band, the page's signature */
+    .knit {
+      height: 44px;
+      background: url('./img/knit.svg') center top repeat-x;
+    }
+
+    .hero-band {
+      margin: 0 calc(50% - 50vw) clamp(2rem, 5vw, 3.5rem);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Menu */
     .page-controls {
-      position: relative;
-      margin-left: auto;
-      align-self: flex-start;
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 10;
     }
 
     .menu-button {
-      width: 42px;
-      height: 42px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      background: linear-gradient(135deg, #fff, #fef3f2);
-      color: var(--accent);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid rgba(251, 238, 219, 0.35);
+      background: rgba(42, 23, 15, 0.85);
+      color: var(--text);
       font-size: 1.4rem;
-      font-weight: 600;
+      line-height: 1;
       cursor: pointer;
       display: grid;
       place-items: center;
-      box-shadow: 0 12px 30px rgba(4, 18, 29, 0.25);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: background 0.2s ease;
     }
 
     .menu-button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 18px 36px rgba(4, 18, 29, 0.25);
+      background: var(--wood);
     }
 
     .menu-dropdown {
       position: absolute;
-      top: 48px;
+      top: 52px;
       right: 0;
-      min-width: 180px;
-      border-radius: 18px;
-      background: var(--menu-bg);
+      min-width: 190px;
       padding: 0.35rem;
-      box-shadow: 0 25px 50px rgba(15, 23, 42, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      background: var(--paper);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
       opacity: 0;
-      pointer-events: none;
+      visibility: hidden;
       transform: translateY(-6px);
-      transition: opacity 0.15s ease, transform 0.15s ease;
-      z-index: 10;
+      transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
     }
 
     .menu-dropdown[data-open="true"] {
       opacity: 1;
-      pointer-events: auto;
+      visibility: visible;
       transform: translateY(0);
     }
 
     .menu-dropdown button {
       width: 100%;
+      min-height: 44px;
       border: none;
+      border-radius: 10px;
       background: transparent;
-      color: #f8fafc;
-      padding: 0.65rem 0.75rem;
-      border-radius: 12px;
+      color: var(--ink);
+      padding: 0.6rem 0.75rem;
       text-align: left;
-      font-weight: 500;
-      font-size: 0.95rem;
+      font: 600 0.95rem var(--body);
       cursor: pointer;
     }
 
     .menu-dropdown button:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(143, 42, 36, 0.1);
     }
 
-    .winter-frame {
-      position: relative;
-      padding: 1.35rem;
-      border-radius: 24px;
-      background: rgba(11, 30, 21, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 0 20px 40px rgba(5, 20, 13, 0.35);
-    }
-
+    /* Sections */
     section {
-      margin-bottom: 3rem;
-    }
-
-    section:last-of-type {
-      margin-bottom: 0;
+      margin-bottom: clamp(2.5rem, 6vw, 4rem);
     }
 
     .section-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
     }
 
-    .section-heading h2 {
+    h2 {
       margin: 0;
-      font-size: 1.5rem;
-      color: var(--accent);
-    }
-
-    .pairings-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
-    }
-
-    .pair-card {
-      --avatar-image: none;
-      padding: 1.4rem;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(240, 249, 244, 0.95));
-      box-shadow: 0 18px 35px rgba(2, 22, 15, 0.2);
-      display: grid;
-      gap: 0.35rem;
-      position: relative;
-      overflow: hidden;
-      color: var(--card-text);
-    }
-
-    .pair-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: var(--avatar-image);
-      background-repeat: no-repeat;
-      background-size: 55%;
-      background-position: 95% 110%;
-      opacity: 0.4;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-
-    .pair-card span {
-      display: block;
-      position: relative;
-      z-index: 1;
-    }
-
-    .pair-card .giver {
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--accent-secondary);
-    }
-
-    .pair-card .receiver {
-      font-size: 1.6rem;
+      font-family: var(--display);
       font-weight: 600;
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      line-height: 1.15;
+      font-variation-settings: 'SOFT' 100, 'WONK' 0;
     }
 
-    .pair-card .receiver[data-hidden="true"] {
-      filter: blur(0.45rem);
-      color: rgba(3, 31, 19, 0.35);
-      letter-spacing: 0.08em;
-    }
-
-    .pair-card .arrow {
-      font-size: 1.2rem;
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .reveal-button {
-      margin-top: 0.65rem;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      border-radius: 999px;
-      padding: 0.35rem 0.95rem;
-      background: linear-gradient(135deg, #0f766e, #10b981);
-      color: #ecfff5;
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      width: fit-content;
-      position: relative;
-      z-index: 1;
-    }
-
-    .reveal-button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 18px rgba(2, 22, 15, 0.2);
-    }
-
-    @keyframes snow {
-      from {
-        transform: translateY(-10vh);
-      }
-      to {
-        transform: translateY(10vh);
-      }
-    }
-
-    .hint,
-    .sync-status {
-      margin: 0.75rem 0 0;
+    .hint {
+      margin: 0.4rem 0 0;
       color: var(--text-muted);
-      font-size: 0.95rem;
-      padding: 5px;
-    }
-
-    .winter-frame .hint,
-    .winter-frame .sync-status {
-      color: rgba(241, 245, 249, 0.9);
-    }
-
-    .winter-frame > .hint:first-child {
-      margin-top: 0;
-    }
-
-    .winter-frame > .sync-status:last-child {
-      margin-bottom: 0;
+      font-size: 1.05rem;
     }
 
     .sync-status {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
+      margin: 1rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
     }
 
     .sync-status::before {
       content: '';
-      width: 10px;
-      height: 10px;
+      flex: none;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       background: var(--text-muted);
     }
 
-    .sync-status[data-state="connected"]::before {
-      background: #22c55e;
+    .sync-status[data-state="connected"]::before { background: #9bd094; }
+    .sync-status[data-state="offline"]::before { background: var(--amber); }
+    .sync-status[data-state="error"]::before { background: #f0695a; }
+
+    /* Pairings: knitted-cuff gift tags */
+    .pairings-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(1rem, 2.5vw, 1.75rem);
     }
 
-    .sync-status[data-state="offline"]::before {
-      background: #f97316;
+    .pairings-grid > p {
+      grid-column: 1 / -1;
+      margin: 0;
+      color: var(--text-muted);
     }
 
-    .sync-status[data-state="error"]::before {
-      background: #ef4444;
+    .pair-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 1.25rem;
+      overflow: hidden;
+      border-radius: 18px;
+      background: var(--wool);
+      color: var(--ink);
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
+    .pair-card:nth-child(odd) { transform: rotate(-0.7deg); }
+    .pair-card:nth-child(even) { transform: rotate(0.6deg); }
+
+    .pair-card:hover {
+      transform: rotate(0deg) translateY(-3px);
+      box-shadow: 0 20px 38px rgba(0, 0, 0, 0.48), 0 0 34px rgba(242, 169, 80, 0.16);
+    }
+
+    .pair-card .knit {
+      align-self: stretch;
+      flex: none;
+    }
+
+    .portrait {
+      display: block;
+      flex: none;
+      border-radius: 50%;
+      overflow: hidden;
+      background: var(--wool);
+      box-shadow: 0 0 0 3px var(--wool), 0 0 0 5px var(--wood-light);
+    }
+
+    .portrait img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      /* The drawings sit on white; this melts it into the wool */
+      mix-blend-mode: multiply;
+    }
+
+    .pair-card .portrait {
+      width: 92px;
+      height: 92px;
+      margin-top: -26px;
+    }
+
+    .pair-card .giver {
+      margin-top: 0.8rem;
+      color: var(--ink-soft);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .pair-card .receiver {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 3.5rem;
+      padding: 0 0.5rem;
+      font-family: var(--hand);
+      font-weight: 600;
+      font-size: 2.6rem;
+      line-height: 1;
+      color: var(--cranberry);
+    }
+
+    .pair-card .receiver[data-hidden="false"] {
+      animation: unwrap 0.4s cubic-bezier(0.2, 1.4, 0.4, 1);
+    }
+
+    .pair-card .receiver[data-hidden="true"] {
+      font-size: 1.6rem;
+      color: var(--ink-soft);
+    }
+
+    @keyframes unwrap {
+      from { transform: scale(0.7) rotate(-4deg); opacity: 0; }
+      to { transform: scale(1) rotate(0); opacity: 1; }
+    }
+
+    .reveal-button {
+      min-height: 40px;
+      margin-top: 0.35rem;
+      padding: 0.4rem 1.05rem;
+      border: none;
+      border-radius: 999px;
+      background: var(--cranberry);
+      color: var(--paper);
+      font: 700 0.9rem var(--body);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .reveal-button:hover {
+      background: var(--cranberry-deep);
+    }
+
+    .reveal-button[aria-pressed="true"] {
+      background: transparent;
+      color: var(--ink-soft);
+      box-shadow: inset 0 0 0 1.5px rgba(111, 79, 58, 0.5);
+    }
+
+    .reveal-button[aria-pressed="true"]:hover {
+      background: rgba(111, 79, 58, 0.12);
+    }
+
+    /* Wish lists: letters on ruled paper */
     .suggestions-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(1rem, 2.5vw, 1.75rem);
+      margin-top: 1.25rem;
     }
 
     .suggestion-card {
-      border-radius: 22px;
-      padding: 1.35rem;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(239, 250, 244, 0.92));
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 18px 30px rgba(5, 25, 17, 0.18);
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 0.75rem;
-      color: var(--card-text);
+      min-width: 0;
+      padding: 1.25rem;
+      border-radius: 6px;
+      background: var(--paper);
+      color: var(--ink);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
     }
 
-    .suggestion-card header {
-      margin: 0;
+    .suggestion-card .who {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .suggestion-card .portrait {
+      width: 44px;
+      height: 44px;
+      background: var(--paper);
+      box-shadow: 0 0 0 2px var(--wood-light);
     }
 
     .suggestion-card h3 {
       margin: 0;
-      font-size: 1.1rem;
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 1.35rem;
+      font-variation-settings: 'SOFT' 100, 'WONK' 0;
+    }
+
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 10.5rem;
+      padding: 0 0.25rem;
+      border: none;
+      border-radius: 0;
+      resize: vertical;
+      overflow: auto;
+      font-family: var(--body);
+      font-size: 1rem;
+      line-height: 1.75rem;
+      color: var(--ink);
+      background-color: transparent;
+      background-image: repeating-linear-gradient(transparent 0 calc(1.75rem - 1px), rgba(122, 74, 44, 0.24) calc(1.75rem - 1px) 1.75rem);
+      background-attachment: local;
+    }
+
+    textarea::placeholder {
+      color: var(--ink-soft);
+      opacity: 1;
+    }
+
+    textarea:focus {
+      outline: 2px solid var(--ember);
+      outline-offset: 4px;
+      border-radius: 2px;
     }
 
     .suggestion-preview {
-      margin-top: 0.65rem;
-      padding: 0.85rem 1rem;
-      border-radius: 14px;
-      border: 1px dashed rgba(4, 52, 34, 0.15);
-      background: rgba(4, 52, 34, 0.03);
+      padding: 0.7rem 0.85rem;
+      border-radius: 6px;
+      background: rgba(143, 42, 36, 0.07);
       font-size: 0.95rem;
       line-height: 1.5;
-      color: var(--card-text);
       word-break: break-word;
     }
 
@@ -378,137 +554,227 @@
 
     .suggestion-preview a {
       display: block;
-      color: var(--accent-secondary);
-      text-decoration: underline;
       margin-bottom: 0.35rem;
+      color: var(--cranberry);
     }
 
     .suggestion-preview a:last-child {
       margin-bottom: 0;
     }
 
-    textarea {
-      width: 100%;
-      min-height: 180px;
-      border-radius: 16px;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      padding: 1rem 1.1rem;
-      font-family: inherit;
-      font-size: 1rem;
-      resize: vertical;
-      background: rgba(248, 250, 252, 0.95);
-      transition: border 0.2s ease, box-shadow 0.2s ease;
-      color: var(--card-text);
-      overflow: auto;
-    }
-
-    textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-soft);
-    }
-
     .save-indicator {
+      margin-top: auto;
       font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+    }
+
+    .save-indicator[data-state="saved-online"] { color: #3f6140; }
+    .save-indicator[data-state="saving"] { color: #85561b; }
+    .save-indicator[data-state="saved-offline"] { color: #2f6275; }
+    .save-indicator[data-state="error"] { color: #a32020; }
+
+    /* The hearth */
+    .hearth {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 1rem 1.5rem;
+      text-align: center;
+    }
+
+    .hearth .past {
+      margin: 0 0 1.5rem;
       color: var(--text-muted);
     }
 
-    .save-indicator[data-state="saved-online"] {
-      color: #16a34a;
-      font-weight: 600;
+    .hearth svg {
+      display: block;
+      width: min(420px, 100%);
+      height: auto;
     }
 
-    .save-indicator[data-state="saving"] {
-      color: #7c3aed;
-    }
+    .hearth .flame.mid { animation-duration: 1.9s; animation-delay: -0.6s; }
+    .hearth .flame.core { animation-duration: 1.4s; animation-delay: -1s; }
 
-    .save-indicator[data-state="error"] {
-      color: #dc2626;
-      font-weight: 600;
-    }
+    @media (max-width: 860px) {
+      .pairings-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
 
-    .save-indicator[data-state="saved-offline"] {
-      color: #0ea5e9;
-      font-weight: 600;
+      .suggestions-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 640px) {
-      body {
-        padding: 0rem;
-      }
-
-      main {
-        padding: 0.5rem;
-      }
-
-      header {
-        flex-direction: column;
-      }
-
-      .page-controls {
-        align-self: flex-start;
-      }
-
-      .pairings-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+      .hero {
+        grid-template-columns: 1fr;
+        justify-items: center;
         gap: 0.5rem;
+      }
+
+      .intro {
+        justify-self: stretch;
+        padding: 0 3.25rem 0 0;
+      }
+
+      .tagline {
+        margin-right: -3.25rem;
+      }
+
+      .scene {
+        width: 190px;
       }
 
       .suggestions-grid {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
       }
 
-      .pair-card,
-      .suggestion-card,
-      .winter-frame {
-        padding: 0.5rem;
+      .pair-card .portrait {
+        width: 72px;
+        height: 72px;
       }
 
-      textarea {
-        min-height: 140px;
+      .pair-card .receiver {
+        font-size: 2.2rem;
+      }
+
+      .pair-card .receiver[data-hidden="true"] {
+        font-size: 1.4rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+
+      .embers,
+      .scene .flakes,
+      .scene .steam {
+        display: none;
       }
     }
   </style>
 </head>
-  <body>
+<body>
+  <div class="firelight" aria-hidden="true"></div>
+  <div class="embers" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
   <main>
-    <header>
-         <div class="page-controls">
+    <header class="hero">
+      <div class="page-controls">
         <button class="menu-button" id="menuButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="menuDropdown" aria-label="Open menu">⋯</button>
         <div class="menu-dropdown" id="menuDropdown" role="menu" aria-hidden="true">
           <button type="button" role="menuitem" id="shuffleMenuItem">Shuffle pairings</button>
         </div>
       </div>
       <div class="intro">
-        <p class="eyebrow">White Family · 2025</p>
-        <h1>Not-so-Secret Santa</h1>
-        <p class="tagline">Merry Christmas!</p>
+        <p class="eyebrow">White Family · 2026</p>
+        <h1>Not-so-Secret <em>Santa</em></h1>
+        <p class="tagline">Merry Christmas. Pull up a chair, the fire's going.</p>
       </div>
-   
+
+      <svg class="scene" viewBox="0 0 320 360" role="img" aria-label="Snow falling outside a window, with a steaming mug and a lit candle on the sill">
+        <defs>
+          <clipPath id="glass"><path d="M56 326V150a104 104 0 0 1 208 0v176z"/></clipPath>
+          <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#121d2c"/>
+            <stop offset="1" stop-color="#34475c"/>
+          </linearGradient>
+          <radialGradient id="candleGlow">
+            <stop offset="0" stop-color="#f2a950" stop-opacity="0.65"/>
+            <stop offset="1" stop-color="#f2a950" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <path d="M40 340V150a120 120 0 0 1 240 0v190z" fill="#5a3420"/>
+        <g clip-path="url(#glass)">
+          <rect x="50" y="40" width="220" height="290" fill="url(#dusk)"/>
+          <circle cx="212" cy="104" r="17" fill="#f3e9d4"/>
+          <path d="M92 262l16-44 16 44zM74 276l18-54 18 54zM226 268l14-40 14 40zM202 280l19-58 19 58z" fill="#0e1823"/>
+          <path d="M40 286c42-26 82-22 124-2s76 16 110-6v60H40z" fill="#d7e0e6"/>
+          <path d="M40 308c52-14 104-10 150 0s64 4 84-4v34H40z" fill="#eef2f4"/>
+          <g class="flakes" fill="#fff">
+            <circle class="flake" cx="70" cy="30" r="2.6" style="animation-duration:9s;animation-delay:-1s"/>
+            <circle class="flake" cx="92" cy="30" r="1.8" style="animation-duration:12s;animation-delay:-7s"/>
+            <circle class="flake" cx="112" cy="30" r="3" style="animation-duration:8s;animation-delay:-4s"/>
+            <circle class="flake" cx="134" cy="30" r="2" style="animation-duration:11s;animation-delay:-9s"/>
+            <circle class="flake" cx="150" cy="30" r="2.6" style="animation-duration:10s;animation-delay:-2s"/>
+            <circle class="flake" cx="172" cy="30" r="1.8" style="animation-duration:13s;animation-delay:-5s"/>
+            <circle class="flake" cx="190" cy="30" r="3" style="animation-duration:9s;animation-delay:-6.5s"/>
+            <circle class="flake" cx="208" cy="30" r="2.2" style="animation-duration:11s;animation-delay:-3s"/>
+            <circle class="flake" cx="228" cy="30" r="2.6" style="animation-duration:8.5s;animation-delay:-7.5s"/>
+            <circle class="flake" cx="246" cy="30" r="1.8" style="animation-duration:12s;animation-delay:-1.5s"/>
+            <circle class="flake" cx="82" cy="30" r="2.2" style="animation-duration:10s;animation-delay:-5.5s"/>
+            <circle class="flake" cx="160" cy="30" r="1.6" style="animation-duration:14s;animation-delay:-10s"/>
+          </g>
+        </g>
+        <rect x="155" y="40" width="10" height="290" fill="#5a3420"/>
+        <rect x="50" y="186" width="220" height="10" fill="#5a3420"/>
+
+        <!-- Sill -->
+        <rect x="16" y="334" width="288" height="20" rx="5" fill="#7a4a2c"/>
+        <rect x="16" y="348" width="288" height="6" rx="3" fill="#4a2a18"/>
+
+        <!-- Mug -->
+        <path class="steam" d="M92 268c-7-9 7-15 0-25"/>
+        <path class="steam later" d="M112 266c-7-9 7-15 0-25"/>
+        <path d="M134 296h10a15 15 0 0 1 0 30h-10" fill="none" stroke="#8f2a24" stroke-width="7"/>
+        <path d="M72 280h66v44a11 11 0 0 1-11 11H83a11 11 0 0 1-11-11z" fill="#8f2a24"/>
+        <ellipse cx="105" cy="280" rx="33" ry="6.5" fill="#6b1f1a"/>
+        <ellipse cx="105" cy="281" rx="27" ry="4.2" fill="#6b3a20"/>
+        <rect x="72" y="298" width="66" height="19" fill="#f6e8d2"/>
+        <path d="M78 307.500l5-5 5 5-5 5zM92 307.500l5-5 5 5-5 5zM106 307.500l5-5 5 5-5 5zM120 307.500l5-5 5 5-5 5z" fill="#8f2a24"/>
+
+        <!-- Candle -->
+        <circle cx="228" cy="262" r="44" fill="url(#candleGlow)"/>
+        <rect x="216" y="280" width="24" height="54" rx="3" fill="#f6e8d2"/>
+        <rect x="205" y="330" width="46" height="6" rx="3" fill="#a9845f"/>
+        <path d="M228 280v-6" stroke="#3a2114" stroke-width="2"/>
+        <path class="candle-flame" d="M228 276c-7-5-8-13 0-24 8 11 7 19 0 24z" fill="#f2a950"/>
+      </svg>
     </header>
+
+    <div class="knit hero-band" aria-hidden="true"></div>
 
     <section aria-labelledby="pairings-title">
       <div class="section-heading">
-        <h2 id="pairings-title">Pairings</h2>
+        <h2 id="pairings-title">Who's got who</h2>
+        <p class="hint">Find your tag and unwrap it.</p>
       </div>
-      <div class="winter-frame">
-        <div class="pairings-grid" id="pairingsGrid" aria-live="polite"></div>
-        <p class="sync-status" id="pairingsStatus" data-state="syncing">Loading saved pairings…</p>
-      </div>
+      <div class="pairings-grid" id="pairingsGrid" aria-live="polite"></div>
+      <p class="sync-status" id="pairingsStatus" data-state="syncing">Loading saved pairings…</p>
     </section>
 
     <section aria-labelledby="suggestions-title">
       <div class="section-heading">
-        <h2 id="suggestions-title">Wish List Notes</h2>
+        <h2 id="suggestions-title">Wish lists</h2>
+        <p class="hint">Drop in hints, links and sizes. Your list saves as you type.</p>
+        <p class="sync-status" id="syncStatus" data-state="syncing">Connecting…</p>
       </div>
-      <div class="winter-frame">
-        <p class="hint">Everyone can drop hints, links, and sizes here!</p>
-        <p class="sync-status" id="syncStatus" data-state="syncing">Connecting to Firebase…</p>
-        <div class="suggestions-grid" id="suggestionsGrid"></div>
-      </div>
+      <div class="suggestions-grid" id="suggestionsGrid"></div>
     </section>
   </main>
+
+  <footer class="hearth">
+    <p class="past">Past years: <a href="./2025/">2025</a></p>
+    <svg viewBox="0 0 300 170" aria-hidden="true">
+      <path class="flame" d="M150 150c-52 0-74-34-58-72 6 12 14 17 22 17-8-32 8-64 40-84-4 26 10 38 24 54 6-6 8-14 8-22 22 22 30 48 22 70-8 24-30 37-58 37z" fill="#e8743b"/>
+      <path class="flame mid" d="M150 150c-32 0-48-22-38-48 6 8 12 11 18 10-4-22 6-42 24-56-1 18 8 27 17 38 4-4 6-9 6-15 13 16 18 33 12 47-6 15-20 24-39 24z" fill="#f2a950"/>
+      <path class="flame core" d="M150 150c-16 0-25-12-20-26 4 4 7 5 10 5-2-12 4-23 12-30 0 10 5 15 10 21 2-2 3-5 3-8 7 9 9 18 6 25-3 8-11 13-21 13z" fill="#fde3a7"/>
+      <g fill="#5f3920">
+        <rect x="52" y="138" width="196" height="20" rx="10" transform="rotate(-6 150 148)"/>
+        <rect x="52" y="138" width="196" height="20" rx="10" transform="rotate(6 150 148)"/>
+      </g>
+      <circle cx="68" cy="158" r="7.500" fill="#a9845f"/>
+      <circle cx="232" cy="158" r="7.500" fill="#a9845f"/>
+    </svg>
+  </footer>
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
@@ -533,12 +799,12 @@
       return acc;
     }, {});
     const giverAvatars = {
-      Michael: './img/mike.png',
-      Diane: './img/diane.png',
-      Sarah: './img/sarah.png',
-      Chris: './img/chris.png',
-      Steve: './img/steve.png',
-      Jess: './img/jess.png'
+      Michael: './portraits/mike.webp',
+      Diane: './portraits/diane.webp',
+      Sarah: './portraits/sarah.webp',
+      Chris: './portraits/chris.webp',
+      Steve: './portraits/steve.webp',
+      Jess: './portraits/jess.webp'
     };
     const disallowedPairs = new Set([
       'Chris|Sarah',
@@ -548,9 +814,9 @@
       'Steve|Jess',
       'Jess|Steve'
     ]);
-    const wishlistStorageKey = 'whiteFamilySecretSantaSuggestions_v2';
-    const pairingsStorageKey = 'whiteFamilySecretSantaPairings_v1';
-    const revealStorageKey = 'whiteFamilySecretSantaReveals_v1';
+    const wishlistStorageKey = 'whiteFamilySecretSantaSuggestions_2026';
+    const pairingsStorageKey = 'whiteFamilySecretSantaPairings_2026';
+    const revealStorageKey = 'whiteFamilySecretSantaReveals_2026';
     const adminPassword = 'eganville';
     const adminStorageKey = 'whiteFamilySantaAdmin';
     const urlPattern = /((https?:\/\/|www\.)[^\s]+)/gi;
@@ -667,6 +933,18 @@
       throw new Error('Could not build pairings within the rules.');
     }
 
+    function createPortrait(name) {
+      const frame = document.createElement('span');
+      frame.className = 'portrait';
+      const image = document.createElement('img');
+      image.src = giverAvatars[name];
+      image.alt = '';
+      image.width = 320;
+      image.height = 320;
+      frame.appendChild(image);
+      return frame;
+    }
+
     function renderPairingCards(pairings) {
       pairingsGrid.innerHTML = '';
       const ordered = [...pairings].sort((a, b) => {
@@ -675,19 +953,13 @@
       ordered.forEach(({ giver, receiver }) => {
         const card = document.createElement('article');
         card.className = 'pair-card';
-        if (giverAvatars[giver]) {
-          card.style.setProperty('--avatar-image', `url("${giverAvatars[giver]}")`);
-        } else {
-          card.style.removeProperty('--avatar-image');
-        }
+
+        const cuff = document.createElement('div');
+        cuff.className = 'knit';
 
         const giverSpan = document.createElement('span');
         giverSpan.className = 'giver';
         giverSpan.textContent = `From ${giver}`;
-
-        const arrowSpan = document.createElement('span');
-        arrowSpan.className = 'arrow';
-        arrowSpan.textContent = '→';
 
         const receiverSpan = document.createElement('span');
         receiverSpan.className = 'receiver';
@@ -698,9 +970,9 @@
 
         const syncRevealState = () => {
           const isRevealed = revealedGivers.has(giver);
-          receiverSpan.textContent = isRevealed ? receiver : 'Tap to reveal';
+          receiverSpan.textContent = isRevealed ? receiver : 'Who could it be?';
           receiverSpan.dataset.hidden = isRevealed ? 'false' : 'true';
-          revealButton.textContent = isRevealed ? 'Hide' : 'Reveal';
+          revealButton.textContent = isRevealed ? 'Wrap it back up' : 'Unwrap';
           revealButton.setAttribute('aria-pressed', String(isRevealed));
         };
 
@@ -727,7 +999,7 @@
 
         syncRevealState();
 
-        card.append(giverSpan, arrowSpan, receiverSpan, revealButton);
+        card.append(cuff, createPortrait(giver), giverSpan, receiverSpan, revealButton);
         pairingsGrid.appendChild(card);
       });
     }
@@ -814,7 +1086,12 @@
         applyPairings(freshPairings, 'cloud', { updatedAt });
       } catch (error) {
         console.error('Unable to load pairings', error);
-        updatePairingsStatus('Could not load saved pairings · showing local copy', 'error');
+        if (latestPairings.length) {
+          updatePairingsStatus('Could not load saved pairings · showing local copy', 'error');
+        } else {
+          pairingsGrid.innerHTML = '<p>The pairings aren\'t ready yet. Check back soon.</p>';
+          updatePairingsStatus('Could not reach the saved pairings', 'error');
+        }
       }
     }
 
@@ -909,13 +1186,17 @@
         const card = document.createElement('article');
         card.className = 'suggestion-card';
 
+        const who = document.createElement('div');
+        who.className = 'who';
         const title = document.createElement('h3');
         title.textContent = name;
+        who.append(createPortrait(name), title);
 
         const textarea = document.createElement('textarea');
         textarea.placeholder = 'Gift ideas, sizes, links…';
         textarea.value = initialValues[name] || '';
         textarea.dataset.person = name;
+        textarea.setAttribute('aria-label', `${name}'s wish list`);
 
         const indicator = document.createElement('span');
         indicator.className = 'save-indicator';
@@ -929,7 +1210,7 @@
         preview.className = 'suggestion-preview';
         updatePreviewElement(preview, textarea.value);
 
-        card.appendChild(title);
+        card.appendChild(who);
         card.appendChild(textarea);
         card.appendChild(preview);
         card.appendChild(indicator);
@@ -1034,8 +1315,8 @@
           isTokenAutoRefreshEnabled: true
         });
         const db = getFirestore(app);
-        wishlistDocRef = doc(db, 'secretSanta', 'wishlists');
-        pairingsDocRef = doc(db, 'secretSanta', 'pairings');
+        wishlistDocRef = doc(db, 'secretSanta', 'wishlists2026');
+        pairingsDocRef = doc(db, 'secretSanta', 'pairings2026');
         updateSyncStatus('Connected', 'connected');
         updatePairingsStatus('Connected · loading saved pairings…', 'syncing');
       } catch (error) {
